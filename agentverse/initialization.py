@@ -79,13 +79,38 @@ def prepare_task_config(taskwithyaml):
     parser = output_parser_registry.build(task)
     task_config["output_parser"] = parser
 
+    # Handle llm_config if present
+    selected_llm_config = None
+    if "llm_config" in task_config:
+        llm_config = task_config["llm_config"]
+        mode = llm_config.get("mode", "api")
+        
+        if mode == "api":
+            selected_llm_config = llm_config.get("api_settings", {})
+            print(f"🔗 Using API mode with model: {selected_llm_config.get('model', 'default')}")
+        elif mode == "local":
+            selected_llm_config = llm_config.get("local_settings", {})
+            print(f"🏠 Using Local LLM mode with model: {selected_llm_config.get('model_path', 'default')}")
+            # Update output_dir to reflect local mode
+            if "output_dir" in task_config:
+                task_config["output_dir"] = task_config["output_dir"].replace("deepseek_chat", "deepseek_local")
+        else:
+            raise ValueError(f"Invalid llm_config mode: {mode}. Must be 'api' or 'local'")
+
     for i, agent_configs in enumerate(task_config["agents"]):
         agent_configs["memory"] = load_memory(agent_configs.get("memory", {}))
         memory_manipulator = load_memory_manipulator(agent_configs.get("memory_manipulator", {}))
         agent_configs["memory_manipulator"] = memory_manipulator
         if agent_configs.get("tool_memory", None) is not None:
             agent_configs["tool_memory"] = load_memory(agent_configs["tool_memory"])
-        llm = load_llm(agent_configs.get("llm", "text-davinci-003"))
+        
+        # Use selected_llm_config if available, otherwise use agent's own llm config
+        if selected_llm_config:
+            llm_config_to_use = selected_llm_config.copy()
+        else:
+            llm_config_to_use = agent_configs.get("llm", {"llm_type": "text-davinci-003"})
+            
+        llm = load_llm(llm_config_to_use)
         agent_configs["llm"] = llm
 
         agent_configs["tools"] = load_tools(agent_configs.get("tools", []))

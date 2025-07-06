@@ -86,6 +86,7 @@ class OpenAICompletion(BaseCompletionModel):
 @llm_registry.register("gpt-3.5-turbo-0301")
 @llm_registry.register("gpt-3.5-turbo")
 @llm_registry.register("gpt-4")
+@llm_registry.register("deepseek-chat") # added by xiang
 class OpenAIChat(BaseChatModel):
     args: OpenAIChatArgs = Field(default_factory=OpenAIChatArgs)
 
@@ -130,6 +131,7 @@ class OpenAIChat(BaseChatModel):
 
     async def agenerate_response(self, prompt: str, chat_memory: List[Message], final_prompt: str) -> LLMResult:
         messages = self._construct_messages(prompt, chat_memory, final_prompt)
+        print(f"🔄 Messages: {messages}")
         try:
             if openai.api_type == "azure":
                 response = await aclient.chat.completions.create(engine="gpt-4-6", messages=messages, **self.args.dict())

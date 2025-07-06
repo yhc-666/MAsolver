@@ -61,8 +61,10 @@ agents:
       memory_manipulator_type: basic
     prompt_template: *prompt
     llm:
-      model: "gpt-3.5-turbo-0301"
-      llm_type: gpt-3.5-turbo-0301
+      # model: "gpt-3.5-turbo-0301"
+      # llm_type: gpt-3.5-turbo-0301
+      model: "deepseek-chat"
+      llm_type: deepseek-chat
       temperature: 0
       max_tokens: 512
   -
@@ -85,8 +87,10 @@ agents:
       memory_manipulator_type: basic
     prompt_template: *prompt
     llm:
-      model: "gpt-3.5-turbo-0301"
-      llm_type: gpt-3.5-turbo-0301
+      # model: "gpt-3.5-turbo-0301"
+      # llm_type: gpt-3.5-turbo-0301
+      model: "deepseek-chat"
+      llm_type: deepseek-chat
       temperature: 0
       max_tokens: 512
 

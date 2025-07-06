@@ -1,6 +1,10 @@
 import os
-os.environ["OPENAI_API_KEY"] = "***"
-os.environ["OPENAI_BASE_URL"] = "***"
+
+os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+
+# os.environ["OPENAI_API_KEY"] = "***"
+# os.environ["OPENAI_BASE_URL"] = "***"
 
 # always remember to put these lines at the top of your code if you are using clash
 # os.environ["http_proxy"] = "http://127.0.0.1:7890"
@@ -16,7 +20,7 @@ from argparse import ArgumentParser
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", type=str, default="config.yaml")
+parser.add_argument("--config", type=str, default="agentverse/tasks/llm_eval/lxconfig.yaml")
 parser.add_argument("--reverse_input", default=False, action="store_true")
 
 
@@ -41,30 +45,27 @@ with open(args_data_path) as f:
 if "faireval" in args_data_path:
     pair_comparison_output = []
 
-    for num, ins in enumerate(data[:80]):
+    for num, ins in enumerate(data[:1]):
 
         print(f"================================instance {num}====================================")
 
         # reassign the text to agents, and set final_prompt to null for debate at first round
         for agent_id in range(len(agentverse.agents)):
-            agentverse.agents[agent_id].source_text = ins["question"]
+            agentverse.agents[agent_id].source_text = ins["instruction"]
 
-            if args.reverse_input:
-                agentverse.agents[agent_id].compared_text_one = ins["response"]["vicuna"]
-                agentverse.agents[agent_id].compared_text_two = ins["response"]["gpt35"]
-            else:
-                agentverse.agents[agent_id].compared_text_one = ins["response"]["gpt35"]
-                agentverse.agents[agent_id].compared_text_two = ins["response"]["vicuna"]
+            # if args.reverse_input:
+            #     agentverse.agents[agent_id].compared_text_one = ins["response"]["vicuna"]
+            #     agentverse.agents[agent_id].compared_text_two = ins["response"]["gpt35"]
+            # else:
+            #     agentverse.agents[agent_id].compared_text_one = ins["response"]["gpt35"]
+            #     agentverse.agents[agent_id].compared_text_two = ins["response"]["vicuna"]
 
             agentverse.agents[agent_id].final_prompt = ""
-
         agentverse.run()
 
         evaluation = get_evaluation(setting="every_agent", messages=agentverse.agents[0].memory.messages, agent_nums=len(agentverse.agents))
 
-        pair_comparison_output.append({"question": ins["question"],
-                                       "response": {"gpt35": ins["response"]["gpt35"],
-                                                    "vicuna": ins["response"]["vicuna"]},
+        pair_comparison_output.append({"question": ins["instruction"],
                                        "evaluation": evaluation})
 
         os.makedirs(args_output_dir, exist_ok=True)

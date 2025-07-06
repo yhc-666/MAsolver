@@ -4,3 +4,10 @@ llm_registry = Registry(name="LLMRegistry")
 
 from .base import BaseLLM, BaseChatModel, BaseCompletionModel, LLMResult
 from .openai import OpenAIChat, OpenAICompletion
+
+# Import local LLM classes
+try:
+    from .local_llm import BaseLocalLLM, DeepseekLocalLLM, QwenLocalLLM, ChatGLMLocalLLM, LlamaLocalLLM
+except ImportError:
+    # If vllm is not installed, local LLM classes won't be available
+    pass
