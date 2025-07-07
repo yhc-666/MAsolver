@@ -7,7 +7,7 @@ output_dir:
 prompts:
   prompt: &prompt |-
     [Question]
-    ${source_text}
+    ${question}
     [System]
     说一下你对这个问题的理解，这个问题是否合理以及其原因。请用中文作答：
     ${role_description}
@@ -19,7 +19,7 @@ prompts:
 # LLM Configuration - 选择使用API还是本地LLM
 llm_config:
   # 模式选择: 'api' 使用API调用, 'local' 使用本地LLM
-  mode: 'local'  # 可选: 'api' 或 'local'
+  mode: 'api'  # 可选: 'api' 或 'local'
   
   # API模式配置
   api_settings:

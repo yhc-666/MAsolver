@@ -51,7 +51,7 @@ if "faireval" in args_data_path:
 
         # reassign the text to agents, and set final_prompt to null for debate at first round
         for agent_id in range(len(agentverse.agents)):
-            agentverse.agents[agent_id].source_text = ins["instruction"]
+            agentverse.agents[agent_id].question = ins["instruction"]
 
             # if args.reverse_input:
             #     agentverse.agents[agent_id].compared_text_one = ins["response"]["vicuna"]
@@ -84,7 +84,7 @@ elif "adversarial" in args_data_path:
 
         # reassign the text to agents, and set final_prompt to null for debate at first round
         for agent_id in range(len(agentverse.agents)):
-            agentverse.agents[agent_id].source_text = ins["question"]
+            agentverse.agents[agent_id].question = ins["question"]
 
             if args.reverse_input:
                 agentverse.agents[agent_id].compared_text_one = ins["response"]["output_2"]

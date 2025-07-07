@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 @agent_registry.register("llm_eval_multi_con")
 class LLMEvalAgent(BaseAgent):
 
-    source_text: str = ""
+    question: str = ""
     # for direct score
     reference_text: str = ""
     generated_text: str = ""
@@ -134,7 +134,7 @@ class LLMEvalAgent(BaseAgent):
             "agent_name": self.name,
             "env_description": env_description,
             "role_description": self.role_description,
-            "source_text": self.source_text,
+            "question": self.question,
             "reference_text": self.reference_text,
             "generated_text": self.generated_text,
             "compared_text_one": self.compared_text_one,
