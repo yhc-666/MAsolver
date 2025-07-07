@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from typing import Dict
+from typing import Dict, List
 
 from pydantic import BaseModel, Field
+from agentverse.message import Message, StructuredPrompt
 
 
 class LLMResult(BaseModel):
@@ -20,11 +21,11 @@ class BaseLLM(BaseModel):
     max_retry: int = Field(default=3)
 
     @abstractmethod
-    def generate_response(self, **kwargs) -> LLMResult:
+    def generate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         pass
 
     @abstractmethod
-    def agenerate_response(self, **kwargs) -> LLMResult:
+    async def agenerate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         pass
 
 

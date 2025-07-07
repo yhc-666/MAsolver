@@ -5,7 +5,7 @@ import bdb
 from string import Template
 from typing import TYPE_CHECKING, List
 
-from agentverse.message import Message
+from agentverse.message import Message, StructuredPrompt
 from openai import RateLimitError
 
 from . import agent_registry
@@ -30,14 +30,15 @@ class LLMEvalAgent(BaseAgent):
 
     final_prompt: str = ""
     final_prompt_to_use: str = ""
+    normal_turn_instruction: str = ""
 
     def step(self, env_description: str = "") -> Message:
-        prompt = self._fill_prompt_template(env_description)
+        structured_prompt = self._fill_prompt_template(env_description, None)
 
         parsed_response = None
         for i in range(self.max_retry):
             try:
-                response = self.llm.generate_response(prompt, self.memory.messages, self.final_prompt)
+                response = self.llm.generate_response(structured_prompt, self.memory.messages)
                 parsed_response = self.output_parser.parse(response)
                 break
             except KeyboardInterrupt:
@@ -59,7 +60,7 @@ class LLMEvalAgent(BaseAgent):
         )
         return message
 
-    async def astep(self, env: BaseEnvironment = None, env_description: str = "") -> Message:
+    async def astep(self, env: "BaseEnvironment" = None, env_description: str = "") -> Message:
         """Asynchronous version of step"""
 
         # TODO modify this line, if it is the final round, add some instruction in the prompt
@@ -80,7 +81,7 @@ class LLMEvalAgent(BaseAgent):
             #                     "Coherence:\n" \
             self.final_prompt = self.final_prompt_to_use
 
-        prompt = self._fill_prompt_template(env_description)
+        structured_prompt = self._fill_prompt_template(env_description, env)
 
         parsed_response = None
 
@@ -89,7 +90,7 @@ class LLMEvalAgent(BaseAgent):
 
             for i in range(self.max_retry):
                 try:
-                    response = await self.llm.agenerate_response(prompt, self.memory.messages, self.final_prompt)
+                    response = await self.llm.agenerate_response(structured_prompt, self.memory.messages)
                     parsed_response = self.output_parser.parse(response, env.cnt_turn, env.max_turns, len(env.agents))
                     should_break = True
                     break
@@ -124,15 +125,24 @@ class LLMEvalAgent(BaseAgent):
         )
         return message
 
-    def _fill_prompt_template(self, env_description: str = "") -> str:
-        """Fill the placeholders in the prompt template
-
-        In the conversation agent, three placeholders are supported:
-        - ${agent_name}: the name of the agent
-        - ${env_description}: the description of the environment
-        - ${role_description}: the description of the role of the agent
-        - ${chat_history}: the chat history of the agent
+    def _fill_prompt_template(self, env_description: str = "", env=None) -> StructuredPrompt:
+        """Fill the placeholders in the prompt template and return structured prompt components
+        
+        这个方法将原来的单一prompt字符串拆分为结构化的部分：
+        - system_content: ${chat_history}之前的部分
+        - user_content: ${chat_history}之后的部分
         """
+        # Determine turn-specific instruction based on current turn
+        if env and hasattr(env, 'cnt_turn') and hasattr(env, 'max_turns') and hasattr(env, 'agents'):
+            if env.cnt_turn < env.max_turns - len(env.agents):
+                turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
+            else:
+                turn_specific_instruction = self.final_prompt
+        else:
+            # Fallback for when env is not available
+            turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
+        
+        # 填充除了chat_history之外的所有参数
         input_arguments = {
             "agent_name": self.name,
             "env_description": env_description,
@@ -143,9 +153,35 @@ class LLMEvalAgent(BaseAgent):
             "compared_text_one": self.compared_text_one,
             "compared_text_two": self.compared_text_two,
             "final_prompt": self.final_prompt,
-            # "chat_history": self.memory.to_string(add_sender_prefix=True),
+            "turn_specific_instruction": turn_specific_instruction,
+            # 注意：故意不填充chat_history，保留${chat_history}作为分割点
         }
-        return Template(self.prompt_template).safe_substitute(input_arguments)
+        
+        # 使用safe_substitute，这样未提供的变量（如chat_history）会保留原样
+        partially_filled_template = Template(self.prompt_template).safe_substitute(input_arguments)
+        
+        # 使用${chat_history}作为分割点
+        chat_history_placeholder = "${chat_history}"
+        
+        if chat_history_placeholder in partially_filled_template:
+            # 按照${chat_history}分割
+            parts = partially_filled_template.split(chat_history_placeholder)
+            if len(parts) == 2:
+                system_content = parts[0].strip()
+                user_content = parts[1].strip()
+            else:
+                # 如果有多个${chat_history}或其他异常情况，回退到原始逻辑
+                system_content = partially_filled_template
+                user_content = ""
+        else:
+            # 如果template中没有${chat_history}，所有内容作为system_content
+            system_content = partially_filled_template
+            user_content = ""
+        
+        return StructuredPrompt(
+            system_content=system_content,
+            user_content=user_content
+        )
 
     def add_message_to_memory(self, messages: List[Message]) -> None:
         self.memory.add_message(messages)

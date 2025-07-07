@@ -1,14 +1,16 @@
 import logging
 import re
 import time
+import json
 from typing import Dict, List, Optional, Union, Any
 from pydantic import BaseModel, Field
 from agentverse.llms.base import LLMResult
 from . import llm_registry
 from .base import BaseChatModel, BaseModelArgs
-from agentverse.message import Message
+from agentverse.message import Message, StructuredPrompt
 
 logger = logging.getLogger(__name__)
+io_logger = logging.getLogger(f"{__name__}.io")
 
 # 共享的模型instances字典，用于避免重复加载同一模型
 _model_instances = {}
@@ -46,7 +48,6 @@ class BaseLocalLLM(BaseChatModel):
         if not is_vllm_available:
             raise ImportError("vLLM and transformers are required for local LLM support")
         
-        # 处理参数
         args = LocalLLMArgs()
         args_dict = args.dict()
         
@@ -56,7 +57,6 @@ class BaseLocalLLM(BaseChatModel):
         if len(kwargs) > 0:
             logger.warning(f"Unused arguments: {kwargs}")
         
-        # 创建LocalLLMArgs实例
         local_args = LocalLLMArgs(**args_dict)
         
         super().__init__(args=local_args, max_retry=max_retry)
@@ -64,11 +64,9 @@ class BaseLocalLLM(BaseChatModel):
         # 生成模型实例键（用于共享）
         self._model_key = f"{self.args.model_path}_{self.args.tensor_parallel_size}_{self.args.gpu_memory_utilization}"
         
-        # 初始化模型和tokenizer
         self._init_model()
     
     def _init_model(self):
-        """初始化模型和tokenizer"""
         if self._model_key in _model_instances:
             logger.info(f"🔄 Reusing existing model instance for {self.args.model_path}")
             self._llm = _model_instances[self._model_key]['llm']
@@ -77,13 +75,11 @@ class BaseLocalLLM(BaseChatModel):
             logger.info(f"🚀 Loading new model instance: {self.args.model_path}")
             start_time = time.time()
             
-            # 加载tokenizer
             self._tokenizer = AutoTokenizer.from_pretrained(
                 self.args.model_path,
                 trust_remote_code=self.args.trust_remote_code
             )
             
-            # 加载LLM
             self._llm = LLM(
                 model=self.args.model_path,
                 tensor_parallel_size=self.args.tensor_parallel_size,
@@ -92,7 +88,6 @@ class BaseLocalLLM(BaseChatModel):
                 trust_remote_code=self.args.trust_remote_code
             )
             
-            # 缓存模型实例
             _model_instances[self._model_key] = {
                 'llm': self._llm,
                 'tokenizer': self._tokenizer
@@ -101,15 +96,39 @@ class BaseLocalLLM(BaseChatModel):
             load_time = time.time() - start_time
             logger.info(f"✅ Model loaded in {load_time:.2f} seconds")
     
-    def _construct_messages(self, prompt: str, chat_memory: List[Message], final_prompt: str):
-        chat_messages = []
-        for item_memory in chat_memory:
-            chat_messages.append(str(item_memory.sender) + ": " + str(item_memory.content))
-        processed_prompt = [{"role": "user", "content": prompt}]
-        for chat_message in chat_messages:
-            processed_prompt.append({"role": "assistant", "content": chat_message})
-        processed_prompt.append({"role": "user", "content": final_prompt})
-        return processed_prompt
+    def _construct_messages(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]):
+        """
+        创建messages json, inclusing 3 sections:
+        - system message: 来自structured_prompt.system_content
+        - assistant messages with name: 来自chat_memory, 注意name需要符合API要求
+        - user message: 来自structured_prompt.user_content
+        """
+        messages = []
+        
+        # 1. 添加system message
+        if structured_prompt.system_content:
+            messages.append({
+                "role": "system",
+                "content": structured_prompt.system_content
+            })
+        
+        # 2. 添加历史对话作为assistant messages
+        for message in chat_memory:
+            if message.content.strip() and message.content != "[Silence]":
+                messages.append({
+                    "role": "assistant", 
+                    "name": message.sender.replace(" ", "_"),  # 确保name符合API要求
+                    "content": message.content
+                })
+        
+        # 3. 添加用户消息
+        if structured_prompt.user_content:
+            messages.append({
+                "role": "user",
+                "content": structured_prompt.user_content
+            })
+        
+        return messages
     
     def _apply_chat_template(self, messages: List[Dict]):
         """应用chat template"""
@@ -178,17 +197,16 @@ class BaseLocalLLM(BaseChatModel):
         
         return filtered_text.strip()
     
-    def generate_response(self, prompt: str, chat_memory: List[Message], final_prompt: str) -> LLMResult:
+    def generate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         """生成响应"""
         try:
-            # 构造消息
-            messages = self._construct_messages(prompt, chat_memory, final_prompt)
-            print(f"🔄 Messages: {messages}")
+            messages = self._construct_messages(structured_prompt, chat_memory)
             
-            # 应用chat template
+            # 记录输入消息JSON
+            io_logger.info("➡️Input Messages JSON:\n%s", json.dumps(messages, ensure_ascii=False, indent=2))
+            
             formatted_prompt = self._apply_chat_template(messages)
             
-            # 设置采样参数
             sampling_params = SamplingParams(
                 temperature=self.args.temperature,
                 top_p=self.args.top_p,
@@ -196,17 +214,20 @@ class BaseLocalLLM(BaseChatModel):
                 max_tokens=self.args.max_tokens
             )
             
-            # 生成响应
             outputs = self._llm.generate([formatted_prompt], sampling_params)
             
             if outputs and len(outputs) > 0:
                 output = outputs[0]
                 generated_text = output.outputs[0].text
                 
-                # 过滤think tokens
                 filtered_text = self._filter_think_tokens(generated_text)
                 
-                # 计算token使用量
+                # 记录LLM响应
+                io_logger.info("↩️ LLM Response:\n%s", json.dumps({
+                    "raw_response": generated_text,
+                    "filtered_response": filtered_text
+                }, ensure_ascii=False, indent=2))
+                
                 prompt_tokens = len(output.prompt_token_ids) if hasattr(output, 'prompt_token_ids') else 0
                 completion_tokens = len(output.outputs[0].token_ids) if output.outputs[0].token_ids else 0
                 
@@ -223,9 +244,9 @@ class BaseLocalLLM(BaseChatModel):
             logger.error(f"Error generating response with local LLM: {e}")
             raise
     
-    async def agenerate_response(self, prompt: str, chat_memory: List[Message], final_prompt: str) -> LLMResult:
+    async def agenerate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         """异步生成响应（当前使用同步实现）"""
-        return self.generate_response(prompt, chat_memory, final_prompt)
+        return self.generate_response(structured_prompt, chat_memory)
 
 
 @llm_registry.register("deepseek-local")

@@ -9,12 +9,11 @@ prompts:
     [Question]
     ${question}
     [System]
-    说一下你对这个问题的理解，这个问题是否合理以及其原因。请用中文作答：
+    从你的角度出发，说一下你对这个问题的理解，并就这个问题是否合理以及其原因和你的对手进行论辩。请用中文作答。
+    以下是你和你的对手的对话历史:
+    ${chat_history}
     ${role_description}
-
-    现在轮到你说话了，请你尽可能讲的简短且清晰， ${agent_name} !
-
-    ${final_prompt}
+    ${turn_specific_instruction}
 
 # LLM Configuration - 选择使用API还是本地LLM
 llm_config:
@@ -62,6 +61,8 @@ agents:
     name: 弱智
     final_prompt_to_use: |-
       经过讨论后，你需要给出你对这个问题的理解，这个问题是否合理以及其原因。请记住，您无需输出与其他用户相同的值！请用中文作答：
+    normal_turn_instruction: |-
+      现在轮到你说话了，请你尽可能讲的简短且清晰， ${agent_name} !
     role_description: |-
       你是个弱智，我们问题的题目都是一些看似有道理但实际上非常奇怪的问题，提这种题目的都是你这样的人。你需要误导对方，让对方认为这是个合理的问题。
     memory:
@@ -74,6 +75,8 @@ agents:
     name: 天才
     final_prompt_to_use: |-
       经过讨论后，你需要给出你对这个问题的理解，这个问题是否合理以及其原因。请记住，您无需输出与其他用户相同的值！要一小段文字，不要多余的格式，请用中文作答：
+    normal_turn_instruction: |-
+      现在轮到你说话了，请你尽可能讲的简短且清晰， ${agent_name} !
     role_description: |-
       你是个天才，我们问题的题目都是一些看似有道理但实际上非常奇怪的问题，你的对手是一个弱智，他没法理解到这个问题的奇怪之处，你需要通过讨论，让对方认为这是个不合理的问题。
     memory:

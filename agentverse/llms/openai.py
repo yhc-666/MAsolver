@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import time
 import os
+import json
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
@@ -10,9 +11,11 @@ from agentverse.llms.base import LLMResult
 
 from . import llm_registry
 from .base import BaseChatModel, BaseCompletionModel, BaseModelArgs
-from agentverse.message import Message
+from agentverse.message import Message, StructuredPrompt
 
 logger = logging.getLogger(__name__)
+# 创建专门用于记录输入输出的logger
+io_logger = logging.getLogger(f"{__name__}.io")
 
 try:
     import openai
@@ -100,25 +103,47 @@ class OpenAIChat(BaseChatModel):
             logging.warning(f"Unused arguments: {kwargs}")
         super().__init__(args=args, max_retry=max_retry)
 
-    def _construct_messages(self, prompt: str, chat_memory: List[Message], final_prompt: str):
-        chat_messages = []
-        for item_memory in chat_memory:
-            chat_messages.append(str(item_memory.sender) + ": " + str(item_memory.content))
-        processed_prompt = [{"role": "user", "content": prompt}]
-        for chat_message in chat_messages:
-            processed_prompt.append({"role": "assistant", "content": chat_message})
-        processed_prompt.append({"role": "user", "content": final_prompt})
-        return processed_prompt
+    def _construct_messages(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]):
+        """
+        创建messages json, inclusing 3 sections:
+        - system message: 来自structured_prompt.system_content
+        - assistant messages with name: 来自chat_memory
+        - user message: 来自structured_prompt.user_content
+        """
+        
+        messages = []
+        
+        # 1. 添加system message
+        if structured_prompt.system_content:
+            messages.append({
+                "role": "system",
+                "content": structured_prompt.system_content
+            })
+        
+        # 2. 添加历史对话作为assistant messages
+        for message in chat_memory:
+            if message.content.strip() and message.content != "[Silence]":
+                messages.append({
+                    "role": "assistant", 
+                    "name": message.sender.replace(" ", "_"),  # 确保name符合API要求
+                    "content": message.content
+                })
+        
+        # 3. 添加用户消息
+        if structured_prompt.user_content:
+            messages.append({
+                "role": "user",
+                "content": structured_prompt.user_content
+            })
+        
+        return messages
 
-    def generate_response(self, prompt: str, chat_memory: List[Message], final_prompt: str) -> LLMResult:
-        messages = self._construct_messages(prompt, chat_memory, final_prompt)
+    def generate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
+        messages = self._construct_messages(structured_prompt, chat_memory)
         try:
             if openai.api_type == "azure":
                 response = client.chat.completions.create(engine="gpt-4-6", messages=messages, **self.args.dict())
             else:
-
-
-
                 response = client.chat.completions.create(messages=messages, **self.args.dict())
         except (OpenAIError, KeyboardInterrupt) as error:
             raise
@@ -129,19 +154,28 @@ class OpenAIChat(BaseChatModel):
             total_tokens=response.usage.total_tokens,
         )
 
-    async def agenerate_response(self, prompt: str, chat_memory: List[Message], final_prompt: str) -> LLMResult:
-        messages = self._construct_messages(prompt, chat_memory, final_prompt)
-        print(f"🔄 Messages: {messages}")
+    async def agenerate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
+        messages = self._construct_messages(structured_prompt, chat_memory)
+        
+        io_logger.info("➡️Input Messages JSON:\n%s", json.dumps(messages, ensure_ascii=False, indent=2))
+        
         try:
             if openai.api_type == "azure":
                 response = await aclient.chat.completions.create(engine="gpt-4-6", messages=messages, **self.args.dict())
             else:
-
                 response = await aclient.chat.completions.create(messages=messages, **self.args.dict())
         except (OpenAIError, KeyboardInterrupt) as error:
             raise
+        
+        result_content = response.choices[0].message.content
+        
+        io_logger.info("↩️ LLM Response:\n%s", json.dumps({
+            "response": result_content
+            
+        }, ensure_ascii=False, indent=2))
+        
         return LLMResult(
-            content=response.choices[0].message.content,
+            content=result_content,
             send_tokens=response.usage.prompt_tokens,
             recv_tokens=response.usage.completion_tokens,
             total_tokens=response.usage.total_tokens,
