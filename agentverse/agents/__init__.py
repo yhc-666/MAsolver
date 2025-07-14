@@ -9,3 +9,4 @@ from .conversation_agent import ConversationAgent
 from .llm_eval_agent import LLMEvalAgent
 from .llm_eval_multi_agent import LLMEvalAgent
 from .llm_eval_multi_agent_con import LLMEvalAgent
+from .final_debate_multi_agent import FinalDebateMultiAgent

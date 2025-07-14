@@ -179,3 +179,6 @@ scripts
 
 *.jsonl
 llm_eval_azure.py
+
+
+solver_engine/src/symbolic_solvers/Prover9/

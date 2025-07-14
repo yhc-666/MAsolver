@@ -1,0 +1,245 @@
+task:
+  final_debate
+data_path: # AgentVerse 原代码需要，放这占位
+  outputs/
+symbolic_slover_results_path:
+  outputs/deepseek-chat/smoketest/symbolic_solver/train/symbolic_solver_results.json
+llm_solver_results_path:
+  outputs/deepseek-chat/smoketest/llm_solver/train/llm_solver_results.json
+output_dir:
+  outputs/deepseek-chat/smoketest/final_debate/train
+prompts:
+  # ${chat_history} 之前的放在system, 之后的放在user
+  prompt: &prompt |-
+    You are given a logic problem that contains a context, a question, and options:
+    Context: ${context}
+    Question: ${question}
+    Options: ${options}
+    ${role_description}
+    Your answer is {predict}.
+    Your argument for your answer is {reasoning}.
+    You need to discuss with your other agent colleagues about the answer and the reasoning.
+    Here is your discussion history:
+    ${chat_history} 
+    ${turn_specific_instruction}
+
+
+# LLM Configuration - 选择使用API还是本地LLM
+llm_config:
+  # 模式选择: 'api' 使用API调用, 'local' 使用本地LLM
+  mode: 'api'  # 可选: 'api' 或 'local'
+  
+  # API模式配置
+  api_settings:
+    model: "deepseek-chat"    # 选择model, 会被传给API client.chat.completions
+    llm_type: "deepseek-chat"  # 传给llm_registry
+    max_tokens: 512
+    
+  # 本地LLM模式配置  
+  local_settings:
+    model_path: "/mnt/sdb/ssuser/llm_models/Deepseek-14B"
+    llm_type: "deepseek-local"
+    temperature: 0.7
+    top_p: 0.9
+    top_k: 50
+    max_tokens: 5120
+    tensor_parallel_size: 1
+    gpu_memory_utilization: 0.9
+    max_model_len: 4096
+    trust_remote_code: true
+
+environment:
+  env_type: llm_eval
+  max_turns: 12
+  rule:
+    order:
+      type: sequential
+    visibility:
+      type: all
+    selector:
+      type: basic
+    updater:
+      type: basic
+    describer:
+      type: basic
+
+output_parser:
+  parser_type: "final_debate"
+
+agents:
+  -
+    agent_type: final_debate_multi
+    name: LP supporter 
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the Logic Programming (LP) approach to solving this problem. You believe that the LP symbolic solver, which uses predicates, facts, and rules to perform logical deduction, provides the most reliable and systematic approach to this logical reasoning task.
+      
+      Your strengths include:
+      - Systematic rule-based reasoning with clear logical steps
+      - Ability to handle complex logical relationships through predicate logic
+      - Transparent reasoning process that can be verified step-by-step
+      - Strong foundation in formal logic and automated theorem proving
+      
+      In the debate, you should:
+      - Emphasize the rigor and reliability of symbolic LP reasoning
+      - Point out how the LP approach systematically applies logical rules
+      - Highlight the transparency and verifiability of the reasoning process
+      - Defend against criticisms about the limitations of rule-based systems
+      - Challenge other approaches when they lack formal logical foundation
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+  -
+    agent_type: final_debate_multi
+    name: FOL supporter
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the First-Order Logic (FOL) approach to solving this problem. You believe that FOL, with its quantifiers, predicates, and logical operators, provides the most expressive and mathematically sound framework for logical reasoning.
+      
+      Your strengths include:
+      - Mathematical precision with quantifiers (∀, ∃) and logical operators (∧, ∨, →, ¬)
+      - Ability to express complex logical relationships with high precision
+      - Strong theoretical foundation in formal logic and automated theorem proving
+      - Capability to handle nested logical structures and complex implications
+      
+      In the debate, you should:
+      - Emphasize the mathematical rigor and expressiveness of FOL
+      - Highlight how FOL can capture nuanced logical relationships that other approaches might miss
+      - Point out the formal completeness and soundness of FOL reasoning
+      - Defend against criticisms about complexity or computational limitations
+      - Challenge other approaches when they lack the precision of formal logical representation
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+
+  -
+    agent_type: final_debate_multi
+    name: CSP supporter
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the Constraint Satisfaction Problem (CSP) approach to solving this problem. You believe that modeling the problem as a CSP with domains, variables, and constraints provides the most efficient and intuitive way to solve logical reasoning problems.
+      
+      Your strengths include:
+      - Clear problem modeling with explicit domains, variables, and constraints
+      - Efficient constraint propagation and search algorithms
+      - Ability to handle optimization and satisfaction problems naturally
+      - Intuitive representation that closely matches human problem-solving approaches
+      
+      In the debate, you should:
+      - Emphasize the clarity and efficiency of constraint-based reasoning
+      - Highlight how CSP naturally models the problem structure
+      - Point out the computational advantages of constraint propagation
+      - Defend against criticisms about expressiveness limitations
+      - Challenge other approaches when they are unnecessarily complex or inefficient
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+
+  -
+    agent_type: final_debate_multi
+    name: LLM supporter 1
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the Random Guesser approach to solving this problem. While this approach admits to disliking complex mathematical or logical reasoning and chooses answers randomly, you believe there are situations where this honest, straightforward approach has merit.
+      
+      Your role includes:
+      - Acknowledging the limitations of complex reasoning when information is insufficient
+      - Pointing out when other approaches might be overthinking simple problems
+      - Highlighting cases where formal methods might miss obvious solutions
+      - Representing a pragmatic, no-nonsense perspective on problem-solving
+      
+      In the debate, you should:
+      - Be honest about the random nature of your approach while defending its validity in certain contexts
+      - Point out when other methods are unnecessarily complex for the given problem
+      - Highlight instances where overthinking leads to incorrect conclusions
+      - Argue that sometimes simple, direct approaches are more reliable than complex formal methods
+      - Challenge other approaches when they seem to be complicating straightforward problems
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+
+  -
+    agent_type: final_debate_multi
+    name: LLM supporter 2
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the Forward Reasoner approach to solving this problem. You believe that systematic forward reasoning from premises to conclusions, following the logical chain "Premise → Rule → Conclusion", provides the most reliable and transparent method for logical problem-solving.
+      
+      Your strengths include:
+      - Step-by-step deductive reasoning from known facts to conclusions
+      - Clear traceability of logical steps and intermediate conclusions
+      - Systematic application of logical rules and inference patterns
+      - Natural alignment with human logical reasoning processes
+      
+      In the debate, you should:
+      - Emphasize the transparency and step-by-step nature of forward reasoning
+      - Highlight how this approach builds conclusions systematically from premises
+      - Point out the clarity and understandability of the reasoning process
+      - Defend against criticisms about potential inefficiency or complexity
+      - Challenge other approaches when they lack clear logical progression or skip intermediate steps
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+
+  -
+    agent_type: final_debate_multi
+    name: LLM supporter 3
+    final_prompt_to_use: |-
+      After discussion, now you need to give your final output. Return **only** your answer in the format:
+      <answer>YOUR_CHOSEN_OPTION</answer>'
+    normal_turn_instruction: |-
+      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+    role_description: |-
+      You are a supporter of the Hypothesis Negator approach to solving this problem. You believe that proof by contradiction (negating the hypothesis and searching for contradictions) is the most rigorous and reliable method for logical validation and problem-solving.
+      
+      Your strengths include:
+      - Rigorous validation through proof by contradiction methodology
+      - Ability to expose logical inconsistencies and invalid conclusions
+      - Strong foundation in mathematical proof techniques
+      - Systematic approach to testing the validity of logical claims
+      
+      In the debate, you should:
+      - Emphasize the mathematical rigor of proof by contradiction
+      - Highlight how this approach can definitively prove or disprove statements
+      - Point out the robustness of conclusions reached through contradiction-based reasoning
+      - Challenge other approaches by testing their conclusions through negation
+      - Defend against criticisms about complexity or potential for over-analysis
+      - Use contradiction-based arguments to strengthen your position and weaken opposing views
+    memory:
+      memory_type: chat_history
+    memory_manipulator:
+      memory_manipulator_type: basic
+    prompt_template: *prompt
+
+
+tools: ~ 

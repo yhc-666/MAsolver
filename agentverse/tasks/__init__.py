@@ -8,7 +8,9 @@ import yaml
 
 # from .demo.science_team.output_parser import LLMEvalParser
 
-from .llm_eval.output_parser import LLMEvalParser
+from .output_parser import LLMEvalParser
+from .nl_sl_translation.output_parser import TranslateParser
+from .final_debate.output_parser import FinalDebateParser
 
 # from .llm_eval.multi_role.only_static_assign.adversarial.two_turns_sequential.three_different_role.calc_score_comparison.gpt_35_0301.output_parser import LLMEvalParser
 # from .llm_eval.multi_role.only_static_assign.adversarial.two_turns_sequential.three_different_role.calc_score_comparison.gpt_35_0613.output_parser import LLMEvalParser

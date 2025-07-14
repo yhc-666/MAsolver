@@ -8,7 +8,13 @@ openai
 opencv-python
 gradio
 httpx[socks]
-git+https://github.com/OpenBMB/BMTools.git
 icecream
 astunparse
 scikit-learn
+scitools-pyke
+nltk
+python-constraint
+func_timeout
+z3-solver
+ply
+tqdm

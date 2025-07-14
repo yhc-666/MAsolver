@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 class LLMEvalAgent(BaseAgent):
 
     question: str = ""
+    context: str = ""  
     # for direct score
     reference_text: str = ""
     generated_text: str = ""
@@ -39,7 +40,7 @@ class LLMEvalAgent(BaseAgent):
         for i in range(self.max_retry):
             try:
                 response = self.llm.generate_response(structured_prompt, self.memory.messages)
-                parsed_response = self.output_parser.parse(response)
+                parsed_response = self.output_parser.parse(response, 0, 10, 1, self.name)
                 break
             except KeyboardInterrupt:
                 raise
@@ -91,7 +92,7 @@ class LLMEvalAgent(BaseAgent):
             for i in range(self.max_retry):
                 try:
                     response = await self.llm.agenerate_response(structured_prompt, self.memory.messages)
-                    parsed_response = self.output_parser.parse(response, env.cnt_turn, env.max_turns, len(env.agents))
+                    parsed_response = self.output_parser.parse(response, env.cnt_turn, env.max_turns, len(env.agents), self.name)
                     should_break = True
                     break
                 except (KeyboardInterrupt, bdb.BdbQuit):
@@ -103,7 +104,7 @@ class LLMEvalAgent(BaseAgent):
                         break
                     else:
                         logging.error(e)
-                        logging.warning("Retrying...")
+                        logging.warning(f"Retrying..{i}_th time")
                         continue
             else:
                 logging.error(f"After {self.max_retry} failed try, end the loop")
@@ -148,6 +149,7 @@ class LLMEvalAgent(BaseAgent):
             "env_description": env_description,
             "role_description": self.role_description,
             "question": self.question,
+            "context": self.context, 
             "reference_text": self.reference_text,
             "generated_text": self.generated_text,
             "compared_text_one": self.compared_text_one,

@@ -9,7 +9,7 @@ from langchain.agents import Agent as langchainAgent
 # from langchain.chat_models.base import BaseChatModel
 # from langchain.llms import OpenAI
 # from langchain.llms.base import BaseLLM
-from agentverse.llms import OpenAICompletion, OpenAIChat, llm_registry
+from agentverse.llms import OpenAIChat, llm_registry  # OpenAICompletion commented out as unused
 
 # from langchain.memory import ChatMessageHistory
 from langchain.memory.prompt import _DEFAULT_SUMMARIZER_TEMPLATE
@@ -26,7 +26,7 @@ from agentverse.parser import output_parser_registry
 
 
 def load_llm(llm_config: Dict):
-    llm_type = llm_config.pop("llm_type", "text-davinci-003")
+    llm_type = llm_config.pop("llm_type", "gpt-3.5-turbo")  # Changed default from text-davinci-003 to gpt-3.5-turbo
 
     return llm_registry.build(llm_type, **llm_config)
 
@@ -108,7 +108,7 @@ def prepare_task_config(taskwithyaml):
         if selected_llm_config:
             llm_config_to_use = selected_llm_config.copy()
         else:
-            llm_config_to_use = agent_configs.get("llm", {"llm_type": "text-davinci-003"})
+            llm_config_to_use = agent_configs.get("llm", {"llm_type": "gpt-3.5-turbo"})  # Changed default from text-davinci-003 to gpt-3.5-turbo
             
         llm = load_llm(llm_config_to_use)
         agent_configs["llm"] = llm

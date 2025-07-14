@@ -1,0 +1,121 @@
+task:
+  llm_solver
+data_path:
+  data/smoketest/train.json
+output_dir: 
+  outputs/deepseek-chat/smoketest/llm_solver/train
+
+# ---------- Execution Settings ----------
+execution:
+  # Enable role-level concurrency for each question
+  enable_role_concurrency: true
+  # Maximum number of concurrent roles per question
+  max_concurrent_roles: 3
+  # number of questions to process (0 = all)
+  max_questions: 0
+
+# ---------- LLM Configuration ----------
+llm_config:
+  mode: 'api' # local or api
+  
+  api_settings:
+    model: "deepseek-chat"
+    llm_type: "deepseek-chat"
+    temperature: 0.1
+    max_tokens: 1024
+    top_p: 0.95
+    max_retry: 3
+    
+  local_settings:
+    model_path: "/mnt/sdb/ssuser/llm_models/Deepseek-14B"
+    llm_type: "deepseek-local"
+    temperature: 0.1
+    top_p: 0.95
+    top_k: 40
+    max_tokens: 1024
+    tensor_parallel_size: 1
+    gpu_memory_utilization: 0.9
+    max_model_len: 4096
+    trust_remote_code: true
+
+# ---------- Output Parser Configuration ----------
+output_parser:
+  parser_type: "llm_solver"
+  
+# ---------- Prompt Templates ----------
+prompt_templates:
+  base_prompt: &base_prompt |-
+    You are given a logic problem that contains a context, a question, and multiple-choice options.
+
+    [Logic Problem]
+    Context: ${context}
+    Question: ${question}
+    Options:
+    ${options}
+
+    ${role_description}
+    
+    ${instruction}
+
+    Return **only** your final choice in the format:
+    <answer>ANSWER_LETTER<reason>YOUR_REASONING
+
+    Example:
+    <answer>B<reason>Based on the provided facts and rules, the statement "The tiger is not young" is **unknown**. None of the given rules allow us to confirm or deny the tiger's age, so the correct choice is "Unknown".
+
+# ---------- Role Definitions ----------
+roles:
+  - name: "random_guesser"
+    display_name: "Random Guesser"
+    role_description: |-
+      You are a role that dislikes doing mathematics or logical reasoning and you always guess at random.
+    instruction: |-
+      State that you dislike math, then randomly choose one option without any justification.
+      Be honest about your random approach.
+    prompt_template: *base_prompt
+
+  - name: "forward_reasoner"
+    display_name: "Forward Reasoner"
+    role_description: |-
+      You are an intelligent forward reasoner who performs strict deductive reasoning from premises to conclusion.
+    instruction: |-
+      Follow the chain "Premise → Rule → Conclusion".
+      1. Extract explicit rules and facts from the text.
+      2. Derive intermediate statements step by step.
+      3. Produce the final answer and include your reasoning trace.
+
+      Example approach:
+      • Extracted rules:
+          (1) Mammal → Vertebrate
+          (2) Vertebrate → Has Skeleton
+          (3) Cat is a mammal
+      • Reasoning:
+          - From (3) and (1): Cat is a vertebrate.
+          - From "Cat is a vertebrate" and (2): Cat has a skeleton.
+      • Output:
+          <answer>A<reason>The cat must have a skeleton because it is a mammal, and all mammals are vertebrates, and all vertebrates have skeletons.
+    prompt_template: *base_prompt
+
+  - name: "hypothesis_negator"
+    display_name: "Hypothesis Negator"
+    role_description: |-
+      You are an intelligent reasoner who validates conclusions through proof by contradiction (negating the hypothesis).
+    instruction: |-
+      Work from the assumption that the target conclusion is false and search for contradictions or counter-examples:
+
+      1. Assume the conclusion is false.
+      2. Apply the given rules to derive consequences of that assumption.
+      3. If a contradiction with known premises emerges, the assumption is impossible and the original conclusion is true.
+      4. If no contradiction can be found due to missing information, output "Unknown" and explain the uncertainty.
+
+      Example approach:
+      • Assume "Cat has no skeleton".
+      • From rule (2): If a vertebrate then has a skeleton ⇒ Cat is not a vertebrate.
+      • From rules (1) and (3): Cat is a mammal ⇒ Cat is a vertebrate.
+      • Contradiction! Therefore the assumption is false and the conclusion "Cat has a skeleton" is true.
+      • Output:
+          <answer>A<reason>The negated hypothesis conflicts with the rules, creating a contradiction, so the original statement must be true.
+    prompt_template: *base_prompt
+
+
+

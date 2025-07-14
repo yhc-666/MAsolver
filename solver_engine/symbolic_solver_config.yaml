@@ -1,0 +1,13 @@
+# Symbolic Solver Configuration
+# Configuration file for logic inference engine
+
+paths:
+  input_file: "outputs/deepseek-chat/smoketest/translation/train/smoketest_results.json"
+  output_file: "outputs/deepseek-chat/smoketest/symbolic_solver/train/symbolic_solver_results.json"
+  backup_LLM_result_path: ""
+
+solver:
+  backup_strategy: "random"  # choices: ["random", "LLM"]
+
+processing:
+  cleanup_cache: true

@@ -1,0 +1,41 @@
+rule1
+	foreach
+		facts.1. Temperature($x, cold)
+	assert
+		facts.Visits($x, tiger)
+
+rule2
+	foreach
+		facts.2. Visits($x, tiger)
+	assert
+		facts.Disposition($x, nice)
+
+rule3
+	foreach
+		facts.3. Sees($x, tiger) ∧ Age($x, young)
+	assert
+		facts.Color($x, blue)
+
+rule4
+	foreach
+		facts.4. Disposition($x, nice)
+	assert
+		facts.Sees($x, tiger)
+
+rule5
+	foreach
+		facts.5. Likes($x, squirrel) ∧ Likes($x, cow)
+	assert
+		facts.Visits($x, tiger)
+
+rule6
+	foreach
+		facts.6. Disposition($x, nice) ∧ Sees($x, tiger)
+	assert
+		facts.Age($x, young)
+
+rule7
+	foreach
+		facts.7. Temperature(cow, cold) ∧ Visits(cow, lion)
+	assert
+		facts.Sees(lion, squirrel)

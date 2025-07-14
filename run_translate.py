@@ -1,6 +1,6 @@
 import os
 
-os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+os.environ["OPENAI_API_KEY"] = "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" #"sk-733e47bc35da4b49b0bc7ca99ede48f8"
 os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 # os.environ["OPENAI_API_KEY"] = "***"
@@ -14,13 +14,14 @@ os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 import json
 from eval_helper.get_evaluation import get_evaluation
+from translation_output_helper.get_translation_output import get_translation_output
 
 from agentverse.agentverse import AgentVerse
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", type=str, default="agentverse/tasks/llm_eval/lxconfig.yaml")
+parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/translate_config.yaml")
 parser.add_argument("--reverse_input", default=False, action="store_true")
 
 
@@ -42,10 +43,10 @@ with open(os.path.join(args_output_dir, "args.txt"), "w") as f:
 with open(args_data_path) as f:
     data = json.load(f)
 
-if "faireval" in args_data_path:
+if "ruozhiba" in args_data_path:
     pair_comparison_output = []
 
-    for num, ins in enumerate(data[:1]):
+    for num, ins in enumerate(data):
 
         print(f"================================instance {num}====================================")
 
@@ -74,37 +75,68 @@ if "faireval" in args_data_path:
     # with open(os.path.join(args_output_dir, "gt_origin_results.json"), "w") as f:
     #     json.dump(gt_origin_output, f, indent=4)
 
-elif "adversarial" in args_data_path:
+elif "ProofWriter" in args_data_path:
+    # 处理ProofWriter数据集
+    proof_writer_output = []
 
-    pair_comparison_output = []
-
-    for num, ins in enumerate(data):
-
+    for num, ins in enumerate(data[:3]):
         print(f"================================instance {num}====================================")
 
-        # reassign the text to agents, and set final_prompt to null for debate at first round
         for agent_id in range(len(agentverse.agents)):
-            agentverse.agents[agent_id].question = ins["question"]
-
-            if args.reverse_input:
-                agentverse.agents[agent_id].compared_text_one = ins["response"]["output_2"]
-                agentverse.agents[agent_id].compared_text_two = ins["response"]["output_1"]
-            else:
-                agentverse.agents[agent_id].compared_text_one = ins["response"]["output_1"]
-                agentverse.agents[agent_id].compared_text_two = ins["response"]["output_2"]
-
+            agentverse.agents[agent_id].context = ins["context"]  # 赋值prompt template中的${context}字段
+            agentverse.agents[agent_id].question = ins["question"].strip()  # 赋值prompt template中的${question}字段
             agentverse.agents[agent_id].final_prompt = ""
 
         agentverse.run()
 
-        evaluation = get_evaluation(setting="every_agent", messages=agentverse.agents[0].memory.messages,
+        chat_history, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
                                     agent_nums=len(agentverse.agents))
 
-        pair_comparison_output.append({"question": ins["question"],
-                                       "response": {"output_1": ins["response"]["output_1"],
-                                                    "output_2": ins["response"]["output_2"]},
-                                       "evaluation": evaluation})
+        proof_writer_output.append({
+            "id": ins["id"],
+            "context": ins["context"],
+            "question": ins["question"],
+            "options": ins["options"],
+            "answer": ins["answer"],
+            "chat_history": chat_history,
+            "translation": translations
+        })
 
         os.makedirs(args_output_dir, exist_ok=True)
-        with open(os.path.join(args_output_dir, "pair_comparison_results.json"), "w") as f:
-            json.dump(pair_comparison_output, f, indent=4)
+        with open(os.path.join(args_output_dir, "proof_writer_results.json"), "w") as f:
+            json.dump(proof_writer_output, f, indent=4)
+
+elif "smoketest" in args_data_path:
+# 处理ProofWriter数据集
+    smoketest_output = []
+
+    for num, ins in enumerate(data):
+        print(f"================================instance {num}====================================")
+
+        for agent_id in range(len(agentverse.agents)):
+            agentverse.agents[agent_id].context = ins["context"]  # 赋值prompt template中的${context}字段
+            agentverse.agents[agent_id].question = ins["question"].strip()  # 赋值prompt template中的${question}字段
+            agentverse.agents[agent_id].final_prompt = ""
+
+        agentverse.run()
+
+        chat_history, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
+                                    agent_nums=len(agentverse.agents))
+
+        smoketest_output.append({
+            "id": ins["id"],
+            "context": ins["context"],
+            "question": ins["question"],
+            "options": ins["options"],
+            "answer": ins["answer"],
+            "chat_history": chat_history,
+            "translation": translations
+        })
+
+        os.makedirs(args_output_dir, exist_ok=True)
+        with open(os.path.join(args_output_dir, "smoketest_results.json"), "w") as f:
+            json.dump(smoketest_output, f, indent=4)
+
+
+
+    

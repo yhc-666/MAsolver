@@ -3,7 +3,7 @@ from agentverse.registry import Registry
 llm_registry = Registry(name="LLMRegistry")
 
 from .base import BaseLLM, BaseChatModel, BaseCompletionModel, LLMResult
-from .openai import OpenAIChat, OpenAICompletion
+from .openai import OpenAIChat  # OpenAICompletion commented out as unused
 
 # Import local LLM classes
 try:

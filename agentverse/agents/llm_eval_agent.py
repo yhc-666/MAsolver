@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 class LLMEvalAgent(BaseAgent):
 
     question: str = ""
+    context: str = ""  # 添加context变量用于存储ProofWriter数据集的context字段
     # for direct score
     reference_text: str = ""
     generated_text: str = ""
@@ -139,6 +140,7 @@ class LLMEvalAgent(BaseAgent):
             "env_description": env_description,
             "role_description": self.role_description,
             "question": self.question,
+            "context": self.context,  # 添加context变量，用于ProofWriter数据集
             "reference_text": self.reference_text,
             "generated_text": self.generated_text,
             "compared_text_one": self.compared_text_one,
