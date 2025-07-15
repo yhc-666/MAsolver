@@ -16,9 +16,10 @@ from argparse import ArgumentParser
 from tqdm import tqdm
 
 from agentverse.agents.llm_solver_agent import LLMSolverAgent, SolverResult
+from agentverse.agents.plan_and_solve_agent import PlanAndSolveAgent
 from agentverse.agentverse import setup_file_logging
-# Import to ensure parser is registered
-from agentverse.tasks.llm_as_solver.output_parser import LLMSolverParser
+# Import to ensure parsers are registered
+from agentverse.tasks.llm_as_solver.output_parser import COTParser, PlanAndSolveParser
 
 parser = ArgumentParser()
 parser.add_argument("--config", type=str, default="agentverse/tasks/llm_as_solver/llm_solver_config.yaml")
@@ -49,7 +50,6 @@ from agentverse.initialization import load_llm
 from agentverse.parser import output_parser_registry
 
 llm_config = config['llm_config']
-output_parser_config = config['output_parser']
 roles = config['roles']
 
 mode = llm_config.get('mode', 'api')
@@ -62,21 +62,43 @@ llm = load_llm(llm_settings)
 
 setup_file_logging(args_output_dir)
 
-parser_type = output_parser_config.get('parser_type', 'llm_solver')
-output_parser = output_parser_registry.build(parser_type)
-
 solver_agents = []
 for role_config in roles:
-    agent = LLMSolverAgent(
-        name=role_config['name'],
-        display_name=role_config['display_name'],
-        llm=llm,
-        output_parser=output_parser,
-        prompt_template=role_config['prompt_template'],
-        role_description=role_config['role_description'],
-        instruction=role_config['instruction'],
-        max_retry=llm_settings.get('max_retry', 3)
-    )
+    # Get parser type for this role
+    parser_type = role_config.get('parser_type', 'cot')  # Default to COT parser
+    output_parser = output_parser_registry.build(parser_type)
+    
+    # Determine agent type based on role name or explicit agent_type field
+    agent_type = role_config.get('agent_type', 'llm_solver')
+    
+    # If agent_type is not explicitly set, infer from role name
+    if agent_type == 'llm_solver' and 'plan-and-solve' in role_config['name'].lower():
+        agent_type = 'plan_and_solve'
+    
+    if agent_type == 'plan_and_solve':
+        agent = PlanAndSolveAgent(
+            name=role_config['name'],
+            display_name=role_config['display_name'],
+            llm=llm,
+            output_parser=output_parser,
+            prompt_template=role_config['prompt_template'],
+            role_description=role_config['role_description'],
+            instruction=role_config['instruction'],
+            max_retry=llm_settings.get('max_retry', 3),
+            extraction_trigger=role_config.get('extraction_trigger', "Therefore, the answer is")
+        )
+    else:
+        agent = LLMSolverAgent(
+            name=role_config['name'],
+            display_name=role_config['display_name'],
+            llm=llm,
+            output_parser=output_parser,
+            prompt_template=role_config['prompt_template'],
+            role_description=role_config['role_description'],
+            instruction=role_config['instruction'],
+            max_retry=llm_settings.get('max_retry', 3)
+        )
+    
     solver_agents.append(agent)
 
 print(f"Initialized {len(solver_agents)} solver agents")
@@ -204,10 +226,9 @@ async def main_async():
         )
         llm_solver_output.append(result)
         
-        # Save intermediate results every 5 questions
-        if (num + 1) % 5 == 0:
-            with open(os.path.join(args_output_dir, "llm_solver_results.json"), "w") as f:
-                json.dump(llm_solver_output, f, indent=2, ensure_ascii=False)
+        # Save results immediately after each question
+        with open(os.path.join(args_output_dir, "llm_solver_results.json"), "w") as f:
+            json.dump(llm_solver_output, f, indent=2, ensure_ascii=False)
     
     # Save final results
     os.makedirs(args_output_dir, exist_ok=True)
@@ -248,10 +269,9 @@ def main_sync():
         )
         llm_solver_output.append(result)
         
-        # Save intermediate results every 5 questions
-        if (num + 1) % 5 == 0:
-            with open(os.path.join(args_output_dir, "llm_solver_results.json"), "w") as f:
-                json.dump(llm_solver_output, f, indent=2, ensure_ascii=False)
+        # Save results immediately after each question
+        with open(os.path.join(args_output_dir, "llm_solver_results.json"), "w") as f:
+            json.dump(llm_solver_output, f, indent=2, ensure_ascii=False)
     
     # Save final results
     os.makedirs(args_output_dir, exist_ok=True)

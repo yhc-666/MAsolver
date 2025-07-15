@@ -161,10 +161,10 @@ class OpenAIChat(BaseChatModel):
         
         result_content = response.choices[0].message.content
         
-        #io_logger.info("↩️ LLM Response:\n%s", json.dumps({
-        #    "response": result_content
+        io_logger.info("↩️ LLM Response:\n%s", json.dumps({
+           "response": result_content
             
-        #}, ensure_ascii=False, indent=2))
+        }, ensure_ascii=False, indent=2))
         
         return LLMResult(
             content=result_content,

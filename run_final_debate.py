@@ -56,7 +56,7 @@ def load_solver_results(symbolic_path: str, llm_path: str) -> List[Dict]:
                 "FOL": symbolic_item["roles"].get("FOL", {}), 
                 "CSP": symbolic_item["roles"].get("CSP", {})
             },
-            "llm_results": llm_item["roles"]  # Random Guesser, Forward Reasoner, Hypothesis Negator
+            "llm_results": llm_item["roles"]  # COT Solver, Plan-and-Solve
         }
         
         merged_data.append(merged_item)
@@ -81,9 +81,8 @@ def assign_agent_data(agentverse, merged_instance: Dict) -> None:
         "LP supporter": ("symbolic", "LP"),
         "FOL supporter": ("symbolic", "FOL"), 
         "CSP supporter": ("symbolic", "CSP"),
-        "LLM supporter 1": ("llm", "Random Guesser"),
-        "LLM supporter 2": ("llm", "Forward Reasoner"),
-        "LLM supporter 3": ("llm", "Hypothesis Negator")
+        "COT Solver supporter": ("llm", "COT Solver"),
+        "Plan-and-Solve supporter": ("llm", "Plan-and-Solve")
     }
     
     for agent in agentverse.agents:

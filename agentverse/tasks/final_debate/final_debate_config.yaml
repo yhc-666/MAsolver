@@ -50,7 +50,7 @@ llm_config:
 
 environment:
   env_type: llm_eval
-  max_turns: 12
+  max_turns: 10 # 5的倍数
   rule:
     order:
       type: sequential

@@ -1,0 +1,66 @@
+[
+    {
+        "id": "0001",
+        "context": "test_context",
+        "question": "test_question",
+        "options": [
+            "A) True",
+            "B) False",
+            "C) Unknown"
+        ],
+        "answer": "test_answer",
+        "chat_history": [
+            {
+                "role": "LP translator",
+                "content": "Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\n\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\n\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nKind(Charlie, True) ::: Charlie is kind."
+            },
+            {
+                "role": "FOL translator",
+                "content": "Predicates:\n- Blue(x) ::: Is x blue?\n- Round(x) ::: Is x round?\n- Likes(x, y) ::: Does x like y?\n- Visits(x, y) ::: Does x visit y?\n- Cold(x) ::: Is x cold?\n- Nice(x) ::: Is x nice?\n- Young(x) ::: Is x young?\n- Sees(x, y) ::: Does x see y?\n\nPremises:\n- Blue(cow)\n- Round(cow)\n- Likes(cow, lion)\n- Visits(cow, tiger)\n- Cold(lion)\n- Nice(lion)\n- Likes(lion, squirrel)\n- Round(squirrel)\n- Sees(squirrel, lion)\n- Visits(squirrel, cow)\n- Likes(tiger, cow)\n- Likes(tiger, squirrel)\n- ∀x (Cold(x) → Visits(x, tiger))\n- ∀x (Visits(x, tiger) → Nice(x))\n- ∀x (Sees(x, tiger) ∧ Young(x) → Blue(x))\n- ∀x (Nice(x) → Sees(x, tiger))\n- ∀x (Likes(x, squirrel) ∧ Likes(x, cow) → Visits(x, tiger))\n- ∀x (Nice(x) ∧ Sees(x, tiger) → Young(x))\n- (Cold(cow) ∧ Visits(cow, lion)) → Sees(lion, squirrel)\n\nConclusion:\n- ¬Young(tiger) ::: The tiger is not young."
+            },
+            {
+                "role": "CSP translator",
+                "content": "Domain:\n- Boolean values (True, False) for predicates.\n\nVariables:\n- Blue(cow) [IN] [True, False]\n- Round(cow) [IN] [True, False]\n- Likes(cow, lion) [IN] [True, False]\n- Visits(cow, tiger) [IN] [True, False]\n- Cold(lion) [IN] [True, False]\n- Nice(lion) [IN] [True, False]\n- Likes(lion, squirrel) [IN] [True, False]\n- Round(squirrel) [IN] [True, False]\n- Sees(squirrel, lion) [IN] [True, False]\n- Visits(squirrel, cow) [IN] [True, False]\n- Likes(tiger, cow) [IN] [True, False]\n- Likes(tiger, squirrel) [IN] [True, False]\n- Young(tiger) [IN] [True, False]\n\nConstraints:\n- Blue(cow) == True\n- Round(cow) == True\n- Likes(cow, lion) == True\n- Visits(cow, tiger) == True\n- Cold(lion) == True\n- Nice(lion) == True\n- Likes(lion, squirrel) == True\n- Round(squirrel) == True\n- Sees(squirrel, lion) == True\n- Visits(squirrel, cow) == True\n- Likes(tiger, cow) == True\n- Likes(tiger, squirrel) == True\n- ∀x (Cold(x) → Visits(x, tiger))\n- ∀x (Visits(x, tiger) → Nice(x))\n- ∀x (Sees(x, tiger) ∧ Young(x) → Blue(x))\n- ∀x (Nice(x) → Sees(x, tiger))\n- ∀x (Likes(x, squirrel) ∧ Likes(x, cow) → Visits(x, tiger))\n- ∀x (Nice(x) ∧ Sees(x, tiger) → Young(x))\n- (Cold(cow) ∧ Visits(cow, lion)) → Sees(lion, squirrel)\n- Query: Young(tiger) == False"
+            }
+        ],
+        "translation": [
+            {
+                "LP": "Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\n\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\n\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nKind(Charlie, True) ::: Charlie is kind.",
+                "FOL": "Premises:\nCold(bob) ::: Bob is cold.\nQuiet(bob) ::: Bob is quiet.\nRed(bob) ::: Bob is red.\nSmart(bob) ::: Bob is smart.\nKind(charlie) ::: Charlie is kind.\nQuiet(charlie) ::: Charlie is quiet.\nRed(charlie) ::: Charlie is red.\nRough(charlie) ::: Charlie is rough.\nCold(dave) ::: Dave is cold.\nKind(dave) ::: Dave is kind.\nSmart(dave) ::: Dave is smart.\nQuiet(fiona) ::: Fiona is quiet.\n∀x (Quiet(x) ∧ Cold(x) → Smart(x)) ::: If something is quiet and cold then it is smart.\n∀x (Red(x) ∧ Cold(x) → Round(x)) ::: Red, cold things are round.\n∀x (Kind(x) ∧ Rough(x) → Red(x)) ::: If something is kind and rough then it is red.\n∀x (Quiet(x) → Rough(x)) ::: All quiet things are rough.\n∀x (Cold(x) ∧ Smart(x) → Red(x)) ::: Cold, smart things are red.\n∀x (Rough(x) → Cold(x)) ::: If something is rough then it is cold.\n∀x (Red(x) → Rough(x)) ::: All red things are rough.\n(Smart(dave) ∧ Kind(dave)) → Quiet(dave) ::: If Dave is smart and Dave is kind then Dave is quiet.\nConclusion:\nKind(charlie) ::: Charlie is kind.",
+                "CSP": ""
+            }
+        ]
+    },
+    {
+        "id": "0002",
+        "context": "test_context",
+        "question": "test_question",
+        "options": [
+            "A) True",
+            "B) False",
+            "C) Unknown"
+        ],
+        "answer": "test_answer",
+        "chat_history": [
+            {
+                "role": "LP translator",
+                "content": "Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\n\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\n\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nKind(Charlie, True) ::: Charlie is kind."
+            },
+            {
+                "role": "FOL translator",
+                "content": "Predicates:\n- Sees(x, y) ::: Does x see y?\n- Eats(x, y) ::: Does x eat y?\n- Likes(x, y) ::: Does x like y?\n- Kind(x) ::: Is x kind?\n- Cold(x) ::: Is x cold?\n- Nice(x) ::: Is x nice?\n- Young(x) ::: Is x young?\n\nPremises:\n- Sees(dog, rabbit)\n- Sees(dog, squirrel)\n- Sees(dog, tiger)\n- Eats(rabbit, dog)\n- ¬Eats(rabbit, tiger)\n- ¬Likes(rabbit, tiger)\n- ¬Sees(squirrel, rabbit)\n- ¬Eats(tiger, rabbit)\n- ¬Kind(tiger)\n- Likes(tiger, dog)\n- Sees(tiger, dog)\n- ∀x (Cold(x) → Likes(x, rabbit))\n- ∀x (Eats(x, tiger) ∧ Nice(x) → Likes(x, rabbit))\n- ∀x (Likes(x, squirrel) → Likes(squirrel, rabbit))\n- ∀x (Likes(x, rabbit) ∧ Kind(rabbit) → Sees(x, tiger))\n- ∀x (Likes(x, tiger) → Young(tiger))\n- ∀x (Young(x) ∧ Eats(x, rabbit) → Likes(x, tiger))\n- ∀x (Sees(x, rabbit) → Cold(rabbit))\n- ∀x (Likes(x, rabbit) → Likes(x, squirrel))\n- ∀x (Likes(x, squirrel) → Cold(squirrel))\n\nConclusion:\n- Cold(rabbit) ::: The rabbit is cold."
+            },
+            {
+                "role": "CSP translator",
+                "content": ""
+            }
+        ],
+        "translation": [
+            {
+                "LP": "Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\n\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\n\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nKind(Charlie, True) ::: Charlie is kind.",
+                "FOL": "Premises:\nCold(bob) ::: Bob is cold.\nQuiet(bob) ::: Bob is quiet.\nRed(bob) ::: Bob is red.\nSmart(bob) ::: Bob is smart.\nKind(charlie) ::: Charlie is kind.\nQuiet(charlie) ::: Charlie is quiet.\nRed(charlie) ::: Charlie is red.\nRough(charlie) ::: Charlie is rough.\nCold(dave) ::: Dave is cold.\nKind(dave) ::: Dave is kind.\nSmart(dave) ::: Dave is smart.\nQuiet(fiona) ::: Fiona is quiet.\n∀x (Quiet(x) ∧ Cold(x) → Smart(x)) ::: If something is quiet and cold then it is smart.\n∀x (Red(x) ∧ Cold(x) → Round(x)) ::: Red, cold things are round.\n∀x (Kind(x) ∧ Rough(x) → Red(x)) ::: If something is kind and rough then it is red.\n∀x (Quiet(x) → Rough(x)) ::: All quiet things are rough.\n∀x (Cold(x) ∧ Smart(x) → Red(x)) ::: Cold, smart things are red.\n∀x (Rough(x) → Cold(x)) ::: If something is rough then it is cold.\n∀x (Red(x) → Rough(x)) ::: All red things are rough.\n(Smart(dave) ∧ Kind(dave)) → Quiet(dave) ::: If Dave is smart and Dave is kind then Dave is quiet.\nConclusion:\nKind(charlie) ::: Charlie is kind.",
+                "CSP": ""
+            }
+        ]
+    }
+]

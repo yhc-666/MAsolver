@@ -1,0 +1,35 @@
+[
+    {
+      "id": "ProofWriter_RelNoneg-OWA-D5-84_Q10",
+      "context": "Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.",
+      "question": "True or false: Charlie is kind.",
+      "options": [
+        "A) True",
+        "B) False",
+        "C) Unknown"
+      ],
+      "answer": "A"
+    },
+    {
+      "id": "ProofWriter_RelNeg-OWA-D5-961_Q3",
+      "context": "Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.",
+      "question": "True or false: Charlie is kind.",
+      "options": [
+        "A) True",
+        "B) False",
+        "C) Unknown"
+      ],
+      "answer": "A"
+    },
+    {
+      "id": "ProofWriter_AttNoneg-OWA-D5-769_Q9",
+      "context": "Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.",
+      "question": "True or false: Charlie is kind.",
+      "options": [
+        "A) True",
+        "B) False",
+        "C) Unknown"
+      ],
+      "answer": "A"
+    }
+]

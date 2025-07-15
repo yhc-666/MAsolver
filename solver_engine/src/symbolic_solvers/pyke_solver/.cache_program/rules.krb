@@ -1,56 +1,45 @@
 rule1
 	foreach
-		facts.Big($x, True)
+		facts.Kind($x, True)
 	assert
-		facts.Rough($x, True)
+		facts.See($x, cat, True)
 
 rule2
 	foreach
-		facts.Eats($x, lion, True)
-		facts.Visits($x, bear, True)
+		facts.Visit($x, bear, True)
 	assert
-		facts.Likes(bear, bald_eagle, True)
+		facts.Kind($x, True)
 
 rule3
 	foreach
-		facts.Eats($x, bald_eagle, True)
+		facts.(Rough($x, True)
+		facts.Need($x, mouse, True))
 	assert
-		facts.Likes(bald_eagle, bear, True)
+		facts.Visit(mouse, bear, True)
 
 rule4
 	foreach
-		facts.Likes($x, bear, True)
-		facts.Visits(bear, lion, True)
+		facts.See($x, cat, True)
 	assert
-		facts.Cold(lion, True)
+		facts.Visit(cat, bear, True)
 
 rule5
 	foreach
-		facts.Likes(bear, lion, True)
+		facts.(See($x, cat, True)
+		facts.Visit(cat, bear, True))
 	assert
-		facts.Likes(lion, bear, True)
+		facts.Visit(bear, lion, False)
 
 rule6
 	foreach
-		facts.Likes($x, bear, True)
-		facts.Cold($x, True)
+		facts.(See($x, mouse, True)
+		facts.Need($x, mouse, False))
 	assert
-		facts.Eats(bear, dog, True)
+		facts.Need(mouse, cat, True)
 
 rule7
 	foreach
-		facts.Eats($x, dog, True)
+		facts.(Visit($x, lion, True)
+		facts.See($x, mouse, False))
 	assert
-		facts.Eats(dog, lion, True)
-
-rule8
-	foreach
-		facts.Likes($x, bald_eagle, True)
-	assert
-		facts.Rough($x, True)
-
-rule9
-	foreach
-		facts.Eats($x, lion, True)
-	assert
-		facts.Likes(lion, bear, True)
+		facts.Cold(mouse, True)

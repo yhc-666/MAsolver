@@ -22,7 +22,7 @@ llm_config:
     model: "deepseek-chat"
     llm_type: "deepseek-chat"
     temperature: 0.1
-    max_tokens: 1024
+    max_tokens: 2048
     top_p: 0.95
     max_retry: 3
     
@@ -39,12 +39,11 @@ llm_config:
     trust_remote_code: true
 
 # ---------- Output Parser Configuration ----------
-output_parser:
-  parser_type: "llm_solver"
-  
+# Note: parser_type is now specified per role below
+
 # ---------- Prompt Templates ----------
 prompt_templates:
-  base_prompt: &base_prompt |-
+  cot_prompt: &cot_prompt |-
     You are given a logic problem that contains a context, a question, and multiple-choice options.
 
     [Logic Problem]
@@ -63,10 +62,17 @@ prompt_templates:
     Example:
     <answer>B<reason>Based on the provided facts and rules, the statement "The tiger is not young" is **unknown**. None of the given rules allow us to confirm or deny the tiger's age, so the correct choice is "Unknown".
 
+  plan_and_solve_prompt: &plan_and_solve_prompt |-
+    Q: ${context}
+    ${question}
+    ${options}
+    A: ${instruction}
+
 # ---------- Role Definitions ----------
 roles:
   - name: "cot_solver"
     display_name: "COT Solver"
+    parser_type: "cot"
     role_description: |-
       You are an intelligent forward reasoner who performs strict deductive reasoning from premises to conclusion.
     instruction: |-
@@ -85,17 +91,17 @@ roles:
           - From "Cat is a vertebrate" and (2): Cat has a skeleton.
       • Output:
           <answer>A<reason>The cat must have a skeleton because it is a mammal, and all mammals are vertebrates, and all vertebrates have skeletons.
-    prompt_template: *base_prompt
+    prompt_template: *cot_prompt
 
   - name: "plan-and-solve"
     display_name: "Plan-and-Solve"
-    role_description: |-
-      You are an intelligent reasoner who validates conclusions through proof by contradiction (negating the hypothesis).
+    agent_type: "plan_and_solve"
+    parser_type: "plan_and_solve"
+    role_description: ""
     instruction: |-
-      Work from the assumption that the target conclusion is false and search for contradictions or counter-examples:
-      • Output:
-          <answer>A<reason>The negated hypothesis conflicts with the rules, creating a contradiction, so the original statement must be true.
-    prompt_template: *base_prompt
+      Let's first understand the problem and devise a plan to solve the problem. Then, let's carry out the plan to solve the problem step by step.
+    extraction_trigger: "Therefore, the answer is (return a single answer letter in the format <answer>ANSWER_LETTER<answer/>)"
+    prompt_template: *plan_and_solve_prompt
 
 
 
