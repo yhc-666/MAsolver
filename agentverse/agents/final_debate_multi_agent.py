@@ -182,9 +182,10 @@ class FinalDebateMultiAgent(LLMEvalAgent):
     def reset(self) -> None:
         """Reset the agent for next instance"""
         super().reset()
-        # Reset solver-specific attributes
-        self.predict = ""
-        self.reasoning = ""
+        # Don't reset predict and reasoning - these are instance data from solvers
+        # that should persist throughout the conversation
+        # self.predict = ""     # Keep solver prediction
+        # self.reasoning = ""   # Keep solver reasoning
         # Don't reset options - it's instance data that should persist
         # self.options = ""  # Remove this line - options should not be reset
-        self.final_answer = ""  # Reset final_answer too 
+        self.final_answer = ""  # Reset final_answer for new conversation 

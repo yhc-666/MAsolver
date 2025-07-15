@@ -3,11 +3,11 @@ task:
 data_path: # AgentVerse 原代码需要，放这占位
   outputs/
 symbolic_slover_results_path:
-  outputs/deepseek-chat/smoketest/symbolic_solver/train/symbolic_solver_results.json
+  outputs/deepseek-chat/ProofWriter/symbolic_solver/train/proof_writer_results.json
 llm_solver_results_path:
-  outputs/deepseek-chat/smoketest/llm_solver/train/llm_solver_results.json
+  outputs/deepseek-chat/ProofWriter/llm_solver/train/llm_solver_results.json
 output_dir:
-  outputs/deepseek-chat/smoketest/final_debate/train
+  outputs/deepseek-chat/ProofWriter/final_debate/train
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -16,8 +16,8 @@ prompts:
     Question: ${question}
     Options: ${options}
     ${role_description}
-    Your answer is {predict}.
-    Your argument for your answer is {reasoning}.
+    Your answer is ${predict}.
+    Your argument for your answer is ${reasoning}.
     You need to discuss with your other agent colleagues about the answer and the reasoning.
     Here is your discussion history:
     ${chat_history} 
@@ -153,29 +153,22 @@ agents:
       memory_manipulator_type: basic
     prompt_template: *prompt
 
+
   -
     agent_type: final_debate_multi
-    name: LLM supporter 1
+    name: COT Solver supporter
     final_prompt_to_use: |-
       After discussion, now you need to give your final output. Return **only** your answer in the format:
       <answer>YOUR_CHOSEN_OPTION</answer>'
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
-      You are a supporter of the Random Guesser approach to solving this problem. While this approach admits to disliking complex mathematical or logical reasoning and chooses answers randomly, you believe there are situations where this honest, straightforward approach has merit.
-      
-      Your role includes:
-      - Acknowledging the limitations of complex reasoning when information is insufficient
-      - Pointing out when other approaches might be overthinking simple problems
-      - Highlighting cases where formal methods might miss obvious solutions
-      - Representing a pragmatic, no-nonsense perspective on problem-solving
-      
+      You are the Chain-of-Thought (CoT) Reasoner Supporter.
+      Your strengths include:
+      - Step-by-step reasoning from known facts to conclusions
       In the debate, you should:
-      - Be honest about the random nature of your approach while defending its validity in certain contexts
-      - Point out when other methods are unnecessarily complex for the given problem
-      - Highlight instances where overthinking leads to incorrect conclusions
-      - Argue that sometimes simple, direct approaches are more reliable than complex formal methods
-      - Challenge other approaches when they seem to be complicating straightforward problems
+      - Your job in the debate is to defend a solution that was produced with the classic "Let's think step by step" Chain-of-Thought prompting style. 
+      - You validate the step-by-step logic, show that each inference follows from the previous one, and argue for the overall soundness of the conclusion.
     memory:
       memory_type: chat_history
     memory_manipulator:
@@ -184,57 +177,17 @@ agents:
 
   -
     agent_type: final_debate_multi
-    name: LLM supporter 2
+    name: Plan-and-Solve supporter
     final_prompt_to_use: |-
       After discussion, now you need to give your final output. Return **only** your answer in the format:
       <answer>YOUR_CHOSEN_OPTION</answer>'
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
-      You are a supporter of the Forward Reasoner approach to solving this problem. You believe that systematic forward reasoning from premises to conclusions, following the logical chain "Premise → Rule → Conclusion", provides the most reliable and transparent method for logical problem-solving.
-      
-      Your strengths include:
-      - Step-by-step deductive reasoning from known facts to conclusions
-      - Clear traceability of logical steps and intermediate conclusions
-      - Systematic application of logical rules and inference patterns
-      - Natural alignment with human logical reasoning processes
-      
-      In the debate, you should:
-      - Emphasize the transparency and step-by-step nature of forward reasoning
-      - Highlight how this approach builds conclusions systematically from premises
-      - Point out the clarity and understandability of the reasoning process
-      - Defend against criticisms about potential inefficiency or complexity
-      - Challenge other approaches when they lack clear logical progression or skip intermediate steps
-    memory:
-      memory_type: chat_history
-    memory_manipulator:
-      memory_manipulator_type: basic
-    prompt_template: *prompt
-
-  -
-    agent_type: final_debate_multi
-    name: LLM supporter 3
-    final_prompt_to_use: |-
-      After discussion, now you need to give your final output. Return **only** your answer in the format:
-      <answer>YOUR_CHOSEN_OPTION</answer>'
-    normal_turn_instruction: |-
-      Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
-    role_description: |-
-      You are a supporter of the Hypothesis Negator approach to solving this problem. You believe that proof by contradiction (negating the hypothesis and searching for contradictions) is the most rigorous and reliable method for logical validation and problem-solving.
-      
-      Your strengths include:
-      - Rigorous validation through proof by contradiction methodology
-      - Ability to expose logical inconsistencies and invalid conclusions
-      - Strong foundation in mathematical proof techniques
-      - Systematic approach to testing the validity of logical claims
-      
-      In the debate, you should:
-      - Emphasize the mathematical rigor of proof by contradiction
-      - Highlight how this approach can definitively prove or disprove statements
-      - Point out the robustness of conclusions reached through contradiction-based reasoning
-      - Challenge other approaches by testing their conclusions through negation
-      - Defend against criticisms about complexity or potential for over-analysis
-      - Use contradiction-based arguments to strengthen your position and weaken opposing views
+      You are a supporter of the Plan-and-Solver approach to solving this problem. 
+      Your strength is first devise a plan, then execute it.
+      In the debate, your task is to defend the reasoning process and solution generated by the Plan-and-Solve approach. 
+      You are tasked with justifying the steps, the plan, and the accuracy of the solution, based on the detailed reasoning framework. 
     memory:
       memory_type: chat_history
     memory_manipulator:

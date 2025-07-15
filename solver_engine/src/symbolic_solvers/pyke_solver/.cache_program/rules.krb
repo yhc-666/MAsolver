@@ -1,41 +1,56 @@
 rule1
 	foreach
-		facts.1. Temperature($x, cold)
+		facts.Big($x, True)
 	assert
-		facts.Visits($x, tiger)
+		facts.Rough($x, True)
 
 rule2
 	foreach
-		facts.2. Visits($x, tiger)
+		facts.Eats($x, lion, True)
+		facts.Visits($x, bear, True)
 	assert
-		facts.Disposition($x, nice)
+		facts.Likes(bear, bald_eagle, True)
 
 rule3
 	foreach
-		facts.3. Sees($x, tiger) ∧ Age($x, young)
+		facts.Eats($x, bald_eagle, True)
 	assert
-		facts.Color($x, blue)
+		facts.Likes(bald_eagle, bear, True)
 
 rule4
 	foreach
-		facts.4. Disposition($x, nice)
+		facts.Likes($x, bear, True)
+		facts.Visits(bear, lion, True)
 	assert
-		facts.Sees($x, tiger)
+		facts.Cold(lion, True)
 
 rule5
 	foreach
-		facts.5. Likes($x, squirrel) ∧ Likes($x, cow)
+		facts.Likes(bear, lion, True)
 	assert
-		facts.Visits($x, tiger)
+		facts.Likes(lion, bear, True)
 
 rule6
 	foreach
-		facts.6. Disposition($x, nice) ∧ Sees($x, tiger)
+		facts.Likes($x, bear, True)
+		facts.Cold($x, True)
 	assert
-		facts.Age($x, young)
+		facts.Eats(bear, dog, True)
 
 rule7
 	foreach
-		facts.7. Temperature(cow, cold) ∧ Visits(cow, lion)
+		facts.Eats($x, dog, True)
 	assert
-		facts.Sees(lion, squirrel)
+		facts.Eats(dog, lion, True)
+
+rule8
+	foreach
+		facts.Likes($x, bald_eagle, True)
+	assert
+		facts.Rough($x, True)
+
+rule9
+	foreach
+		facts.Eats($x, lion, True)
+	assert
+		facts.Likes(lion, bear, True)

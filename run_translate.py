@@ -1,6 +1,6 @@
 import os
 
-os.environ["OPENAI_API_KEY"] = "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" #"sk-733e47bc35da4b49b0bc7ca99ede48f8"
+os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
 os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 # os.environ["OPENAI_API_KEY"] = "***"
@@ -79,7 +79,7 @@ elif "ProofWriter" in args_data_path:
     # 处理ProofWriter数据集
     proof_writer_output = []
 
-    for num, ins in enumerate(data[:3]):
+    for num, ins in enumerate(data[:20]):
         print(f"================================instance {num}====================================")
 
         for agent_id in range(len(agentverse.agents)):

@@ -4,6 +4,7 @@ import re
 from typing import Union, Optional
 
 from agentverse.parser import OutputParser, LLMResult
+from pydantic import Field
 
 from agentverse.utils import AgentAction, AgentFinish
 
@@ -50,37 +51,40 @@ try:
     USE_ACTUAL_SOLVERS = True
     # Agent name to solver mapping (based on logic_inference.py PROGRAM_CLASS)
     AGENT_SOLVER_MAP = {
-        'LP translator': ('LP', Pyke_Program, 'ProntoQA'),
-        'FOL translator': ('FOL', FOL_Prover9_Program, 'FOLIO'),
-        'CSP translator': ('CSP', CSP_Program, 'LogicalDeduction'),
+        'LP translator': ('LP', Pyke_Program),
+        'FOL translator': ('FOL', FOL_Prover9_Program),
+        'CSP translator': ('CSP', CSP_Program),
     }
 except ImportError as e:
     # Use simplified validation if actual solvers are not available
     SOLVER_AVAILABLE = True
     USE_ACTUAL_SOLVERS = False
     AGENT_SOLVER_MAP = {
-        'LP translator': ('LP', None, 'ProntoQA'),
-        'FOL translator': ('FOL', None, 'FOLIO'),
-        'CSP translator': ('CSP', None, 'LogicalDeduction'),
+        'LP translator': ('LP', None),
+        'FOL translator': ('FOL', None),
+        'CSP translator': ('CSP', None),
     }
 
 
 @output_parser_registry.register("translate")
 class TranslateParser(OutputParser):
+    dataset_name: str = Field(default="ProofWriter")
+    
     def parse(self, output: LLMResult, cnt_turn: int, max_turns: int, agent_nums: int, agent_name: Optional[str] = None) -> Union[AgentAction, AgentFinish]:
         text = output.content
         cleaned_output = text.strip()
         cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
+        #cleaned_output = re.sub(r"-", "", cleaned_output) # TODO: remove this
 
         # Check if it's the last turn and validate with solver
         if cnt_turn >= max_turns - agent_nums and agent_name and SOLVER_AVAILABLE:
             if agent_name in AGENT_SOLVER_MAP:
-                solver_key, solver_class, dataset_name = AGENT_SOLVER_MAP[agent_name]
+                solver_key, solver_class = AGENT_SOLVER_MAP[agent_name]
                 
                 if USE_ACTUAL_SOLVERS and solver_class is not None:
                     try:
                         # Create solver instance and validate (mimicking safe_execute_program)
-                        program = solver_class(cleaned_output, dataset_name)
+                        program = solver_class(cleaned_output, self.dataset_name)
                         
                         # Check parsing flag (similar to safe_execute_program)
                         if not getattr(program, 'flag', True):

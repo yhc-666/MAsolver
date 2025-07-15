@@ -226,9 +226,38 @@ class LSAT_Z3_Program:
         return result_lines, "", proof_text
     
     def answer_mapping(self, answer):
-        mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C', '(D)': 'D', '(E)': 'E',
-                   'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E'}
-        return mapping[answer[0].strip()]
+        """
+        Map the SAT solver output to the appropriate dataset answer format.
+        
+        Args:
+            answer: The SAT solver output
+            
+        Returns:
+            str: The mapped answer for the specific dataset
+        """
+        # Handle ProofWriter dataset
+        if self.dataset_name == 'ProofWriter':
+            # ProofWriter uses A/B/C format
+            if answer is None or len(answer) == 0:
+                return 'C'  # Unknown/no solution
+            mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C',
+                       'A': 'A', 'B': 'B', 'C': 'C'}
+            return mapping.get(answer[0].strip(), 'C')
+        
+        # Handle ProntoQA dataset
+        elif self.dataset_name == 'ProntoQA':
+            # ProntoQA uses A/B format
+            if answer is None or len(answer) == 0:
+                return 'B'  # Default to False
+            mapping = {'(A)': 'A', '(B)': 'B',
+                       'A': 'A', 'B': 'B'}
+            return mapping.get(answer[0].strip(), 'B')
+        
+        # Original AR-LSAT logic (A-E format)
+        else:
+            mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C', '(D)': 'D', '(E)': 'E',
+                       'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E'}
+            return mapping[answer[0].strip()]
 
 if __name__=="__main__":
     logic_program = '''# Declarations

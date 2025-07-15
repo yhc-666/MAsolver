@@ -76,7 +76,8 @@ def prepare_task_config(taskwithyaml):
     task_config = yaml.safe_load(open(taskwithyaml))
     task = task_config["task"]
     # Build the output parser
-    parser = output_parser_registry.build(task)
+    dataset_name = task_config.get('dataset', {}).get('name', 'ProofWriter')
+    parser = output_parser_registry.build(task, dataset_name=dataset_name)
     task_config["output_parser"] = parser
 
     # Handle llm_config if present
@@ -112,6 +113,10 @@ def prepare_task_config(taskwithyaml):
             
         llm = load_llm(llm_config_to_use)
         agent_configs["llm"] = llm
+
+        # Extract max_retry from LLM config and pass it to agent
+        if "max_retry" in llm_config_to_use:
+            agent_configs["max_retry"] = llm_config_to_use["max_retry"]
 
         agent_configs["tools"] = load_tools(agent_configs.get("tools", []))
 

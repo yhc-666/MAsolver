@@ -59,12 +59,18 @@ python run_symbolicsolver.py
 python run_llmsolver.py
 ```
 
-4. Run a debate session for final result:
+4. Run a debate session for final result
 
 ```bash
 python run_final_debate.py
 ```
 
+5. Evaluation
+
+
+```bash
+python run_evaluation.py
+```
 
 ## ⚙️ Configuration
 

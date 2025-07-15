@@ -163,7 +163,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument("--config", type=str, 
                        default="agentverse/tasks/final_debate/final_debate_config.yaml")
-    parser.add_argument("--max_instances", type=int, default=2, help="Maximum number of instances to process (0 for all)")
+    parser.add_argument("--max_instances", type=int, default=0, help="Maximum number of instances to process (0 for all)")
     args = parser.parse_args()
     
     print("Starting Final Debate Stage")

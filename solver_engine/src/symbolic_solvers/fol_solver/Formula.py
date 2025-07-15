@@ -1,41 +1,44 @@
 from nltk.tree import Tree
 from .fol_parser import FOL_Parser
 from concurrent.futures import ThreadPoolExecutor, TimeoutError, ProcessPoolExecutor
-import signal
-
-# def handler(signum, frame):
-#     raise Exception("Timeout!")
+import func_timeout
 
 class FOL_Formula:
     def __init__(self, str_fol) -> None:
         self.parser = FOL_Parser()
 
-        def handler(signum, frame):
-            raise Exception("Timeout!")
+        def parse_fol_with_timeout():
+            """Parse FOL string with timeout handling"""
+            return self.parser.parse_text_FOL_to_tree(str_fol)
 
-        # Set the signal handler and a 5-second alarm
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(60)
         try:
-            tree = self.parser.parse_text_FOL_to_tree(str_fol)
-        except Exception as exc:
+            # Use func_timeout instead of signal.alarm to avoid global interruption
+            tree = func_timeout.func_timeout(60, parse_fol_with_timeout)
+        except func_timeout.FunctionTimedOut:
+            # Handle timeout gracefully
             tree = None
-            self.is_valid = False
+            self._is_valid = False
+            return
+        except Exception as exc:
+            # Handle other parsing errors
+            tree = None
+            self._is_valid = False
             return
     
         self.tree = tree
         if tree is None:
-            self.is_valid = False
+            self._is_valid = False
         else:
-            self.is_valid = True
+            self._is_valid = True
             self.variables, self.constants, self.predicates = self.parser.symbol_resolution(tree)
     
     def __str__(self) -> str:
         _, rule_str = self.parser.msplit(''.join(self.tree.leaves()))
         return rule_str
     
+    @property
     def is_valid(self):
-        return self.is_valid
+        return self._is_valid
 
     def _get_formula_template(self, tree, name_mapping):
         for i, subtree in enumerate(tree):
@@ -70,7 +73,6 @@ if __name__ == '__main__':
     fol_rule = FOL_Formula(str_fol)
     if fol_rule.is_valid:
         print(fol_rule)
-        print(fol_rule.isFOL)
         print(fol_rule.variables)
         print(fol_rule.constants)
         print(fol_rule.predicates)

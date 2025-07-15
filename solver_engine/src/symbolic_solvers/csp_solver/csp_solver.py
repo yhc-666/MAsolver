@@ -20,13 +20,25 @@ class CSP_Program:
             except:
                 setattr(self, keyword[:-1], None)
         
+        # 检查必需的段落是否存在
         if self.Query is None or self.Constraints is None or self.Variables is None or self.Domain is None:
             return False
-        else:
-            return True
+        
+        # 验证变量格式：每个变量必须包含[IN]分隔符
+        if hasattr(self, 'Variables') and self.Variables:
+            for variable in self.Variables:
+                if '[IN]' not in variable:
+                    return False  # 格式不符合要求
+        
+        return True
     
     def _parse_segment(self, program_str, key_phrase):
-        remain_program_str, segment = program_str.split(key_phrase)
+        # 检查关键词是否存在
+        if key_phrase not in program_str:
+            return program_str, []  # 返回原字符串和空列表
+        
+        # 正常解析，限制分割次数为1
+        remain_program_str, segment = program_str.split(key_phrase, 1)
         segment_list = [line.strip() for line in segment.strip().split('\n') if line.strip()]
         for i in range(len(segment_list)):
             segment_list[i] = segment_list[i].split(':::')[0].strip()
@@ -107,7 +119,6 @@ class CSP_Program:
         
         # add variables
         for variable in self.Variables:
-            print(variable)
             variable_name, variable_domain = variable.split('[IN]')
             variable_name, variable_domain = variable_name.strip(), variable_domain.strip()
             # variable_domain = ast.literal_eval(variable_domain)
@@ -157,33 +168,52 @@ class CSP_Program:
         ]
 
         """
-        self.option_pattern = r'^\w+\)' # 用于匹配选项标识符: "A)", "B)", "C)" 等
-        self.expression_pattern = r'\w+ == \d+'   # 用于匹配变量等式: "T == 1", "T == 0" 等
+        # Handle ProofWriter dataset - simplified answer mapping
+        if self.dataset_name == 'ProofWriter':
+            # For ProofWriter: A=True, B=False, C=Unknown
+            # Simple logic: if has solutions -> A, if no solutions -> C
+            if answer is None or len(answer) == 0:
+                return 'C'  # Unknown/no solution
+            else:
+                return 'A'  # Has solution, assume True
+        
+        # Handle ProntoQA dataset - simplified answer mapping  
+        elif self.dataset_name == 'ProntoQA':
+            # For ProntoQA: A=True, B=False
+            # Simple logic: if has solutions -> A, if no solutions -> B
+            if answer is None or len(answer) == 0:
+                return 'B'  # No solution, assume False
+            else:
+                return 'A'  # Has solution, assume True
+        
+        # Original LogicalDeduction logic
+        else:
+            self.option_pattern = r'^\w+\)' # 用于匹配选项标识符: "A)", "B)", "C)" 等
+            self.expression_pattern = r'\w+ == \d+'   # 用于匹配变量等式: "T == 1", "T == 0" 等
 
-        variable_ans_map = defaultdict(set)
-        for result in answer:
-            for variable, value in result.items():
-                variable_ans_map[variable].add(value)
+            variable_ans_map = defaultdict(set)
+            for result in answer:
+                for variable, value in result.items():
+                    variable_ans_map[variable].add(value)
 
-        for option_str in self.Query:
-            # Extract the option using regex
-            option_match = re.match(self.option_pattern, option_str)
-            option = option_match.group().replace(')', '')
-            # Extract the expression using regex
-            expression_match = re.search(self.expression_pattern, option_str)
-            expression_str = expression_match.group()
-            # Extract the variable and its value
-            variable, value = expression_str.split('==')
-            variable, value = variable.strip(), int(value.strip())
-            # Check if the variable is in the execution result
-            if len(variable_ans_map[variable]) == 1 and value in variable_ans_map[variable]:
-                return option
+            for option_str in self.Query:
+                # Extract the option using regex
+                option_match = re.match(self.option_pattern, option_str)
+                option = option_match.group().replace(')', '')
+                # Extract the expression using regex
+                expression_match = re.search(self.expression_pattern, option_str)
+                expression_str = expression_match.group()
+                # Extract the variable and its value
+                variable, value = expression_str.split('==')
+                variable, value = variable.strip(), int(value.strip())
+                # Check if the variable is in the execution result
+                if len(variable_ans_map[variable]) == 1 and value in variable_ans_map[variable]:
+                    return option
 
-        return None
+            return None
     
 if __name__ == "__main__":
     logic_program = "Domain:\n1: leftmost\n5: rightmost\nVariables:\ngreen_book [IN] [1, 2, 3, 4, 5]\nblue_book [IN] [1, 2, 3, 4, 5]\nwhite_book [IN] [1, 2, 3, 4, 5]\npurple_book [IN] [1, 2, 3, 4, 5]\nyellow_book [IN] [1, 2, 3, 4, 5]\nConstraints:\nblue_book > yellow_book ::: The blue book is to the right of the yellow book.\nwhite_book < yellow_book ::: The white book is to the left of the yellow book.\nblue_book == 4 ::: The blue book is the second from the right.\npurple_book == 2 ::: The purple book is the second from the left.\nAllDifferentConstraint([green_book, blue_book, white_book, purple_book, yellow_book]) ::: All books have different values.\nQuery:\nA) green_book == 2 ::: The green book is the second from the left.\nB) blue_book == 2 ::: The blue book is the second from the left.\nC) white_book == 2 ::: The white book is the second from the left.\nD) purple_book == 2 ::: The purple book is the second from the left.\nE) yellow_book == 2 ::: The yellow book is the second from the left."
-    logic_program_2 = "Domain:\nObjects: Bob, Charlie, Dave, Fiona\nAttributes: cold, quiet, red, smart, kind, rough, round (each attribute is a boolean: true or false)\n\nVariables:\nBob_cold [IN] [true, false]\nBob_quiet [IN] [true, false]\nBob_red [IN] [true, false]\nBob_smart [IN] [true, false]\nBob_kind [IN] [true, false]\nBob_rough [IN] [true, false]\nBob_round [IN] [true, false] \nCharlie_cold [IN] [true, false]\nCharlie_quiet [IN] [true, false]\nCharlie_red [IN] [true, false]\nCharlie_smart [IN] [true, false]\nCharlie_kind [IN] [true, false]\nCharlie_rough [IN] [true, false]\nCharlie_round [IN] [true, false]\n\nDave_cold [IN] [true, false]\nDave_quiet [IN] [true, false]\nDave_red [IN] [true, false]\nDave_smart [IN] [true, false]\nDave_kind [IN] [true, false]\nDave_rough [IN] [true, false]\nDave_round [IN] [true, false]\n\nFiona_cold [IN] [true, false]\nFiona_quiet [IN] [true, false]\nFiona_red [IN] [true, false]\nFiona_smart [IN] [true, false]\nFiona_kind [IN] [true, false]\nFiona_rough [IN] [true, false]\nFiona_round [IN] [true, false]\n\nConstraints:\nBob_cold = true ::: Bob is cold.\nBob_quiet = true ::: Bob is quiet.\nBob_red = true ::: Bob is red.\nBob_smart = true ::: Bob is smart.\nCharlie_kind = true ::: Charlie is kind.\nCharlie_quiet = true ::: Charlie is quiet.\nCharlie_red = true ::: Charlie is red.\nCharlie_rough = true ::: Charlie is rough.\nDave_cold = true ::: Dave is cold.\nDave_kind = true ::: Dave is kind.\nDave_smart = true ::: Dave is smart.\nFiona_quiet = true ::: Fiona is quiet.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_quiet = true ∧ x_cold = true) → (x_smart = true) ::: If something is quiet and cold then it is smart.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_red = true ∧ x_cold = true) → (x_round = true) ::: Red, cold things are round.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_kind = true ∧ x_rough = true) → (x_red = true) ::: If something is kind and rough then it is red.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_quiet = true) → (x_rough = true) ::: All quiet things are rough.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_cold = true ∧ x_smart = true) → (x_red = true) ::: Cold, smart things are red.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_rough = true) → (x_cold = true) ::: If something is rough then it is cold.\nFor all x in {Bob, Charlie, Dave, Fiona}: (x_red = true) → (x_rough = true) ::: All red things are rough.\n(Dave_smart = true ∧ Dave_kind = true) → (Dave_quiet = true) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nCharlie_kind = true ::: Charlie is kind."
     logic_program_fol = "Domain:\n0: False\n1: True\nVariables:\nP [IN] [0, 1] ::: Bonnie performs in school talent shows often\nE [IN] [0, 1] ::: Bonnie attends and is very engaged with school events\nI [IN] [0, 1] ::: Bonnie is inactive and disinterested in her community\nC [IN] [0, 1] ::: Bonnie chaperones high school dances\nS [IN] [0, 1] ::: Bonnie is a student at the school\nY [IN] [0, 1] ::: Bonnie is a young child/teen who wishes to further her education\nNotC [IN] [0, 1] ::: Logical NOT of C\nAux [IN] [0, 1] ::: (NotC AND P)\nA [IN] [0, 1] ::: Antecedent  C OR (NotC AND P)\nBvar [IN] [0, 1] ::: Consequent Y AND I\nT [IN] [0, 1] ::: Truth value of the implication (statement in question)\n\nConstraints:\nE >= P ::: If Bonnie performs, she is engaged.\nP + I >= 1 ::: Bonnie either performs or is inactive.\nC + S <= 1 ::: Chaperone implies not a student.\nC >= I ::: Inactive implies chaperone.\nS >= Y ::: Young child/teen implies student.\nE == S ::: Bonnie is either both engaged & student, or neither.\n\nNotC + C == 1 ::: NotC is the negation of C.\n\nAux <= NotC ::: Aux = NotC AND P\nAux <= P\nAux >= NotC + P - 1\n\nA >= C ::: A = C OR Aux\nA >= Aux\nA <= C + Aux\n\nBvar <= Y ::: Bvar = Y AND I\nBvar <= I\nBvar >= Y + I - 1\n\nT >= 1 - A ::: T = (A → Bvar)\nT >= Bvar\nT <= 1 - A + Bvar\n\nQuery:\nA) T == 1 ::: The implication is always true (answer \"True\").\nB) T == 0 ::: The implication is always false (answer \"False\").\nC) Both T == 1 and T == 0 are possible ::: The implication is uncertain.\n"
     csp_program = CSP_Program(logic_program_fol, 'LogicalDeduction')
     ans, err_msg, reasoning = csp_program.execute_program()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import bdb
+import re
 from string import Template
 from typing import TYPE_CHECKING, List
 
@@ -33,10 +34,17 @@ class LLMEvalAgent(BaseAgent):
     final_prompt_to_use: str = ""
     normal_turn_instruction: str = ""
 
+    def _clean_output(self, text: str) -> str:
+        """Clean the output text similar to output_parser.py"""
+        cleaned_output = text.strip()
+        cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
+        return cleaned_output
+
     def step(self, env_description: str = "") -> Message:
         structured_prompt = self._fill_prompt_template(env_description, None)
 
         parsed_response = None
+        response = None
         for i in range(self.max_retry):
             try:
                 response = self.llm.generate_response(structured_prompt, self.memory.messages)
@@ -51,9 +59,15 @@ class LLMEvalAgent(BaseAgent):
 
         if parsed_response is None:
             logging.error(f"{self.name} failed to generate valid response.")
+            # Use cleaned output as fallback when parsing fails
+            if response is not None:
+                cleaned_content = self._clean_output(response.content)
+                logging.info(f"{self.name} using cleaned output as fallback: {cleaned_content[:100]}...")
+            else:
+                cleaned_content = ""
 
         message = Message(
-            content=""
+            content=cleaned_content
             if parsed_response is None
             else parsed_response.return_values["output"],
             sender=self.name,
@@ -85,6 +99,7 @@ class LLMEvalAgent(BaseAgent):
         structured_prompt = self._fill_prompt_template(env_description, env)
 
         parsed_response = None
+        response = None
 
         should_break = False
         while True:
@@ -116,9 +131,15 @@ class LLMEvalAgent(BaseAgent):
 
         if parsed_response is None:
             logging.error(f"{self.name} failed to generate valid response.")
+            # Use cleaned output as fallback when parsing fails
+            if response is not None:
+                cleaned_content = self._clean_output(response.content)
+                logging.info(f"{self.name} using cleaned output as fallback: {cleaned_content[:100]}...")
+            else:
+                cleaned_content = ""
 
         message = Message(
-            content=""
+            content=cleaned_content
             if parsed_response is None
             else parsed_response.return_values["output"],
             sender=self.name,

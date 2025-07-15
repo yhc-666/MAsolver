@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import random
 from nltk.inference.prover9 import *
 from nltk.sem.logic import NegatedExpression
 import subprocess, shutil
@@ -205,14 +206,45 @@ class FOL_Prover9_Program:
             return None, str(e), '' 
         
     def answer_mapping(self, answer):
-        if answer == 'True':
-            return 'A'
-        elif answer == 'False':
-            return 'B'
-        elif answer == 'Unknown':
-            return 'C'
+        """
+        Map the prover9 output to the appropriate dataset answer format.
+        
+        Args:
+            answer: The prover9 output ('True', 'False', 'Unknown')
+            
+        Returns:
+            str: The mapped answer for the specific dataset
+        """
+        if self.dataset_name == 'ProntoQA':
+            # ProntoQA only has A/B options, no Unknown
+            if answer == 'True':
+                return 'A'
+            elif answer == 'False':
+                return 'B'
+            elif answer == 'Unknown':
+                # For ProntoQA, Unknown is randomly mapped to A or B
+                return random.choice(['A', 'B'])
+        elif self.dataset_name == 'ProofWriter':
+            # ProofWriter supports A/B/C (True/False/Unknown)
+            if answer == 'True':
+                return 'A'
+            elif answer == 'False':
+                return 'B'
+            elif answer == 'Unknown':
+                return 'C'
+        elif self.dataset_name == 'FOLIO':
+            # FOLIO supports A/B/C (True/False/Unknown) - keep original logic
+            if answer == 'True':
+                return 'A'
+            elif answer == 'False':
+                return 'B'
+            elif answer == 'Unknown':
+                return 'C'
         else:
-            raise Exception("Answer not recognized")
+            raise ValueError(f'Unsupported dataset: {self.dataset_name}')
+        
+        # Fallback for unrecognized answers
+        raise ValueError(f'Answer "{answer}" not recognized for dataset "{self.dataset_name}"')
         
     @staticmethod
     def _extract_proof_steps_ture_false(proof_str: str) -> str:
@@ -341,7 +373,7 @@ if __name__ == "__main__":
     Conclusion:
     TakeOut(subway) ∧ ¬NegativeReviews(subway) ::: Subway provides take-out service and does not receive many negative reviews."""
     
-    logic_program_byfx = "Premises:\nCold(bob) ::: Bob is cold.\nQuiet(bob) ::: Bob is quiet.\nRed(bob) ::: Bob is red.\nSmart(bob) ::: Bob is smart.\nKind(charlie) ::: Charlie is kind.\nQuiet(charlie) ::: Charlie is quiet.\nRed(charlie) ::: Charlie is red.\nRough(charlie) ::: Charlie is rough.\nCold(dave) ::: Dave is cold.\nKind(dave) ::: Dave is kind.\nSmart(dave) ::: Dave is smart.\nQuiet(fiona) ::: Fiona is quiet.\n∀x (Quiet(x) ∧ Cold(x) → Smart(x)) ::: If something is quiet and cold then it is smart.\n∀x (Red(x) ∧ Cold(x) → Round(x)) ::: Red, cold things are round.\n∀x (Kind(x) ∧ Rough(x) → Red(x)) ::: If something is kind and rough then it is red.\n∀x (Quiet(x) → Rough(x)) ::: All quiet things are rough.\n∀x (Cold(x) ∧ Smart(x) → Red(x)) ::: Cold, smart things are red.\n∀x (Rough(x) → Cold(x)) ::: If something is rough then it is cold.\n∀x (Red(x) → Rough(x)) ::: All red things are rough.\n(Smart(dave) ∧ Kind(dave)) → Quiet(dave) ::: If Dave is smart and Dave is kind then Dave is quiet.\nConclusion:\nKind(charlie) ::: Charlie is kind."
+    logic_program_byfx = "Predicates:\nBlue(x) ::: x is blue\nRound(x) ::: x is round\nLikes(x, y) ::: x likes y\nVisits(x, y) ::: x visits y\nCold(x) ::: x is cold\nNice(x) ::: x is nice\nSees(x, y) ::: x sees y\nYoung(x) ::: x is young\nPremises:\nBlue(cow) ::: The cow is blue\nRound(cow) ::: The cow is round\nLikes(cow, lion) ::: The cow likes the lion\nVisits(cow, tiger) ::: The cow visits the tiger\nCold(lion) ::: The lion is cold\nNice(lion) ::: The lion is nice\nLikes(lion, squirrel) ::: The lion likes the squirrel\nRound(squirrel) ::: The squirrel is round\nSees(squirrel, lion) ::: The squirrel sees the lion\nVisits(squirrel, cow) ::: The squirrel visits the cow\nLikes(tiger, cow) ::: The tiger likes the cow\nLikes(tiger, squirrel) ::: The tiger likes the squirrel\n\u2200x (Cold(x) \u2192 Visits(x, tiger)) ::: If something is cold then it visits the tiger\n\u2200x (Visits(x, tiger) \u2192 Nice(x)) ::: If something visits the tiger then it is nice\n\u2200x (Nice(x) \u2192 Sees(x, tiger)) ::: If something is nice then it sees the tiger\n\u2200x (Nice(x) \u2227 Sees(x, tiger) \u2192 Young(x)) ::: If something is nice and it sees the tiger then it is young\n\u2200x (Sees(x, tiger) \u2227 Young(x) \u2192 Blue(x)) ::: If something sees the tiger and it is young then it is blue\n\u2200x (Likes(x, squirrel) \u2227 Likes(x, cow) \u2192 Visits(x, tiger)) ::: If something likes the squirrel and it likes the cow then it visits the tiger\nCold(cow) \u2227 Visits(cow, lion) \u2192 Sees(lion, squirrel) ::: If the cow is cold and the cow visits the lion then the lion sees the squirrel\nConclusion:\n\u00acYoung(tiger) ::: The tiger is not young"
     # ground-truth: True
     prover9_program = FOL_Prover9_Program(logic_program_byfx)
     result, error_message, reasoning = prover9_program.execute_program()

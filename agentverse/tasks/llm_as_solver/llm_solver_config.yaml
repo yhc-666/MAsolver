@@ -1,9 +1,9 @@
 task:
   llm_solver
 data_path:
-  data/smoketest/train.json
+  data/ProofWriter/train.json
 output_dir: 
-  outputs/deepseek-chat/smoketest/llm_solver/train
+  outputs/deepseek-chat/ProofWriter/llm_solver/train
 
 # ---------- Execution Settings ----------
 execution:
@@ -12,7 +12,7 @@ execution:
   # Maximum number of concurrent roles per question
   max_concurrent_roles: 3
   # number of questions to process (0 = all)
-  max_questions: 0
+  max_questions: 20
 
 # ---------- LLM Configuration ----------
 llm_config:
@@ -65,17 +65,8 @@ prompt_templates:
 
 # ---------- Role Definitions ----------
 roles:
-  - name: "random_guesser"
-    display_name: "Random Guesser"
-    role_description: |-
-      You are a role that dislikes doing mathematics or logical reasoning and you always guess at random.
-    instruction: |-
-      State that you dislike math, then randomly choose one option without any justification.
-      Be honest about your random approach.
-    prompt_template: *base_prompt
-
-  - name: "forward_reasoner"
-    display_name: "Forward Reasoner"
+  - name: "cot_solver"
+    display_name: "COT Solver"
     role_description: |-
       You are an intelligent forward reasoner who performs strict deductive reasoning from premises to conclusion.
     instruction: |-
@@ -96,23 +87,12 @@ roles:
           <answer>A<reason>The cat must have a skeleton because it is a mammal, and all mammals are vertebrates, and all vertebrates have skeletons.
     prompt_template: *base_prompt
 
-  - name: "hypothesis_negator"
-    display_name: "Hypothesis Negator"
+  - name: "plan-and-solve"
+    display_name: "Plan-and-Solve"
     role_description: |-
       You are an intelligent reasoner who validates conclusions through proof by contradiction (negating the hypothesis).
     instruction: |-
       Work from the assumption that the target conclusion is false and search for contradictions or counter-examples:
-
-      1. Assume the conclusion is false.
-      2. Apply the given rules to derive consequences of that assumption.
-      3. If a contradiction with known premises emerges, the assumption is impossible and the original conclusion is true.
-      4. If no contradiction can be found due to missing information, output "Unknown" and explain the uncertainty.
-
-      Example approach:
-      • Assume "Cat has no skeleton".
-      • From rule (2): If a vertebrate then has a skeleton ⇒ Cat is not a vertebrate.
-      • From rules (1) and (3): Cat is a mammal ⇒ Cat is a vertebrate.
-      • Contradiction! Therefore the assumption is false and the conclusion "Cat has a skeleton" is true.
       • Output:
           <answer>A<reason>The negated hypothesis conflicts with the rules, creating a contradiction, so the original statement must be true.
     prompt_template: *base_prompt

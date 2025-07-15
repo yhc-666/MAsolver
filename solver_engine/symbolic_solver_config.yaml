@@ -1,9 +1,13 @@
 # Symbolic Solver Configuration
 # Configuration file for logic inference engine
 
+# Dataset configuration
+dataset:
+  name: "ProofWriter"  # Available options: ProntoQA, ProofWriter, FOLIO, LogicalDeduction, AR-LSAT
+
 paths:
-  input_file: "outputs/deepseek-chat/smoketest/translation/train/smoketest_results.json"
-  output_file: "outputs/deepseek-chat/smoketest/symbolic_solver/train/symbolic_solver_results.json"
+  input_file: "outputs/deepseek-chat/ProofWriter/translation/train/proof_writer_results.json"
+  output_file: "outputs/deepseek-chat/ProofWriter/symbolic_solver/train/proof_writer_results.json"
   backup_LLM_result_path: ""
 
 solver:
