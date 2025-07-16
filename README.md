@@ -44,10 +44,16 @@ Note: config each session's .yaml accordingly
 
 1. Run a debate session for NL->SL translation:
 
+    Configure in `agentverse/tasks/nl_sl_translation/translate_config.yaml`
+
 ```bash
 python run_translate.py
 ```
+
+
 2. Run solver engine to generate (answer, reasoning_path) from SL
+
+    Configure in `solver_engine/symbolic_solver_config.yaml` 
 
 ```bash
 python run_symbolicsolver.py 
@@ -55,11 +61,15 @@ python run_symbolicsolver.py
 
 3. Run LLM as Solver session to directly generate (answer, reasoning_path) from NL
 
+    Configure in `agentverse/tasks/llm_as_solver/llm_solver_config.yaml` 
+
 ```bash
 python run_llmsolver.py
 ```
 
 4. Run a debate session for final result
+
+    Configure in `agentverse/tasks/final_debate/final_debate_config.yaml`
 
 ```bash
 python run_final_debate.py
