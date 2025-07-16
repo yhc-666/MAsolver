@@ -22,7 +22,7 @@ class Pyke_Program:
         self.dataset_name = dataset_name
         
         # create the folder to save the Pyke program
-        cache_dir = os.path.join(os.path.dirname(__file__), '.cache_program')
+        cache_dir = os.path.join(os.path.dirname(__file__), 'cache_program')
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         self.cache_dir = cache_dir
@@ -218,13 +218,9 @@ class Pyke_Program:
         Returns:
             tuple: (答案, 错误信息)
         """
-        # 删除编译的krb目录，避免缓存问题
-        complied_krb_dir = './models/compiled_krb'
-        if os.path.exists(complied_krb_dir):
-            print('removing compiled_krb')
-            os.system(f'rm -rf {complied_krb_dir}/*')
 
         try:
+
             # 初始化Pyke推理引擎
             engine = knowledge_engine.engine(self.cache_dir)
             engine.reset()
@@ -237,6 +233,23 @@ class Pyke_Program:
             
             # 根据数据集类型映射答案
             answer = self.answer_map[self.dataset_name](result, value_to_check)
+            
+            # Clean up after successful execution
+            complied_krb_dir = 'solver_engine/src/compiled_krb'
+            if os.path.exists(complied_krb_dir):
+                print('removing compiled_krb')
+                # Preserve __init__.py file while removing compiled files
+                for file in os.listdir(complied_krb_dir):
+                    if file != '__init__.py':
+                        file_path = os.path.join(complied_krb_dir, file)
+                        if os.path.isfile(file_path):
+                            os.remove(file_path)
+                        elif os.path.isdir(file_path):
+                            os.system(f'rm -rf {file_path}')
+
+            if os.path.exists(self.cache_dir):
+                print('removing cache_program')
+                os.system(f'rm -rf {self.cache_dir}/*')
         except Exception as e:
             return None, e
         
@@ -408,7 +421,7 @@ Green(Harry, False) ::: Harry is not green."""
 
 
     tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    #tests = [logic_program_fol]
+    #tests = [logic_program2]
    
     
     import json
