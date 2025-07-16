@@ -74,7 +74,7 @@ class TranslateParser(OutputParser):
         text = output.content
         cleaned_output = text.strip()
         cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
-        #cleaned_output = re.sub(r"-", "", cleaned_output) # TODO: remove this
+        cleaned_output = re.sub(r"\n-", "\n", cleaned_output)  # Remove dash after newline
 
         # Check if it's the last turn and validate with solver
         if cnt_turn >= max_turns - agent_nums and agent_name and SOLVER_AVAILABLE:

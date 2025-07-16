@@ -38,6 +38,7 @@ class LLMEvalAgent(BaseAgent):
         """Clean the output text similar to output_parser.py"""
         cleaned_output = text.strip()
         cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
+        cleaned_output = re.sub(r"\n-", "\n", cleaned_output)  # Remove dash after newline
         return cleaned_output
 
     def step(self, env_description: str = "") -> Message:

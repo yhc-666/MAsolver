@@ -1,45 +1,57 @@
 rule1
 	foreach
-		facts.Kind($x, True)
+		facts.Young($x, True)
 	assert
-		facts.See($x, cat, True)
+		facts.Furry($x, True)
 
 rule2
 	foreach
-		facts.Visit($x, bear, True)
+		facts.Nice($x, True)
+		facts.Furry($x, True)
 	assert
-		facts.Kind($x, True)
+		facts.Green($x, True)
 
 rule3
 	foreach
-		facts.(Rough($x, True)
-		facts.Need($x, mouse, True))
+		facts.Green($x, True)
 	assert
-		facts.Visit(mouse, bear, True)
+		facts.Nice($x, True)
 
 rule4
 	foreach
-		facts.See($x, cat, True)
+		facts.Nice($x, True)
+		facts.Green($x, True)
 	assert
-		facts.Visit(cat, bear, True)
+		facts.Big($x, True)
 
 rule5
 	foreach
-		facts.(See($x, cat, True)
-		facts.Visit(cat, bear, True))
+		facts.Green($x, True)
 	assert
-		facts.Visit(bear, lion, False)
+		facts.Smart($x, True)
 
 rule6
 	foreach
-		facts.(See($x, mouse, True)
-		facts.Need($x, mouse, False))
+		facts.Big($x, True)
+		facts.Young($x, True)
 	assert
-		facts.Need(mouse, cat, True)
+		facts.Round($x, True)
 
 rule7
 	foreach
-		facts.(Visit($x, lion, True)
-		facts.See($x, mouse, False))
+		facts.Green($x, True)
 	assert
-		facts.Cold(mouse, True)
+		facts.Big($x, True)
+
+rule8
+	foreach
+		facts.Young(Harry, True)
+	assert
+		facts.Furry(Harry, True)
+
+rule9
+	foreach
+		facts.Furry($x, True)
+		facts.Smart($x, True)
+	assert
+		facts.Nice($x, True)

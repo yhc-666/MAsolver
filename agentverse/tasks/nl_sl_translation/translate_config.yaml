@@ -1,11 +1,11 @@
 task:
   translate
 dataset:
-  name: "ProofWriter"
+  name: "ProofWriter" # ProntoQA # FOLIO
 data_path:
-  data/ProofWriter/train.json
+  data/ProofWriter/dev.json
 output_dir:
-  outputs/deepseek-chat/ProofWriter/translation/train
+  outputs/deepseek/ProofWriter/translation
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-

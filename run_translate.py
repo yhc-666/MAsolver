@@ -103,10 +103,10 @@ elif "ProofWriter" in args_data_path:
         })
 
         os.makedirs(args_output_dir, exist_ok=True)
-        with open(os.path.join(args_output_dir, "proof_writer_results.json"), "w") as f:
+        with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
             json.dump(proof_writer_output, f, indent=4)
 
-elif "smoketest" in args_data_path:
+elif "FOLIO" in args_data_path:
 # 处理ProofWriter数据集
     smoketest_output = []
 
@@ -134,9 +134,10 @@ elif "smoketest" in args_data_path:
         })
 
         os.makedirs(args_output_dir, exist_ok=True)
-        with open(os.path.join(args_output_dir, "smoketest_results.json"), "w") as f:
+        with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
             json.dump(smoketest_output, f, indent=4)
 
-
+else:
+    raise ValueError(f"Unsupported dataset in run_translate.py: {args_data_path}")
 
     

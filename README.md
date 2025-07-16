@@ -35,7 +35,7 @@ OPENAI_BASE_URL="your_api_base_url"
 ```
 4. Grant Permission for Prover9 SOlver: 
 ```bash
-chmod +x solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/*`
+chmod +x solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/*
 ```
 
 ### Basic Usage

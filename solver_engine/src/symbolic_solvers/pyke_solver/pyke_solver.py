@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 # 添加项目根目录到 Python 路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
@@ -20,6 +21,7 @@ class Pyke_Program:
         self.flag = self.parse_logic_program()  # parse SL, return whether success
         self.dataset_name = dataset_name
         
+        # create the folder to save the Pyke program
         cache_dir = os.path.join(os.path.dirname(__file__), '.cache_program')
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
@@ -217,10 +219,10 @@ class Pyke_Program:
             tuple: (答案, 错误信息)
         """
         # 删除编译的krb目录，避免缓存问题
-        compiled_krb_dir = 'solver_engine/src/compiled_krb'
-        if os.path.exists(compiled_krb_dir):
+        complied_krb_dir = './models/compiled_krb'
+        if os.path.exists(complied_krb_dir):
             print('removing compiled_krb')
-            os.system(f'rm -rf {compiled_krb_dir}/*')
+            os.system(f'rm -rf {complied_krb_dir}/*')
 
         try:
             # 初始化Pyke推理引擎
@@ -402,12 +404,12 @@ Query:
 Green(Harry, False) ::: Harry is not green."""
 
 
-    #logic_program8 = "Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\n\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\n\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\n\nQuery:\nKind(Charlie, True) ::: Charlie is kind."
+    logic_program_fol = "Predicates:\nPerformOften($x, bool) ::: Does x perform in school talent shows often?\nAttendEngaged($x, bool) ::: Does x attend and is very engaged with school events?\nInactiveDisinterested($x, bool) ::: Is x an inactive and disinterested member of their community?\nChaperoneDances($x, bool) ::: Does x chaperone high school dances?\nStudent($x, bool) ::: Is x a student who attends the school?\nYoungChildTeen($x, bool) ::: Is x a young child or teenager who wishes to further their academic career and educational opportunities?\nFacts:\nYoungChildTeen(Bonnie, True)\nRules:\nPerformOften($x, True) >>> AttendEngaged($x, True)\nPerformOften($x, True) || InactiveDisinterested($x, True)\nChaperoneDances($x, True) >>> Student($x, False)\nInactiveDisinterested($x, True) >>> ChaperoneDances($x, True)\nYoungChildTeen($x, True) >>> Student($x, True)\n(AttendEngaged(Bonnie, True) && Student(Bonnie, True)) || (!AttendEngaged(Bonnie, True) && !Student(Bonnie, True))\nQuery:\nPerformOften(Bonnie, True)"
 
 
     tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    #tests = [logic_program8]
-    #tests = ["Predicates:\nCold($x, bool) ::: Is x cold?\nQuiet($x, bool) ::: Is x quiet?\nRed($x, bool) ::: Is x red?\nSmart($x, bool) ::: Is x smart?\nKind($x, bool) ::: Is x kind?\nRough($x, bool) ::: Is x rough?\nRound($x, bool) ::: Is x round?\nFacts:\nCold(Bob, True) ::: Bob is cold.\nQuiet(Bob, True) ::: Bob is quiet.\nRed(Bob, True) ::: Bob is red.\nSmart(Bob, True) ::: Bob is smart.\nKind(Charlie, True) ::: Charlie is kind.\nQuiet(Charlie, True) ::: Charlie is quiet.\nRed(Charlie, True) ::: Charlie is red.\nRough(Charlie, True) ::: Charlie is rough.\nCold(Dave, True) ::: Dave is cold.\nKind(Dave, True) ::: Dave is kind.\nSmart(Dave, True) ::: Dave is smart.\nQuiet(Fiona, True) ::: Fiona is quiet.\nRules:\nQuiet($x, True) && Cold($x, True) >>> Smart($x, True) ::: If something is quiet and cold then it is smart.\nRed($x, True) && Cold($x, True) >>> Round($x, True) ::: Red, cold things are round.\nKind($x, True) && Rough($x, True) >>> Red($x, True) ::: If something is kind and rough then it is red.\nQuiet($x, True) >>> Rough($x, True) ::: All quiet things are rough.\nCold($x, True) && Smart($x, True) >>> Red($x, True) ::: Cold, smart things are red.\nRough($x, True) >>> Cold($x, True) ::: If something is rough then it is cold.\nRed($x, True) >>> Rough($x, True) ::: All red things are rough.\nSmart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True) ::: If Dave is smart and Dave is kind then Dave is quiet.\nQuery:\nKind(Charlie, True) ::: Charlie is kind."]
+    #tests = [logic_program_fol]
+   
     
     import json
     for test in tests:

@@ -150,17 +150,10 @@ class LogicInferenceEngine:
         return stats
 
     def cleanup(self):
-        """
-        remove the compiled krb directory
-        """
-        cache_program_dir = 'src/symbolic_solvers/pyke_solver/.cache_program'
-        compiled_dir = 'solver_engine/src/compiled_krb'
-        # if os.path.exists(cache_program_dir):
-        #     print('removing cache_program')
-        #     os.system(f'rm -rf {cache_program_dir}')
-        if os.path.exists(compiled_dir):
+        complied_krb_dir = './models/compiled_krb'
+        if os.path.exists(complied_krb_dir):
             print('removing compiled_krb')
-            os.system(f'rm -rf {compiled_dir}')
+            os.system(f'rm -rf {complied_krb_dir}')
 
 def load_config_file(config_path):
     """
@@ -222,8 +215,8 @@ def create_args_from_config(config):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str, default='outputs/deepseek-chat/ProofWriter/translation/train/proof_writer_results.json')
-    parser.add_argument('--output_file', type=str, default='outputs/deepseek-chat/ProofWriter/symbolic_solver/train/proof_writer_results.json')
+    parser.add_argument('--input_file', type=str, default='outputs/deepseek/ProofWriter/translation/translation_results.json')
+    parser.add_argument('--output_file', type=str, default='outputs/deepseek/ProofWriter/symbolic_solver/results.json')
     parser.add_argument('--backup_strategy', type=str, default='random', choices=['random', 'LLM'])
     parser.add_argument('--backup_LLM_result_path', type=str, default='') # path to the LLMwCOT result
     parser.add_argument('--dataset_name', type=str, default='ProofWriter', help='Dataset name')

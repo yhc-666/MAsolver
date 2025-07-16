@@ -1,6 +1,7 @@
 import os
 import func_timeout
 import re
+import random
 from collections import defaultdict
 
 class CSP_Program:
@@ -168,49 +169,40 @@ class CSP_Program:
         ]
 
         """
-        # Handle ProofWriter dataset - simplified answer mapping
-        if self.dataset_name == 'ProofWriter':
-            # For ProofWriter: A=True, B=False, C=Unknown
-            # Simple logic: if has solutions -> A, if no solutions -> C
-            if answer is None or len(answer) == 0:
-                return 'C'  # Unknown/no solution
-            else:
-                return 'A'  # Has solution, assume True
-        
-        # Handle ProntoQA dataset - simplified answer mapping  
-        elif self.dataset_name == 'ProntoQA':
-            # For ProntoQA: A=True, B=False
-            # Simple logic: if has solutions -> A, if no solutions -> B
-            if answer is None or len(answer) == 0:
-                return 'B'  # No solution, assume False
-            else:
-                return 'A'  # Has solution, assume True
-        
-        # Original LogicalDeduction logic
-        else:
-            self.option_pattern = r'^\w+\)' # 用于匹配选项标识符: "A)", "B)", "C)" 等
-            self.expression_pattern = r'\w+ == \d+'   # 用于匹配变量等式: "T == 1", "T == 0" 等
+        # Use LogicalDeduction logic for all datasets
+        self.option_pattern = r'^\w+\)' # 用于匹配选项标识符: "A)", "B)", "C)" 等
+        self.expression_pattern = r'\w+ == \d+'   # 用于匹配变量等式: "T == 1", "T == 0" 等
 
-            variable_ans_map = defaultdict(set)
+        variable_ans_map = defaultdict(set)
+        if answer is not None:
             for result in answer:
                 for variable, value in result.items():
                     variable_ans_map[variable].add(value)
 
-            for option_str in self.Query:
-                # Extract the option using regex
-                option_match = re.match(self.option_pattern, option_str)
+        # Check each query option
+        for option_str in self.Query:
+            # Extract the option using regex
+            option_match = re.match(self.option_pattern, option_str)
+            if option_match:
                 option = option_match.group().replace(')', '')
                 # Extract the expression using regex
                 expression_match = re.search(self.expression_pattern, option_str)
-                expression_str = expression_match.group()
-                # Extract the variable and its value
-                variable, value = expression_str.split('==')
-                variable, value = variable.strip(), int(value.strip())
-                # Check if the variable is in the execution result
-                if len(variable_ans_map[variable]) == 1 and value in variable_ans_map[variable]:
-                    return option
+                if expression_match:
+                    expression_str = expression_match.group()
+                    # Extract the variable and its value
+                    variable, value = expression_str.split('==')
+                    variable, value = variable.strip(), int(value.strip())
+                    # Check if the variable is in the execution result
+                    if len(variable_ans_map[variable]) == 1 and value in variable_ans_map[variable]:
+                        return option
 
-            return None
+        # Dataset-specific fallback behavior when no match is found
+        if self.dataset_name == 'ProofWriter':
+            return 'C'  # Unknown
+        elif self.dataset_name == 'ProntoQA':
+            return random.choice(['A', 'B'])  # Random between A and B
+        else:
+            return None  # LogicalDeduction returns None
     
 if __name__ == "__main__":
     logic_program = "Domain:\n1: leftmost\n5: rightmost\nVariables:\ngreen_book [IN] [1, 2, 3, 4, 5]\nblue_book [IN] [1, 2, 3, 4, 5]\nwhite_book [IN] [1, 2, 3, 4, 5]\npurple_book [IN] [1, 2, 3, 4, 5]\nyellow_book [IN] [1, 2, 3, 4, 5]\nConstraints:\nblue_book > yellow_book ::: The blue book is to the right of the yellow book.\nwhite_book < yellow_book ::: The white book is to the left of the yellow book.\nblue_book == 4 ::: The blue book is the second from the right.\npurple_book == 2 ::: The purple book is the second from the left.\nAllDifferentConstraint([green_book, blue_book, white_book, purple_book, yellow_book]) ::: All books have different values.\nQuery:\nA) green_book == 2 ::: The green book is the second from the left.\nB) blue_book == 2 ::: The blue book is the second from the left.\nC) white_book == 2 ::: The white book is the second from the left.\nD) purple_book == 2 ::: The purple book is the second from the left.\nE) yellow_book == 2 ::: The yellow book is the second from the left."

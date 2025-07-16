@@ -6,8 +6,8 @@ dataset:
   name: "ProofWriter"  # Available options: ProntoQA, ProofWriter, FOLIO, LogicalDeduction, AR-LSAT
 
 paths:
-  input_file: "outputs/deepseek-chat/ProofWriter/translation/train/proof_writer_results.json"
-  output_file: "outputs/deepseek-chat/ProofWriter/symbolic_solver/train/proof_writer_results.json"
+  input_file: "outputs/deepseek/ProofWriter/translation/translation_results.json"
+  output_file: "outputs/deepseek/ProofWriter/symbolic_solver/results.json"
   backup_LLM_result_path: ""
 
 solver:
