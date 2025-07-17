@@ -181,6 +181,7 @@ class LSAT_Z3_Program:
         # 检查解析是否成功，如果失败则返回错误信息
         if not self.flag or self.standard_code is None:
             return None, 'Logic program parsing failed'
+        reasoning = "N/A"
             
         filename = join(self.cache_dir, f'tmp.py')
         with open(filename, "w") as f:
@@ -189,15 +190,15 @@ class LSAT_Z3_Program:
             output = check_output(["python", filename], stderr=subprocess.STDOUT, timeout=1.0)
         except subprocess.CalledProcessError as e:
             outputs = e.output.decode("utf-8").strip().splitlines()[-1]
-            return None, outputs
+            return None, outputs, reasoning
         except subprocess.TimeoutExpired:
-            return None, 'TimeoutError'
+            return None, 'TimeoutError', reasoning
         output = output.decode("utf-8").strip()
         result = output.splitlines()
         if len(result) == 0:
-            return None, 'No Output'
+            return None, 'No Output', reasoning
         
-        return result, ""
+        return result, "", reasoning
     
     def answer_mapping(self, answer):
         cleaned_answer = answer[0].strip()

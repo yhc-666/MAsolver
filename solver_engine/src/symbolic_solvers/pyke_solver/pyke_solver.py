@@ -448,30 +448,34 @@ Green(Harry, False) ::: Harry is not green."""
         "answer": "D" """
 
     logic_program_logic_deduction = """
-    Predicates:
-    Book($x, bool)                  ::: $x is one of the five books.
-    LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
-    RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
-    RightMost($x, bool)             ::: Book $x is the right‑most book on the shelf.
-    SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
-    Facts:
-    Book(white,  True)              ::: The white book.
-    Book(orange, True)              ::: The orange book.
-    Book(yellow, True)              ::: The yellow book.
-    Book(blue,   True)              ::: The blue book.
-    Book(red,    True)              ::: The red book.
-    LeftOf(yellow, white,  True)    ::: The yellow book is to the left of the white book.
-    RightOf(red,   blue,   True)    ::: The red book is to the right of the blue book.
-    RightOf(yellow, orange, True)   ::: The yellow book is to the right of the orange book.
-    RightOf(blue,  white,  True)    ::: The blue book is to the right of the white book.
-    Rules:
-    LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
-    RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
-    RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
-    RightOf($b, white,  True) && RightOf($b, orange, True) && RightOf($b, yellow, True) && RightOf($b, blue,   True)  >>> RightMost($b, True) ::: A book that is to the right of all the other four is the right‑most book.
-    RightMost($rm, True) && RightOf($rm, $s, True) && RightOf($s, white,  True) && RightOf($s, orange, True) && RightOf($s, yellow, True) >>> SecondFromRight($s, True) ::: The book immediately left of the right‑most—and still right of the remaining three—is second from the right.
-    Query:
-    SecondFromRight(blue,   True)  ::: Option D
+Predicates:
+Book($x, bool)                  ::: $x is one of the five books.
+LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
+RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
+RightMost($x, bool)             ::: Book $x is the right‑most book on the shelf.
+SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
+Facts:
+Book(white,  True)              ::: The white book.
+Book(orange, True)              ::: The orange book.
+Book(yellow, True)              ::: The yellow book.
+Book(blue,   True)              ::: The blue book.
+Book(red,    True)              ::: The red book.
+LeftOf(yellow, white,  True)    ::: The yellow book is to the left of the white book.
+RightOf(red,   blue,   True)    ::: The red book is to the right of the blue book.
+RightOf(yellow, orange, True)   ::: The yellow book is to the right of the orange book.
+RightOf(blue,  white,  True)    ::: The blue book is to the right of the white book.
+Rules:
+LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
+RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
+RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
+RightOf($b, white,  True) && RightOf($b, orange, True) && RightOf($b, yellow, True) && RightOf($b, blue,   True)  >>> RightMost($b, True) ::: A book that is to the right of all the other four is the right‑most book.
+RightMost($rm, True) && RightOf($rm, $s, True) && RightOf($s, white,  True) && RightOf($s, orange, True) && RightOf($s, yellow, True) >>> SecondFromRight($s, True) ::: The book immediately left of the right‑most—and still right of the remaining three—is second from the right.
+Query:
+SecondFromRight(white,  True)  ::: Option A
+SecondFromRight(orange, True)  ::: Option B
+SecondFromRight(yellow, True)  ::: Option C
+SecondFromRight(blue,   True)  ::: Option D
+SecondFromRight(red,    True)  ::: Option E
     """
 
     # SecondFromRight(white,  True)  ::: Option A
