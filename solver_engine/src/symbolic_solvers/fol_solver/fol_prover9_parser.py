@@ -27,13 +27,14 @@ QUANT -> '∀' | '∃'
 
 class Prover9_FOL_Formula:
     def __init__(self, fol_formula : FOL_Formula) -> None:
-        self.tokens = ['QUANT', 'VAR', 'NOT', 'LPAREN', 'RPAREN', 'OP', 'PRED', 'COMMA', 'CONST']
+        self.tokens = ['QUANT', 'VAR', 'NOT', 'LPAREN', 'RPAREN', 'OP', 'PRED', 'COMMA', 'CONST', 'EQUALS']
 
         self.t_QUANT = r'∀|∃'
         self.t_NOT = r'¬'
         self.t_LPAREN = r'\('
         self.t_RPAREN = r'\)'
         self.t_OP = r'⊕|∨|∧|→|↔'
+        self.t_EQUALS = r'='
         self.t_COMMA = r','
 
         if len(fol_formula.variables) > 0:
@@ -117,6 +118,11 @@ class Prover9_FOL_Formula:
     def p_F_L(self, p):
         '''F : L'''
         p[0] = p[1]
+
+    # F -> TERM EQUALS TERM (equality expression)
+    def p_F_equals(self, p):
+        '''F : TERM EQUALS TERM'''
+        p[0] = f"({p[1]}) = ({p[3]})"
 
     # L -> '¬' PRED '(' TERMS ')'
     def p_L_not(self, p):

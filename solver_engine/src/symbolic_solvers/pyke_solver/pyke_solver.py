@@ -36,7 +36,8 @@ class Pyke_Program:
 
         # answer mapping function for different datasets
         self.answer_map = {'ProntoQA': self.answer_map_prontoqa, 
-                           'ProofWriter': self.answer_map_proofwriter}
+                           'ProofWriter': self.answer_map_proofwriter,
+                           'FOLIO': self.answer_map_folio}
 
     def parse_logic_program(self):
         """
@@ -293,6 +294,24 @@ class Pyke_Program:
         else:
             return 'B'  # 错误
 
+    def answer_map_folio(self, result, value_to_check):
+        """
+        FOLIO数据集的答案映射
+        
+        Args:
+            result: 推理结果  
+            value_to_check: 要检查的值
+            
+        Returns:
+            str: 'A'（正确）、'B'（错误）或'C'（未知）
+        """
+        if result is None:
+            return 'C'  # 未知
+        elif result == value_to_check:
+            return 'A'  # 正确
+        else:
+            return 'B'  # 错误
+
     # ------------------------------------------------------------------
     # Functions for revealing solver reasoning process using Pyke tracing
 
@@ -416,12 +435,54 @@ Furry($x, True) && Smart($x, True) >>> Nice($x, True) ::: Furry, smart things ar
 Query:
 Green(Harry, False) ::: Harry is not green."""
 
+    sample_logic_deduction = """ "id": "logical_deduction_35",
+        "context": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.",
+        "question": "Which of the following is true?",
+        "options": [
+            "A) The white book is the second from the right.",
+            "B) The orange book is the second from the right.",
+            "C) The yellow book is the second from the right.",
+            "D) The blue book is the second from the right.",
+            "E) The red book is the second from the right."
+        ],
+        "answer": "D" """
 
-    logic_program_fol = "Predicates:\nPerformOften($x, bool) ::: Does x perform in school talent shows often?\nAttendEngaged($x, bool) ::: Does x attend and is very engaged with school events?\nInactiveDisinterested($x, bool) ::: Is x an inactive and disinterested member of their community?\nChaperoneDances($x, bool) ::: Does x chaperone high school dances?\nStudent($x, bool) ::: Is x a student who attends the school?\nYoungChildTeen($x, bool) ::: Is x a young child or teenager who wishes to further their academic career and educational opportunities?\nFacts:\nYoungChildTeen(Bonnie, True)\nRules:\nPerformOften($x, True) >>> AttendEngaged($x, True)\nPerformOften($x, True) || InactiveDisinterested($x, True)\nChaperoneDances($x, True) >>> Student($x, False)\nInactiveDisinterested($x, True) >>> ChaperoneDances($x, True)\nYoungChildTeen($x, True) >>> Student($x, True)\n(AttendEngaged(Bonnie, True) && Student(Bonnie, True)) || (!AttendEngaged(Bonnie, True) && !Student(Bonnie, True))\nQuery:\nPerformOften(Bonnie, True)"
+    logic_program_logic_deduction = """
+    Predicates:
+    Book($x, bool)                  ::: $x is one of the five books.
+    LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
+    RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
+    RightMost($x, bool)             ::: Book $x is the right‑most book on the shelf.
+    SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
+    Facts:
+    Book(white,  True)              ::: The white book.
+    Book(orange, True)              ::: The orange book.
+    Book(yellow, True)              ::: The yellow book.
+    Book(blue,   True)              ::: The blue book.
+    Book(red,    True)              ::: The red book.
+    LeftOf(yellow, white,  True)    ::: The yellow book is to the left of the white book.
+    RightOf(red,   blue,   True)    ::: The red book is to the right of the blue book.
+    RightOf(yellow, orange, True)   ::: The yellow book is to the right of the orange book.
+    RightOf(blue,  white,  True)    ::: The blue book is to the right of the white book.
+    Rules:
+    LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
+    RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
+    RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
+    RightOf($b, white,  True) && RightOf($b, orange, True) && RightOf($b, yellow, True) && RightOf($b, blue,   True)  >>> RightMost($b, True) ::: A book that is to the right of all the other four is the right‑most book.
+    RightMost($rm, True) && RightOf($rm, $s, True) && RightOf($s, white,  True) && RightOf($s, orange, True) && RightOf($s, yellow, True) >>> SecondFromRight($s, True) ::: The book immediately left of the right‑most—and still right of the remaining three—is second from the right.
+    Query:
+    SecondFromRight(blue,   True)  ::: Option D
+    """
+
+    # SecondFromRight(white,  True)  ::: Option A
+    # SecondFromRight(orange, True)  ::: Option B
+    # SecondFromRight(yellow, True)  ::: Option C
+    # SecondFromRight(blue,   True)  ::: Option D
+    # SecondFromRight(red,    True)  ::: Option E
 
 
-    tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    #tests = [logic_program2]
+    #tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
+    tests = [logic_program_logic_deduction]
    
     
     import json

@@ -156,6 +156,10 @@ class FOL_Prover9_Program:
             return False
 
     def execute_program(self):
+        # Check if logic program parsing was successful
+        if not self.flag:
+            return None, "Logic program parsing failed", ''
+        
         try:
             goal = Expression.fromstring(self.prover9_conclusion)
             assumptions = [Expression.fromstring(a) for a in self.prover9_premises]
@@ -374,9 +378,82 @@ if __name__ == "__main__":
     TakeOut(subway) ∧ ¬NegativeReviews(subway) ::: Subway provides take-out service and does not receive many negative reviews."""
     
     logic_program_byfx = "Predicates:\nBlue(x) ::: x is blue\nRound(x) ::: x is round\nLikes(x, y) ::: x likes y\nVisits(x, y) ::: x visits y\nCold(x) ::: x is cold\nNice(x) ::: x is nice\nSees(x, y) ::: x sees y\nYoung(x) ::: x is young\nPremises:\nBlue(cow) ::: The cow is blue\nRound(cow) ::: The cow is round\nLikes(cow, lion) ::: The cow likes the lion\nVisits(cow, tiger) ::: The cow visits the tiger\nCold(lion) ::: The lion is cold\nNice(lion) ::: The lion is nice\nLikes(lion, squirrel) ::: The lion likes the squirrel\nRound(squirrel) ::: The squirrel is round\nSees(squirrel, lion) ::: The squirrel sees the lion\nVisits(squirrel, cow) ::: The squirrel visits the cow\nLikes(tiger, cow) ::: The tiger likes the cow\nLikes(tiger, squirrel) ::: The tiger likes the squirrel\n\u2200x (Cold(x) \u2192 Visits(x, tiger)) ::: If something is cold then it visits the tiger\n\u2200x (Visits(x, tiger) \u2192 Nice(x)) ::: If something visits the tiger then it is nice\n\u2200x (Nice(x) \u2192 Sees(x, tiger)) ::: If something is nice then it sees the tiger\n\u2200x (Nice(x) \u2227 Sees(x, tiger) \u2192 Young(x)) ::: If something is nice and it sees the tiger then it is young\n\u2200x (Sees(x, tiger) \u2227 Young(x) \u2192 Blue(x)) ::: If something sees the tiger and it is young then it is blue\n\u2200x (Likes(x, squirrel) \u2227 Likes(x, cow) \u2192 Visits(x, tiger)) ::: If something likes the squirrel and it likes the cow then it visits the tiger\nCold(cow) \u2227 Visits(cow, lion) \u2192 Sees(lion, squirrel) ::: If the cow is cold and the cow visits the lion then the lion sees the squirrel\nConclusion:\n\u00acYoung(tiger) ::: The tiger is not young"
+    
+    
+    logic_program_ALSAT = """Predicates:
+    Tour(d, division) ::: On day d (mon, tue, wed, thu, fri), the company tours division division (ops, prod, sales).
+    Next(d1, d2) ::: Day d2 immediately follows day d1 (mon→tue→wed→thu→fri).
+    Premises:
+    Next(mon, tue) ::: Tuesday follows Monday.
+    Next(tue, wed) ::: Wednesday follows Tuesday.
+    Next(wed, thu) ::: Thursday follows Wednesday.
+    Next(thu, fri) ::: Friday follows Thursday.
+    ∀d (Tour(d, ops) ∨ Tour(d, prod) ∨ Tour(d, sales)) ::: Exactly one division is toured each day.
+    ∀d ∀x ∀y ((Tour(d, x) ∧ Tour(d, y)) → x = y) ::: No day has more than one division (uniqueness).
+    ∀div (Tour(mon, div) ∨ Tour(tue, div) ∨ Tour(wed, div) ∨ Tour(thu, div) ∨ Tour(fri, div)) ::: Each division is toured at least once during the week.
+    ¬Tour(mon, ops) ::: Operations is not toured on Monday.
+    ¬Tour(wed, prod) ::: Production is not toured on Wednesday.
+    ∃d1 ∃d2 (Next(d1, d2) ∧ Tour(d1, sales) ∧ Tour(d2, sales) ∧ ∀d (Tour(d, sales) → (d = d1 ∨ d = d2))) ::: Sales is toured on exactly two consecutive days and on no other days.
+    (Tour(thu, ops) → Tour(fri, prod)) ::: If Operations is toured on Thursday, then Production is toured on Friday.
+    Conclusion:
+    ∃div (Tour(tue, div) ∧ Tour(thu, div)) ::: The division toured on Tuesday is also toured on Thursday.   (Option C)
+"""
+    
+
+
+
+
+
+    sample_logic_deduction = """"id": "logical_deduction_14",
+        "context": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nA fruit stand sells five fruits: mangoes, kiwis, plums, pears, and watermelons. The kiwis are less expensive than the plums. The pears are the third-most expensive. The kiwis are the second-cheapest. The watermelons are the most expensive.",
+        "question": "Which of the following is true?",
+        "options": [
+            "A) The mangoes are the third-most expensive.",
+            "B) The kiwis are the third-most expensive.",
+            "C) The plums are the third-most expensive.",
+            "D) The pears are the third-most expensive.",
+            "E) The watermelons are the third-most expensive."
+        ],
+        "answer": "D" 
+    """
+    logic_program_logic_deduction = """Predicates:
+Rank(fruit, pos) ::: fruit has price position pos, where pos ∈ {one,two,three,four,five}; one = most expensive, five = cheapest.
+Cheaper(x, y) ::: x is cheaper (less expensive) than y.
+Premises:
+Rank(watermelon, one) :::Watermelons are the most expensive
+Rank(pears, three) ::: Pears are the third‑most expensive
+Rank(kiwis, four) ::: Kiwis are the second‑cheapest
+Cheaper(kiwis, plums) ::: Kiwis are cheaper than plums
+∀F ∀P ∀Q ((Rank(F,P) ∧ Rank(F,Q)) → (P = Q)) ::: One rank per fruit
+∀P ∀F ∀G ((Rank(F,P) ∧ Rank(G,P)) → (F = G)) ::: One fruit per rank
+Rank(mangoes, one) ∨ Rank(mangoes, two) ∨ Rank(mangoes, three) ∨ Rank(mangoes, four) ∨ Rank(mangoes, five) ::: each still‑unknown fruit occupies some rank 
+Rank(plums, one) ∨ Rank(plums, two) ∨ Rank(plums, three) ∨ Rank(plums, four) ∨ Rank(plums, five) ::: each still‑unknown fruit occupies some rank 
+∀X ∀Y (Rank(X, one) ∧ Rank(Y, two) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, one) ∧ Rank(Y, three) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, one) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, one) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, two) ∧ Rank(Y, three) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, two) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, two) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, three) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, three) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Rank(X, four) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+∀X ∀Y (Cheaper(X, Y) → ¬Cheaper(Y, X)) ::: “cheaper” is asymmetric
+Conclusion:
+Rank(mangoes, three) ::: Option A
+Rank(kiwis, three) ::: Option B
+Rank(plums, three) ::: Option C
+Rank(pears, three) ::: Option D
+Rank(watermelon, three) ::: Option E
+    """
+    
+    
+
+    
     # ground-truth: True
-    prover9_program = FOL_Prover9_Program(logic_program_byfx)
+    prover9_program = FOL_Prover9_Program(logic_program_logic_deduction)
     result, error_message, reasoning = prover9_program.execute_program()
+    print('error_message:', error_message)
     print('result:', result)
     print('reasoning:', reasoning)
 

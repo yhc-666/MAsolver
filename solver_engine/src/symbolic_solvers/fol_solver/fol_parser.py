@@ -3,16 +3,17 @@ import re
 
 class FOL_Parser:
     def __init__(self) -> None:
-        self.op_ls = ['⊕', '∨', '∧', '→', '↔', '∀', '∃', '¬', '(', ')', ',']
+        self.op_ls = ['⊕', '∨', '∧', '→', '↔', '∀', '∃', '¬', '(', ')', ',', '=']
 
-        self.sym_reg = re.compile(r'[^⊕∨∧→↔∀∃¬(),]+')
+        self.sym_reg = re.compile(r'[^⊕∨∧→↔∀∃¬(),=]+')
 
         # modified a bit. 
         self.cfg_template = """
         S -> F | Q F | '¬' S | '(' S ')'
         Q -> QUANT VAR | QUANT VAR Q
-        F -> '¬' '(' F ')' | '(' F ')' | F OP F | L
+        F -> '¬' '(' F ')' | '(' F ')' | F OP F | L | E
         OP -> '⊕' | '∨' | '∧' | '→' | '↔'
+        E -> TERM '=' TERM
         L -> '¬' PRED '(' TERMS ')' | PRED '(' TERMS ')'
         TERMS -> TERM | TERM ',' TERMS
         TERM -> CONST | VAR
@@ -88,7 +89,7 @@ class FOL_Parser:
 
     def make_cfg_str(self, token_ls):
         """
-        NOTE: since nltk does not support reg strs like \w+, we cannot separately recognize VAR, PRED, and CONST.
+        NOTE: since nltk does not support reg strs like \\w+, we cannot separately recognize VAR, PRED, and CONST.
         Instead, we first allow VAR, PRED, and CONST to be matched with all symbols found in the FOL; once the tree is
         parsered, we then go back and figure out the exact type of each symbols
         """

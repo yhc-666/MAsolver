@@ -32,18 +32,12 @@ class CodeTranslator:
     @staticmethod
     def translate_int_sort_declaration(int_sort_name, int_sort_values):
         line1 = CodeTranslator.StdCodeLine(f"{int_sort_name}_sort = IntSort()", CodeTranslator.LineType.DECL)
-        line2 = "{} = Ints('{}')".format(
-            ", ".join([str(x) for x in int_sort_values]),
-            " ".join([str(x) for x in int_sort_values])
-        )
-        line2 = CodeTranslator.StdCodeLine(line2, CodeTranslator.LineType.DECL)
-
-        line3 = "{} = [{}]".format(
+        line2 = "{} = [{}]".format(
             int_sort_name,
             ", ".join([str(x) for x in int_sort_values])
         )
-        line3 = CodeTranslator.StdCodeLine(line3, CodeTranslator.LineType.DECL)
-        return [line1, line2, line3]
+        line2 = CodeTranslator.StdCodeLine(line2, CodeTranslator.LineType.DECL)
+        return [line1, line2]
     
 
 
