@@ -144,16 +144,9 @@ class LogicInferenceEngine:
             stats['total'] += 1
 
         self.save_results(outputs)
-        self.cleanup()
         
         # Return statistics
         return stats
-
-    def cleanup(self):
-        complied_krb_dir = './models/compiled_krb'
-        if os.path.exists(complied_krb_dir):
-            print('removing compiled_krb')
-            os.system(f'rm -rf {complied_krb_dir}')
 
 def load_config_file(config_path):
     """

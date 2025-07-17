@@ -1,8 +1,5 @@
 from collections import OrderedDict
-try:
-    from .code_translator import *
-except ImportError:
-    from code_translator import *
+from .code_translator import *
 import subprocess
 from subprocess import check_output
 from os.path import join
@@ -174,90 +171,23 @@ class LSAT_Z3_Program:
         with open(filename, "w") as f:
             f.write(self.standard_code)
         try:
-            output = check_output([
-                "python",
-                filename
-            ], stderr=subprocess.STDOUT, timeout=10.0, cwd=self.cache_dir)
+            output = check_output(["python", filename], stderr=subprocess.STDOUT, timeout=1.0)
         except subprocess.CalledProcessError as e:
-            outputs = e.output.decode("utf-8").strip()
-            return None, outputs, ''
+            outputs = e.output.decode("utf-8").strip().splitlines()[-1]
+            return None, outputs
         except subprocess.TimeoutExpired:
-            return None, 'TimeoutError', ''
+            return None, 'TimeoutError'
         output = output.decode("utf-8").strip()
-        result_lines = output.splitlines()
-
-        if not result_lines:
-            return None, 'No Output', ''
-
-        info_lines = []
-        if '---INFO_BEGIN---' in result_lines:
-            b = result_lines.index('---INFO_BEGIN---')
-            e = result_lines.index('---INFO_END---')
-            info_lines = result_lines[b+1:e]
-            result_lines = result_lines[:b] + result_lines[e+1:]
-
-        selected = None
-        for line in result_lines:
-            if line.strip() in ['(A)', '(B)', '(C)', '(D)', '(E)']:
-                selected = line.strip()
-                break
-
-        proof_text = ''
-        if info_lines:
-            if selected:
-                sections = []
-                tag = None
-                body = []
-                for ln in info_lines:
-                    if ln.startswith('=== '):
-                        if tag is not None:
-                            sections.append((tag, body))
-                        tag = ln
-                        body = []
-                    else:
-                        body.append(ln)
-                if tag is not None:
-                    sections.append((tag, body))
-                filtered = [tag + '\n' + '\n'.join(body) for tag, body in sections if selected in tag]
-                proof_text = '\n'.join(filtered)
-            else:
-                proof_text = '\n'.join(info_lines)
-
-        return result_lines, "", proof_text
+        result = output.splitlines()
+        if len(result) == 0:
+            return None, 'No Output'
+        
+        return result, ""
     
     def answer_mapping(self, answer):
-        """
-        Map the SAT solver output to the appropriate dataset answer format.
-        
-        Args:
-            answer: The SAT solver output
-            
-        Returns:
-            str: The mapped answer for the specific dataset
-        """
-        # Handle ProofWriter dataset
-        if self.dataset_name == 'ProofWriter':
-            # ProofWriter uses A/B/C format
-            if answer is None or len(answer) == 0:
-                return 'C'  # Unknown/no solution
-            mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C',
-                       'A': 'A', 'B': 'B', 'C': 'C'}
-            return mapping.get(answer[0].strip(), 'C')
-        
-        # Handle ProntoQA dataset
-        elif self.dataset_name == 'ProntoQA':
-            # ProntoQA uses A/B format
-            if answer is None or len(answer) == 0:
-                return 'B'  # Default to False
-            mapping = {'(A)': 'A', '(B)': 'B',
-                       'A': 'A', 'B': 'B'}
-            return mapping.get(answer[0].strip(), 'B')
-        
-        # Original AR-LSAT logic (A-E format)
-        else:
-            mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C', '(D)': 'D', '(E)': 'E',
-                       'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E'}
-            return mapping[answer[0].strip()]
+        mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C', '(D)': 'D', '(E)': 'E',
+                   'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E'}
+        return mapping[answer[0].strip()]
 
 if __name__=="__main__":
     logic_program = '''# Declarations
@@ -283,11 +213,39 @@ is_valid(Exists([m:meals], eats(Vladimir, m) == macaroni)) ::: (C)
 is_valid(Exists([m:meals], eats(Vladimir, m) == omelet)) ::: (D)
 is_valid(Exists([m:meals], eats(Vladimir, m) == poached_eggs)) ::: (E)'''
 
+    logic_program = '''#Declarations
+objects = EnumSort([Bob, Charlie, Dave, Fiona])
+attributes = EnumSort([cold, quiet, red, smart, kind, rough, round])
+has_attribute = Function([objects, attributes] -> [Boolean])  # True if the object has the attribute, False otherwise
+
+#Constraints
+has_attribute(Bob, cold) == True ::: Bob is cold.
+has_attribute(Bob, quiet) == True ::: Bob is quiet.
+has_attribute(Bob, red) == True ::: Bob is red.
+has_attribute(Bob, smart) == True ::: Bob is smart.
+has_attribute(Charlie, kind) == True ::: Charlie is kind.
+has_attribute(Charlie, quiet) == True ::: Charlie is quiet.
+has_attribute(Charlie, red) == True ::: Charlie is red.
+has_attribute(Charlie, rough) == True ::: Charlie is rough.
+has_attribute(Dave, cold) == True ::: Dave is cold.
+has_attribute(Dave, kind) == True ::: Dave is kind.
+has_attribute(Dave, smart) == True ::: Dave is smart.
+has_attribute(Fiona, quiet) == True ::: Fiona is quiet.
+∀x in objects: (has_attribute(x, quiet) == True ∧ has_attribute(x, cold) == True) → (has_attribute(x, smart) == True) ::: If something is quiet and cold then it is smart.
+∀x in objects: (has_attribute(x, red) == True ∧ has_attribute(x, cold) == True) → (has_attribute(x, round) == True) ::: Red, cold things are round.
+∀x in objects: (has_attribute(x, kind) == True ∧ has_attribute(x, rough) == True) → (has_attribute(x, red) == True) ::: If something is kind and rough then it is red.
+∀x in objects: (has_attribute(x, quiet) == True) → (has_attribute(x, rough) == True) ::: All quiet things are rough.
+∀x in objects: (has_attribute(x, cold) == True ∧ has_attribute(x, smart) == True) → (has_attribute(x, red) == True) ::: Cold, smart things are red.
+∀x in objects: (has_attribute(x, rough) == True) → (has_attribute(x, cold) == True) ::: If something is rough then it is cold.
+∀x in objects: (has_attribute(x, red) == True) → (has_attribute(x, rough) == True) ::: All red things are rough.
+(has_attribute(Dave, smart) == True ∧ has_attribute(Dave, kind) == True) → (has_attribute(Dave, quiet) == True) ::: If Dave is smart and Dave is kind then Dave is quiet.
+
+#Query
+is_valid(has_attribute(Charlie, kind) == True) ::: Charlie is kind.'''
+
     z3_program = LSAT_Z3_Program(logic_program, 'AR-LSAT')
     print(z3_program.standard_code)
 
-    output, error_message, proof = z3_program.execute_program()
-    print('ANSWER :', output[0] if output else None)
-    print('ERR    :', error_message)
-    print('PROOF #lines :', proof.count('\n') + 1 if proof else 0)
-    print('First 10 lines:\n', '\n'.join(proof.splitlines()[:10]))
+    output, error_message = z3_program.execute_program()
+    print(output)
+    print(z3_program.answer_mapping(output))
