@@ -80,6 +80,29 @@ class CSP_Program:
         parsed_constraint = f"lambda {str_variables_in_rule}: {constraint}, ({str_variables_in_rule_with_quotes})"
         return parsed_constraint
     
+    # handle complex logical constraints with and/or/not
+    def parse_logical_constraint(self, constraint):
+        # Extract variables from the constraint, excluding Python keywords
+        python_keywords = {'and', 'or', 'not', 'True', 'False', 'None', 'in', 'is'}
+        pattern = r'\b[a-zA-Z_][a-zA-Z0-9_]*\b'  # Matches variable names
+        all_matches = re.findall(pattern, constraint)
+        
+        # Filter out Python keywords and get unique variables
+        variables_in_rule = []
+        for item in all_matches:
+            if item not in python_keywords and item not in variables_in_rule:
+                variables_in_rule.append(item)
+        
+        str_variables_in_rule = ', '.join(variables_in_rule)
+        str_variables_in_rule_with_quotes = ', '.join([f'"{v}"' for v in variables_in_rule]) + ','
+        parsed_constraint = f"lambda {str_variables_in_rule}: {constraint}, ({str_variables_in_rule_with_quotes})"
+        return parsed_constraint
+    
+    # check if constraint contains logical operators
+    def is_logical_constraint(self, constraint):
+        logical_operators = [' or ', ' and ', ' not ', '(', ')']
+        return any(op in constraint for op in logical_operators)
+    
     # all different constraint
     def parse_all_different_constraint(self, constraint):
         pattern = r'AllDifferentConstraint\(\[(.*?)\]\)'
@@ -131,6 +154,8 @@ class CSP_Program:
             parsed_constraint = None
             if rule.startswith('AllDifferentConstraint'):
                 parsed_constraint = self.parse_all_different_constraint(rule)
+            elif self.is_logical_constraint(rule):
+                parsed_constraint = self.parse_logical_constraint(rule)
             else:
                 parsed_constraint = self.parse_numeric_constraint(rule)
             
@@ -206,8 +231,76 @@ class CSP_Program:
     
 if __name__ == "__main__":
     logic_program = "Domain:\n1: leftmost\n5: rightmost\nVariables:\ngreen_book [IN] [1, 2, 3, 4, 5]\nblue_book [IN] [1, 2, 3, 4, 5]\nwhite_book [IN] [1, 2, 3, 4, 5]\npurple_book [IN] [1, 2, 3, 4, 5]\nyellow_book [IN] [1, 2, 3, 4, 5]\nConstraints:\nblue_book > yellow_book ::: The blue book is to the right of the yellow book.\nwhite_book < yellow_book ::: The white book is to the left of the yellow book.\nblue_book == 4 ::: The blue book is the second from the right.\npurple_book == 2 ::: The purple book is the second from the left.\nAllDifferentConstraint([green_book, blue_book, white_book, purple_book, yellow_book]) ::: All books have different values.\nQuery:\nA) green_book == 2 ::: The green book is the second from the left.\nB) blue_book == 2 ::: The blue book is the second from the left.\nC) white_book == 2 ::: The white book is the second from the left.\nD) purple_book == 2 ::: The purple book is the second from the left.\nE) yellow_book == 2 ::: The yellow book is the second from the left."
-    csp_program = CSP_Program(logic_program, 'LogicalDeduction')
-    ans, err_msg, reasoning = csp_program.execute_program()
+    proofwriter = """Domain:
+[0, 1]
+Variables:
+anne_round  [IN] [0, 1]
+anne_red    [IN] [0, 1]
+anne_smart  [IN] [0, 1]
+anne_furry  [IN] [0, 1]
+anne_rough  [IN] [0, 1]
+anne_big    [IN] [0, 1]
+anne_white  [IN] [0, 1]
+bob_round   [IN] [0, 1]
+bob_red     [IN] [0, 1]
+bob_smart   [IN] [0, 1]
+bob_furry   [IN] [0, 1]
+bob_rough   [IN] [0, 1]
+bob_big     [IN] [0, 1]
+bob_white   [IN] [0, 1]
+erin_round  [IN] [0, 1]
+erin_red    [IN] [0, 1]
+erin_smart  [IN] [0, 1]
+erin_furry  [IN] [0, 1]
+erin_rough  [IN] [0, 1]
+erin_big    [IN] [0, 1]
+erin_white  [IN] [0, 1]
+fiona_round [IN] [0, 1]
+fiona_red   [IN] [0, 1]
+fiona_smart [IN] [0, 1]
+fiona_furry [IN] [0, 1]
+fiona_rough [IN] [0, 1]
+fiona_big   [IN] [0, 1]
+fiona_white [IN] [0, 1]
+Constraints:
+anne_round == 1
+bob_red   == 1
+bob_smart == 1
+erin_furry == 1
+erin_red   == 1
+erin_rough == 1
+erin_smart == 1
+fiona_big   == 1
+fiona_furry == 1
+fiona_smart == 1
+(anne_smart == 0) or (anne_furry == 1)
+(bob_smart  == 0) or (bob_furry  == 1)
+(erin_smart == 0) or (erin_furry == 1)
+(fiona_smart== 0) or (fiona_furry== 1)
+(anne_furry == 0) or (anne_red == 1)
+(bob_furry  == 0) or (bob_red  == 1)
+(erin_furry == 0) or (erin_red == 1)
+(fiona_furry== 0) or (fiona_red == 1)
+(anne_round == 0) or (anne_rough == 1)
+(bob_round  == 0) or (bob_rough  == 1)
+(erin_round == 0) or (erin_rough == 1)
+(fiona_round== 0) or (fiona_rough== 1)
+(anne_red == 0) or (anne_rough == 0) or (anne_big == 1)
+(bob_red  == 0) or (bob_rough  == 0) or (bob_big == 1)
+(erin_red == 0) or (erin_rough == 0) or (erin_big == 1)
+(fiona_red== 0) or (fiona_rough == 0) or (fiona_big == 1)
+(anne_rough == 0) or (anne_smart == 1)
+(bob_rough  == 0) or (bob_smart  == 1)
+(erin_rough == 0) or (erin_smart == 1)
+(fiona_rough== 0) or (fiona_smart == 1)
+(bob_white == 0) or (bob_furry == 1)
+(bob_round == 0) or (bob_big == 0) or (bob_furry == 1)
+(fiona_furry == 0) or (fiona_red == 1)
+(fiona_red == 0) or (fiona_white == 0) or (fiona_smart == 1)
+Query:
+A) bob_white == 0   ::: Bob is not white."""
+    csp_program = CSP_Program(proofwriter, 'ProofWriter')
+    ans, err_msg, reasoning = csp_program.execute_program(debug_mode=False)
     print("Answer:", ans)
     print("Error:", err_msg)
     print("Final answer:", csp_program.answer_mapping(ans))
