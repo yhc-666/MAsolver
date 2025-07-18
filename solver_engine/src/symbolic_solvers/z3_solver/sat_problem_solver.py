@@ -180,7 +180,7 @@ class LSAT_Z3_Program:
     def execute_program(self):
         # 检查解析是否成功，如果失败则返回错误信息
         if not self.flag or self.standard_code is None:
-            return None, 'Logic program parsing failed'
+            return None, 'Logic program parsing failed', ""
         reasoning = "N/A"
             
         filename = join(self.cache_dir, f'tmp.py')
@@ -339,7 +339,7 @@ is_valid(pos(Blue) == 4)  ::: D) The blue book is the second from the right.
 is_valid(pos(Red) == 4)  ::: E) The red book is the second from the right.
     """
 
-    z3_program = LSAT_Z3_Program(logic_program_folio, 'FOLIO')
+    z3_program = LSAT_Z3_Program(logic_program, 'ProofWriter')
     print(z3_program.standard_code)
 
     output, error_message, reasoning = z3_program.execute_program()

@@ -42,28 +42,18 @@ def validate_logic_program(agent_name: str, logic_program: str) -> tuple[bool, s
     return True, ""
 
 # Use simplified validation instead of full solver import
-try:
-    # Try to import actual solvers first
-    from solver_engine.src.symbolic_solvers.pyke_solver.pyke_solver import Pyke_Program
-    from solver_engine.src.symbolic_solvers.fol_solver.prover9_solver import FOL_Prover9_Program
-    from solver_engine.src.symbolic_solvers.z3_solver.sat_problem_solver import LSAT_Z3_Program
-    SOLVER_AVAILABLE = True
-    USE_ACTUAL_SOLVERS = True
-    # Agent name to solver mapping (based on logic_inference.py PROGRAM_CLASS)
-    AGENT_SOLVER_MAP = {
-        'LP translator': ('LP', Pyke_Program),
-        'FOL translator': ('FOL', FOL_Prover9_Program),
-        'SAT translator': ('SAT', LSAT_Z3_Program),
-    }
-except ImportError as e:
-    # Use simplified validation if actual solvers are not available
-    SOLVER_AVAILABLE = True
-    USE_ACTUAL_SOLVERS = False
-    AGENT_SOLVER_MAP = {
-        'LP translator': ('LP', None),
-        'FOL translator': ('FOL', None),
-        'SAT translator': ('SAT', None),
-    }
+# Try to import actual solvers first
+from solver_engine.src.symbolic_solvers.pyke_solver.pyke_solver import Pyke_Program
+from solver_engine.src.symbolic_solvers.fol_solver.prover9_solver import FOL_Prover9_Program
+from solver_engine.src.symbolic_solvers.z3_solver.sat_problem_solver import LSAT_Z3_Program
+SOLVER_AVAILABLE = True
+USE_ACTUAL_SOLVERS = True
+# Agent name to solver mapping (based on logic_inference.py PROGRAM_CLASS)
+AGENT_SOLVER_MAP = {
+    'LP translator': ('LP', Pyke_Program),
+    'FOL translator': ('FOL', FOL_Prover9_Program),
+    'SAT translator': ('SAT', LSAT_Z3_Program),
+}
 
 
 @output_parser_registry.register("translate")

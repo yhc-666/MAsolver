@@ -65,7 +65,9 @@ agents:
     agent_type: llm_eval_multi
     name: LP translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. Return **only** Predicates, Facts, Rules, and Query.
+      After discussion, now you need to give your final output. 
+      Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
+      Return **only** Predicates, Facts, Rules, and Query.
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
@@ -106,7 +108,9 @@ agents:
     agent_type: llm_eval_multi
     name: FOL translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output.Return **only** Predicates, Premises, and Conclusion.
+      After discussion, now you need to give your final output.
+      Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
+      Return **only** Predicates, Premises, and Conclusion.
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
@@ -167,7 +171,9 @@ agents:
     agent_type: llm_eval_multi
     name: SAT translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. Return **only** the declarations, constraints, and options. 
+      After discussion, now you need to give your final output. 
+      Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
+      Return **only** the declarations, constraints, and options. 
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
