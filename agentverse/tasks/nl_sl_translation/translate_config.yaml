@@ -28,7 +28,7 @@ llm_config:
     model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
     llm_type: "gpt-4.1" #"deepseek-chat"  # LLM类选择：在 agentverse/initialization.py 的 load_llm() 函数中，通过 llm_registry.build(llm_type, **llm_config) 来选择具体的LLM实现类   注册系统：通过装饰器 @llm_registry.register() 将不同的LLM类注册到系统中
     temperature: 0
-    max_tokens: 512
+    max_tokens: 1250
     max_retry: 1
     
   # 本地LLM模式配置  
@@ -167,17 +167,32 @@ agents:
     agent_type: llm_eval_multi
     name: SAT translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. Return **only** the declarations, constraints, and options sections. 
+      After discussion, now you need to give your final output. Return **only** the declarations, constraints, and options. 
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
       Task Description: You are given a problem description.
       The task is to parse the problem as a SAT problem using Z3 syntax, defining declarations, constraints, and options.
+        1. Always include all three section headers in order: # Declarations, # Constraints, # Options
+        2. Declarations must follow exact patterns:
+        - name = EnumSort([items, ...])  for non-numeric items
+        - name = IntSort([numbers, ...])  for numeric items
+        - name = Function([types] -> [return_type])
+        3. Constraints support:
+        - Direct expressions with ==, !=, <=, >=, <, >, Implies(), And(), Or(), Not()
+        - ForAll([var:type, ...], expr) and Exists([var:type, ...], expr)
+        - Count([var:type], condition)
+        - Distinct([var:type], expr)
+        4. Options must use predefined functions:
+        - is_valid(), is_sat(), is_unsat()
+        5. Add explanation with :::
+        6. Avoid:
+        - Add # in any other places apart from three section headers
+        - Add any other unnecessary comment or dashes
 
       -----------
       Example：
       Context: Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.
-
       Question: True or false: Charlie is kind.
 
       # Declarations

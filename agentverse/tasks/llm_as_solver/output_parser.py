@@ -15,7 +15,7 @@ class COTParser(OutputParser):
     from structured LLM responses.
     
     Expected format:
-    <answer>A<reason>Your reasoning here...
+    <Reasoning>YOUR_REASONING<Answer>ANSWER_LETTER
     """
     
     def parse(self, output: LLMResult) -> Union[AgentAction, AgentFinish]:
@@ -44,7 +44,7 @@ class COTParser(OutputParser):
     
     def _extract_answer_and_reasoning(self, text: str) -> tuple[str, str]:
         """
-        Extract answer and reasoning from text using <answer>...<reason>... format
+        Extract answer and reasoning from text using <Reasoning>...<Answer>... format
         
         Args:
             text: Raw text from LLM
@@ -52,12 +52,12 @@ class COTParser(OutputParser):
         Returns:
             Tuple of (answer, reasoning)
         """
-        pattern = r'<answer>\s*(.*?)\s*<reason>\s*(.*?)(?:\n|$)'
+        pattern = r'<Reasoning>\s*(.*?)\s*<Answer>\s*(.*?)(?:\n|$)'
         match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
         
         if match:
-            answer = match.group(1).strip()
-            reasoning = match.group(2).strip()
+            reasoning = match.group(1).strip()
+            answer = match.group(2).strip()
             return answer, reasoning
         
         # If no match found, return empty answer with full text as reasoning

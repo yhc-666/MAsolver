@@ -80,7 +80,7 @@ prompt_templates:
 
     ${role_description}
     ${instruction}
-    Return your reasoning and final choice in the format:
+    Return **only** your reasoning and final choice in the format:
     <Reasoning>YOUR_REASONING<Answer>ANSWER_LETTER
 
   plan_and_solve_prompt: &plan_and_solve_prompt |-

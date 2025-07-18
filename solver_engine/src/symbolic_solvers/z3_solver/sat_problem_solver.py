@@ -347,7 +347,7 @@ objects = EnumSort([White, Orange, Yellow, Blue, Red])
 positions = IntSort([1, 2, 3, 4, 5])
 pos = Function([objects] -> [positions])
 # Constraints
-Distinct([b:objects], pos(b)) ::: 每本书占据唯一位置
+Distinct([b:objects], pos(b)) ::: Each book occupies a unique position
 pos(Yellow) < pos(White) ::: The yellow book is to the left of the white book.
 pos(Red) > pos(Blue) ::: The red book is to the right of the blue book.
 pos(Yellow) > pos(Orange) ::: The yellow book is to the right of the orange book.
