@@ -82,17 +82,19 @@ agents:
       context: The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.
       question: Which of the following is true?
       options: 
-            A) The white book is the second from the right.
-            B) The orange book is the second from the right.
-            C) The yellow book is the second from the right.
-            D) The blue book is the second from the right.
-            E) The red book is the second from the right.
+      A) The white book is the second from the right.
+      B) The orange book is the second from the right.
+      C) The yellow book is the second from the right.
+      D) The blue book is the second from the right.
+      E) The red book is the second from the right.
+
       Predicates:
       Book($x, bool)                  ::: $x is one of the five books.
       LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
       RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
       RightMost($x, bool)             ::: Book $x is the right‑most book on the shelf.
       SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
+
       Facts:
       Book(white,  True)              ::: The white book.
       Book(orange, True)              ::: The orange book.
@@ -103,12 +105,14 @@ agents:
       RightOf(red,   blue,   True)    ::: The red book is to the right of the blue book.
       RightOf(yellow, orange, True)   ::: The yellow book is to the right of the orange book.
       RightOf(blue,  white,  True)    ::: The blue book is to the right of the white book.
+
       Rules:
       LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
       RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
       RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
       RightOf($b, white,  True) && RightOf($b, orange, True) && RightOf($b, yellow, True) && RightOf($b, blue,   True)  >>> RightMost($b, True) ::: A book that is to the right of all the other four is the right‑most book.
       RightMost($rm, True) && RightOf($rm, $s, True) && RightOf($s, white,  True) && RightOf($s, orange, True) && RightOf($s, yellow, True) >>> SecondFromRight($s, True) ::: The book immediately left of the right‑most—and still right of the remaining three—is second from the right.
+
       Query:
       SecondFromRight(white,  True)  ::: Option A
       SecondFromRight(orange, True)  ::: Option B
@@ -144,39 +148,47 @@ agents:
 
         ---------------
         Example：
-        Context: All people who regularly drink coffee are
-        dependent on caffeine.
-        (... more context here ...)
-        If Rina is not a person dependent on caffeine and a
-        student, then Rina is either a person dependent
-        on caffeine and a student, or a person dependent
-        on caffeine nor a student, or neither a person
-        dependent on caffeine nor a student.
-
-        Question: Based on the above information, is the
-        following statement true, false, or uncertain?
-        Rina is either a person who jokes about being
-        addicted to caffeine or is unaware that caffeine
-        is a drug.
+        context: The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nA fruit stand sells five fruits: mangoes, kiwis, plums, pears, and watermelons. The kiwis are less expensive than the plums. The pears are the third-most expensive. The kiwis are the second-cheapest. The watermelons are the most expensive.
+        question: Which of the following is true?
+        options: 
+        A) The mangoes are the third-most expensive.
+        B) The kiwis are the third-most expensive.
+        C) The plums are the third-most expensive.
+        D) The pears are the third-most expensive.
+        E) The watermelons are the third-most expensive.
 
         Predicates:
-        Dependent(x) ::: x is a person dependent on caffeine
-        (... more predicates here ...)
-        Student(x) ::: x is a student
+        Rank(fruit, pos) ::: fruit has price position pos, where pos ∈ {one,two,three,four,five}; one = most expensive, five = cheapest.
+        Cheaper(x, y) ::: x is cheaper (less expensive) than y.
 
         Premises:
-        ∀x (Drinks(x) → Dependent(x)) ::: All people who
-        regularly drink coffee are dependent on caffeine.
-
-        (... more premises here ...)
-        ∀x (Jokes(x) → ¬Unaware(x)) ::: No one who jokes
-        about being addicted to caffeine is unaware that
-        caffeine is a drug.
+        Rank(watermelon, one) :::Watermelons are the most expensive
+        Rank(pears, three) ::: Pears are the third‑most expensive
+        Rank(kiwis, four) ::: Kiwis are the second‑cheapest
+        Cheaper(kiwis, plums) ::: Kiwis are cheaper than plums
+        ∀F ∀P ∀Q ((Rank(F,P) ∧ Rank(F,Q)) → (P = Q)) ::: One rank per fruit
+        ∀P ∀F ∀G ((Rank(F,P) ∧ Rank(G,P)) → (F = G)) ::: One fruit per rank
+        Rank(mangoes, one) ∨ Rank(mangoes, two) ∨ Rank(mangoes, three) ∨ Rank(mangoes, four) ∨ Rank(mangoes, five) ::: each still‑unknown fruit occupies some rank 
+        Rank(plums, one) ∨ Rank(plums, two) ∨ Rank(plums, three) ∨ Rank(plums, four) ∨ Rank(plums, five) ::: each still‑unknown fruit occupies some rank 
+        ∀X ∀Y (Rank(X, one) ∧ Rank(Y, two) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, one) ∧ Rank(Y, three) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, one) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, one) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, two) ∧ Rank(Y, three) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, two) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, two) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, three) ∧ Rank(Y, four) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, three) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Rank(X, four) ∧ Rank(Y, five) → Cheaper(Y, X)) ::: “higher rank → more expensive” (10 ordered pairs) 
+        ∀X ∀Y (Cheaper(X, Y) → ¬Cheaper(Y, X)) ::: “cheaper” is asymmetric
 
         Conclusion:
-        Jokes(rina) ⊕ Unaware(rina) ::: Rina is either a
-        person who jokes about being addicted to caffeine
-        or is unaware that caffeine is a drug.into a language that is understandable to the user.
+        Rank(mangoes, three) ::: Option A
+        Rank(kiwis, three) ::: Option B
+        Rank(plums, three) ::: Option C
+        Rank(pears, three) ::: Option D
+        Rank(watermelon, three) ::: Option E
+        
     memory:
       memory_type: chat_history
     memory_manipulator:
@@ -214,39 +226,33 @@ agents:
 
       -----------
       Example：
-      Context: Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.
-      Question: True or false: Charlie is kind.
-
-      # Declarations
-      objects = EnumSort([Bob, Charlie, Dave, Fiona])
-      attributes = EnumSort([cold, quiet, red, smart, kind, rough, round])
-      has_attribute = Function([objects, attributes] -> [bool])
+      context: The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.
+      question: Which of the following is true?
+      options: 
+            A) The white book is the second from the right.
+            B) The orange book is the second from the right.
+            C) The yellow book is the second from the right.
+            D) The blue book is the second from the right.
+            E) The red book is the second from the right.
       
+      # Declarations
+      objects = EnumSort([White, Orange, Yellow, Blue, Red])
+      positions = IntSort([1, 2, 3, 4, 5])
+      pos = Function([objects] -> [positions])
+
       # Constraints
-      has_attribute(Bob, cold) == True ::: Bob is cold.
-      has_attribute(Bob, quiet) == True ::: Bob is quiet.
-      has_attribute(Bob, red) == True ::: Bob is red.
-      has_attribute(Bob, smart) == True ::: Bob is smart.
-      has_attribute(Charlie, kind) == True ::: Charlie is kind.
-      has_attribute(Charlie, quiet) == True ::: Charlie is quiet.
-      has_attribute(Charlie, red) == True ::: Charlie is red.
-      has_attribute(Charlie, rough) == True ::: Charlie is rough.
-      has_attribute(Dave, cold) == True ::: Dave is cold.
-      has_attribute(Dave, kind) == True ::: Dave is kind.
-      has_attribute(Dave, smart) == True ::: Dave is smart.
-      has_attribute(Fiona, quiet) == True ::: Fiona is quiet.
-      ForAll([x:objects], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, cold) == True), has_attribute(x, smart) == True)) ::: If something is quiet and cold then it is smart.
-      ForAll([x:objects], Implies(And(has_attribute(x, red) == True, has_attribute(x, cold) == True), has_attribute(x, round) == True)) ::: Red, cold things are round.
-      ForAll([x:objects], Implies(And(has_attribute(x, kind) == True, has_attribute(x, rough) == True), has_attribute(x, red) == True)) ::: If something is kind and rough then it is red.
-      ForAll([x:objects], Implies(has_attribute(x, quiet) == True, has_attribute(x, rough) == True)) ::: All quiet things are rough.
-      ForAll([x:objects], Implies(And(has_attribute(x, cold) == True, has_attribute(x, smart) == True), has_attribute(x, red) == True)) ::: Cold, smart things are red.
-      ForAll([x:objects], Implies(has_attribute(x, rough) == True, has_attribute(x, cold) == True)) ::: If something is rough then it is cold.
-      ForAll([x:objects], Implies(has_attribute(x, red) == True, has_attribute(x, rough) == True)) ::: All red things are rough.
-      Implies(And(has_attribute(Dave, smart) == True, has_attribute(Dave, kind) == True), has_attribute(Dave, quiet) == True) ::: If Dave is smart and Dave is kind then Dave is quiet.
+      Distinct([b:objects], pos(b)) ::: Each book occupies a unique position
+      pos(Yellow) < pos(White) ::: The yellow book is to the left of the white book.
+      pos(Red) > pos(Blue) ::: The red book is to the right of the blue book.
+      pos(Yellow) > pos(Orange) ::: The yellow book is to the right of the orange book.
+      pos(Blue) > pos(White) ::: The blue book is to the right of the white book.
       
       # Options
-      is_valid(has_attribute(Charlie, kind) == True) ::: Charlie is kind is True (A).
-      is_unsat(has_attribute(Charlie, kind) == True) ::: Charlie is kind is False (B).
+      is_valid(pos(White) == 4)  ::: A) The white book is the second from the right.
+      is_valid(pos(Orange) == 4)  ::: B) The orange book is the second from the right.
+      is_valid(pos(Yellow) == 4)  ::: C) The yellow book is the second from the right.
+      is_valid(pos(Blue) == 4)  ::: D) The blue book is the second from the right.
+      is_valid(pos(Red) == 4)  ::: E) The red book is the second from the right.
 
     memory:
       memory_type: chat_history

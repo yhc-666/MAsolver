@@ -21,7 +21,7 @@ from argparse import ArgumentParser
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/translate_config.yaml")
+parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/logideduct_translate_config.yaml")
 parser.add_argument("--reverse_input", default=False, action="store_true")
 
 
@@ -136,6 +136,41 @@ elif "FOLIO" in args_data_path:
         os.makedirs(args_output_dir, exist_ok=True)
         with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
             json.dump(smoketest_output, f, indent=4)
+
+elif "LogicalDeduction" in args_data_path:
+    # 处理LogicalDeduction数据集
+    logical_deduction_output = []
+
+    for num, ins in enumerate(data):
+        print(f"================================instance {num}====================================")
+
+        # 将options数组转换为格式化的字符串
+        options_str = "\n".join(ins["options"])
+
+        for agent_id in range(len(agentverse.agents)):
+            agentverse.agents[agent_id].context = ins["context"]  # 赋值prompt template中的${context}字段
+            agentverse.agents[agent_id].question = ins["question"].strip()  # 赋值prompt template中的${question}字段
+            agentverse.agents[agent_id].options = options_str  # 赋值prompt template中的${options}字段
+            agentverse.agents[agent_id].final_prompt = ""
+
+        agentverse.run()
+
+        chat_history, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
+                                    agent_nums=len(agentverse.agents))
+
+        logical_deduction_output.append({
+            "id": ins["id"],
+            "context": ins["context"],
+            "question": ins["question"],
+            "options": ins["options"],
+            "answer": ins["answer"],
+            "chat_history": chat_history,
+            "translation": translations
+        })
+
+        os.makedirs(args_output_dir, exist_ok=True)
+        with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
+            json.dump(logical_deduction_output, f, indent=4)
 
 else:
     raise ValueError(f"Unsupported dataset in run_translate.py: {args_data_path}")

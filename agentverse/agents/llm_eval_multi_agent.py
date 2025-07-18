@@ -22,6 +22,7 @@ class LLMEvalAgent(BaseAgent):
 
     question: str = ""
     context: str = ""  
+    options: str = ""  # for LogicalDeduction dataset options
     # for direct score
     reference_text: str = ""
     generated_text: str = ""
@@ -172,6 +173,7 @@ class LLMEvalAgent(BaseAgent):
             "role_description": self.role_description,
             "question": self.question,
             "context": self.context, 
+            "options": self.options,
             "reference_text": self.reference_text,
             "generated_text": self.generated_text,
             "compared_text_one": self.compared_text_one,

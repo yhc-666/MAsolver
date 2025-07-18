@@ -3,11 +3,11 @@
 
 # Dataset configuration
 dataset:
-  name: "ProofWriter"  # Available options: ProntoQA, ProofWriter, FOLIO, LogicalDeduction
+  name: "LogicalDeduction"  # Available options: ProntoQA, ProofWriter, FOLIO, LogicalDeduction
 
 paths:
-  input_file: "outputs/deepseek/ProofWriter/translation/translation_results.json"
-  output_file: "outputs/deepseek/ProofWriter/symbolic_solver/results.json"
+  input_file: "outputs/deepseek/LogicalDeduction/translation/translation_results.json"
+  output_file: "outputs/deepseek/LogicalDeduction/symbolic_solver/results.json"
   backup_LLM_result_path: ""
 
 solver:

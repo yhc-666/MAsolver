@@ -273,6 +273,21 @@ class Pyke_Program:
                 print('removing cache_program')
                 os.system(f'rm -rf {self.cache_dir}/*')
         except Exception as e:
+            complied_krb_dir = 'solver_engine/src/compiled_krb'
+            if os.path.exists(complied_krb_dir):
+                print('removing compiled_krb')
+                # Preserve __init__.py file while removing compiled files
+                for file in os.listdir(complied_krb_dir):
+                    if file != '__init__.py':
+                        file_path = os.path.join(complied_krb_dir, file)
+                        if os.path.isfile(file_path):
+                            os.remove(file_path)
+                        elif os.path.isdir(file_path):
+                            os.system(f'rm -rf {file_path}')
+
+            if os.path.exists(self.cache_dir):
+                print('removing cache_program')
+                os.system(f'rm -rf {self.cache_dir}/*')
             return None, e
         
         return answer, ""
@@ -473,36 +488,33 @@ if __name__ == "__main__":
 
     # Answer: B
     logic_program7 = """Predicates:
-Furry($x, bool) ::: Is x furry?
-Nice($x, bool) ::: Is x nice?
-Smart($x, bool) ::: Is x smart?
-Young($x, bool) ::: Is x young?
-Green($x, bool) ::: Is x green?
-Big($x, bool) ::: Is x big?
-Round($x, bool) ::: Is x round?
-
+Book($x, bool)                  ::: $x is one of the five books.
+LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
+RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
+SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
+SecondFromLeft($x, bool)        ::: Book $x is the second book from the left.
 Facts:
-Furry(Anne, True) ::: Anne is furry.
-Nice(Anne, True) ::: Anne is nice.
-Smart(Anne, True) ::: Anne is smart.
-Young(Bob, True) ::: Bob is young.
-Nice(Erin, True) ::: Erin is nice.
-Smart(Harry, True) ::: Harry is smart.
-Young(Harry, True) ::: Harry is young.
-
+Book(green,  True)              ::: The green book.
+Book(blue,   True)              ::: The blue book.
+Book(white,  True)              ::: The white book.
+Book(purple, True)              ::: The purple book.
+Book(yellow, True)              ::: The yellow book.
+RightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.
+LeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.
+SecondFromRight(blue, True)     ::: The blue book is the second from the right.
+SecondFromLeft(purple, True)    ::: The purple book is the second from the left.
 Rules:
-Young($x, True) >>> Furry($x, True) ::: Young things are furry.
-Nice($x, True) && Furry($x, True) >>> Green($x, True) ::: Nice, furry things are green.
-Green($x, True) >>> Nice($x, True) ::: All green things are nice.
-Nice($x, True) && Green($x, True) >>> Big($x, True) ::: Nice, green things are big.
-Green($x, True) >>> Smart($x, True) ::: All green things are smart.
-Big($x, True) && Young($x, True) >>> Round($x, True) ::: If something is big and young then it is round.
-Green($x, True) >>> Big($x, True) ::: All green things are big.
-Young(Harry, True) >>> Furry(Harry, True) ::: If Harry is young then Harry is furry.
-Furry($x, True) && Smart($x, True) >>> Nice($x, True) ::: Furry, smart things are nice.
-
+LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
+RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
+RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
+SecondFromRight($a, True) >>> RightOf($rm, $a, True) && RightOf($a, $others, True) ::: $a is second from the right if it is immediately left of the rightmost book and right of the remaining books.
+SecondFromLeft($a, True) >>> LeftOf($lm, $a, True) && LeftOf($a, $others, True) ::: $a is second from the left if it is immediately right of the leftmost book and left of the remaining books.
 Query:
-Green(Harry, False) ::: Harry is not green."""
+SecondFromLeft(green,  True)  ::: Option A
+SecondFromLeft(blue,   True)  ::: Option B
+SecondFromLeft(white,  True)  ::: Option C
+SecondFromLeft(purple, True)  ::: Option D
+SecondFromLeft(yellow, True)  ::: Option E"""
 
     sample_logic_deduction = """ "id": "logical_deduction_35",
         "context": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.",
@@ -554,12 +566,12 @@ SecondFromRight(red,    True)  ::: Option E
     # SecondFromRight(red,    True)  ::: Option E
 
 
-    tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    #tests = [logic_program_logic_deduction]
+    #tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6]
+    tests = [logic_program_logic_deduction]
    
     
     for test in tests:
-        pyke_program = Pyke_Program(test, 'ProofWriter')
+        pyke_program = Pyke_Program(test, 'LogicalDeduction')
         result, error, reasoning = pyke_program.execute_program()
         print(f"Error: {error}")
         print(f"Result: {result}")
