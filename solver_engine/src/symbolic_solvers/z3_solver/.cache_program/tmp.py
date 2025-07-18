@@ -1,23 +1,39 @@
 from z3 import *
 
-objects_sort, (Ted, W) = EnumSort('objects', ['Ted', 'W'])
-objects = [Ted, W]
-Cow = Function('Cow', objects_sort, BoolSort())
-Bovine = Function('Bovine', objects_sort, BoolSort())
-Pet = Function('Pet', objects_sort, BoolSort())
-Domesticated = Function('Domesticated', objects_sort, BoolSort())
-Alligator = Function('Alligator', objects_sort, BoolSort())
+objects_sort, (Anne, Charlie, Erin, Fiona) = EnumSort('objects', ['Anne', 'Charlie', 'Erin', 'Fiona'])
+attributes_sort, (green, big, quiet, round, kind, nice, blue) = EnumSort('attributes', ['green', 'big', 'quiet', 'round', 'kind', 'nice', 'blue'])
+objects = [Anne, Charlie, Erin, Fiona]
+attributes = [green, big, quiet, round, kind, nice, blue]
+has_attribute = Function('has_attribute', objects_sort, attributes_sort, BoolSort())
 
 pre_conditions = []
+pre_conditions.append(has_attribute(Anne, green) == True)
+pre_conditions.append(has_attribute(Charlie, big) == True)
+pre_conditions.append(has_attribute(Charlie, quiet) == True)
+pre_conditions.append(has_attribute(Charlie, round) == True)
+pre_conditions.append(has_attribute(Erin, green) == True)
+pre_conditions.append(has_attribute(Erin, kind) == True)
+pre_conditions.append(has_attribute(Erin, nice) == True)
+pre_conditions.append(has_attribute(Erin, quiet) == True)
+pre_conditions.append(has_attribute(Fiona, blue) == True)
+pre_conditions.append(has_attribute(Fiona, kind) == True)
+pre_conditions.append(has_attribute(Fiona, quiet) == True)
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(Cow(x), Bovine(x))))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, kind) == True, has_attribute(x, nice) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(Exists([x], And(Pet(x), Cow(x))))
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, round) == True, has_attribute(x, quiet) == True), has_attribute(x, blue) == True)))
+pre_conditions.append(Implies(has_attribute(Charlie, kind) == True, has_attribute(Charlie, big) == True))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(Bovine(x), Domesticated(x))))
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, big) == True, has_attribute(x, blue) == True), has_attribute(x, kind) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(Domesticated(x), Not(Alligator(x)))))
-pre_conditions.append(Alligator(Ted))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, nice) == True, has_attribute(x, quiet) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, quiet) == True, has_attribute(x, kind) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, big) == True, has_attribute(x, kind) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, green) == True, has_attribute(x, big) == True)))
+pre_conditions.append(Implies(has_attribute(Anne, green) == True, has_attribute(Anne, round) == True))
 
 def is_valid(option_constraints):
     solver = Solver()
@@ -44,5 +60,5 @@ def is_exception(x):
     return not x
 
 
-if is_valid(Implies(Cow(Ted), Not(Pet(Ted)))): print('(A)')
-if is_valid(Not(Implies(Cow(Ted), Not(Pet(Ted))))): print('(B)')
+if is_valid(has_attribute(Erin, blue) == False): print('(A)')
+if is_unsat(has_attribute(Erin, blue) == False): print('(B)')

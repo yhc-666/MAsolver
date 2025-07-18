@@ -12,18 +12,18 @@
     "roles": {
       "LP": {
         "predict": "A",
-        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Cold($x, bool) ::: Is x cold?\n  Quiet($x, bool) ::: Is x quiet?\n  Red($x, bool) ::: Is x red?\n  Smart($x, bool) ::: Is x smart?\n  Kind($x, bool) ::: Is x kind?\n  Rough($x, bool) ::: Is x rough?\n  Round($x, bool) ::: Is x round?\nWe have following known facts from the context:\n  Cold(Bob, True)\n  Quiet(Bob, True)\n  Red(Bob, True)\n  Smart(Bob, True)\n  Kind(Charlie, True)\n  Quiet(Charlie, True)\n  Red(Charlie, True)\n  Rough(Charlie, True)\n  Cold(Dave, True)\n  Kind(Dave, True)\n  Smart(Dave, True)\n  Quiet(Fiona, True)\nWe have following known rules from the context:\n  rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\n  rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\n  rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\n  rule4: Quiet($x, True) >>> Rough($x, True)\n  rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\n  rule6: Rough($x, True) >>> Cold($x, True)\n  rule7: Red($x, True) >>> Rough($x, True)\n  rule8: Smart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Smart('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nUnbind $x\nBind $x to 'Fiona'\nUnbind $x\nFinish implied with rule1\nUse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Bob'\nObtain a new implied fact: Round('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nUnbind $x\nFinish implied with rule2\nUse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nUnbind $x\nBind $x to 'Dave'\nUnbind $x\nFinish implied with rule3\nUse rule4: Quiet($x, True) >>> Rough($x, True)\nBind $x to 'Bob'\nObtain a new implied fact: Rough('Bob', True)\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Bob'\nFinish implied with rule3\nUse rule6: Rough($x, True) >>> Cold($x, True)\nFinish implied with rule6\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nFinish implied with rule3\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nFinish implied with rule6\nFinish implied with rule4\nUse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Red('Bob', True)\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Red('Dave', True)\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Dave'\nObtain a new implied fact: Round('Dave', True)\nFinish implied with rule2\nUse rule7: Red($x, True) >>> Rough($x, True)\nFinish implied with rule7\nFinish implied with rule5\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Cold('Charlie', True)\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Smart('Charlie', True)\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nFinish implied with rule5\nUse rule8: Smart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True)\nFinish implied with rule8\nFinish implied with rule1\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Round('Charlie', True)\nFinish implied with rule2\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nFinish implied with rule5\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Smart('Fiona', True)\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Red('Fiona', True)\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Round('Fiona', True)\nFinish implied with rule2\nReuse rule7: Red($x, True) >>> Rough($x, True)\nFinish implied with rule7\nFinish implied with rule5\nReuse rule8: Smart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True)\nFinish implied with rule8\nFinish implied with rule1\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Round('Fiona', True)\nFinish implied with rule2\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Red('Fiona', True)\nFinish implied with rule5\nFinish implied with rule6\nReuse rule7: Red($x, True) >>> Rough($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Rough('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nObtain an already known or implied fact: Rough('Charlie', True)\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Rough('Dave', True)\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Red('Dave', True)\nFinish implied with rule3\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Cold('Dave', True)\nFinish implied with rule6\nFinish implied with rule7\nReuse rule8: Smart(Dave, True) && Kind(Dave, True) >>> Quiet(Dave, True)\nObtain a new implied fact: Quiet('Dave', True)\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Smart('Dave', True)\nFinish implied with rule1\nReuse rule4: Quiet($x, True) >>> Rough($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Rough('Dave', True)\nFinish implied with rule4\nFinish implied with rule8\nAll newly implied Facts: Cold('Charlie', True), Quiet('Dave', True), Red('Dave', True), Red('Fiona', True), Rough('Bob', True), Rough('Dave', True), Round('Bob', True), Round('Charlie', True), Round('Dave', True), Round('Fiona', True), Smart('Charlie', True), Smart('Fiona', True)\nFinish reasoning",
+        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Cold($x, bool) ::: Is x cold?\n  Quiet($x, bool) ::: Is x quiet?\n  Red($x, bool) ::: Is x red?\n  Smart($x, bool) ::: Is x smart?\n  Kind($x, bool) ::: Is x kind?\n  Rough($x, bool) ::: Is x rough?\n  Round($x, bool) ::: Is x round?\nWe have following known facts from the context:\n  Cold(Bob, True)\n  Quiet(Bob, True)\n  Red(Bob, True)\n  Smart(Bob, True)\n  Kind(Charlie, True)\n  Quiet(Charlie, True)\n  Red(Charlie, True)\n  Rough(Charlie, True)\n  Cold(Dave, True)\n  Kind(Dave, True)\n  Smart(Dave, True)\n  Quiet(Fiona, True)\nWe have following known rules from the context:\n  rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\n  rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\n  rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\n  rule4: Quiet($x, True) >>> Rough($x, True)\n  rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\n  rule6: Rough($x, True) >>> Cold($x, True)\n  rule7: Red($x, True) >>> Rough($x, True)\n  rule8: Smart($x, True) && Kind($x, True) >>> Quiet($x, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Smart('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nUnbind $x\nBind $x to 'Fiona'\nUnbind $x\nFinish implied with rule1\nUse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Bob'\nObtain a new implied fact: Round('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nUnbind $x\nFinish implied with rule2\nUse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nUnbind $x\nBind $x to 'Dave'\nUnbind $x\nFinish implied with rule3\nUse rule4: Quiet($x, True) >>> Rough($x, True)\nBind $x to 'Bob'\nObtain a new implied fact: Rough('Bob', True)\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Bob'\nFinish implied with rule3\nUse rule6: Rough($x, True) >>> Cold($x, True)\nFinish implied with rule6\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nFinish implied with rule3\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nFinish implied with rule6\nFinish implied with rule4\nUse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Red('Bob', True)\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Red('Dave', True)\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Dave'\nObtain a new implied fact: Round('Dave', True)\nFinish implied with rule2\nUse rule7: Red($x, True) >>> Rough($x, True)\nFinish implied with rule7\nFinish implied with rule5\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Cold('Charlie', True)\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Smart('Charlie', True)\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nFinish implied with rule5\nUse rule8: Smart($x, True) && Kind($x, True) >>> Quiet($x, True)\nFinish implied with rule8\nFinish implied with rule1\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Round('Charlie', True)\nFinish implied with rule2\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Red('Charlie', True)\nFinish implied with rule5\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Smart('Fiona', True)\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Red('Fiona', True)\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Round('Fiona', True)\nFinish implied with rule2\nReuse rule7: Red($x, True) >>> Rough($x, True)\nFinish implied with rule7\nFinish implied with rule5\nReuse rule8: Smart($x, True) && Kind($x, True) >>> Quiet($x, True)\nFinish implied with rule8\nFinish implied with rule1\nReuse rule2: Red($x, True) && Cold($x, True) >>> Round($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Round('Fiona', True)\nFinish implied with rule2\nReuse rule5: Cold($x, True) && Smart($x, True) >>> Red($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Red('Fiona', True)\nFinish implied with rule5\nFinish implied with rule6\nReuse rule7: Red($x, True) >>> Rough($x, True)\nBind $x to 'Bob'\nObtain an already known or implied fact: Rough('Bob', True)\nUnbind $x\nBind $x to 'Charlie'\nObtain an already known or implied fact: Rough('Charlie', True)\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Rough('Dave', True)\nReuse rule3: Kind($x, True) && Rough($x, True) >>> Red($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Red('Dave', True)\nFinish implied with rule3\nReuse rule6: Rough($x, True) >>> Cold($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Cold('Dave', True)\nFinish implied with rule6\nFinish implied with rule7\nReuse rule8: Smart($x, True) && Kind($x, True) >>> Quiet($x, True)\nBind $x to 'Bob'\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Quiet('Dave', True)\nReuse rule1: Quiet($x, True) && Cold($x, True) >>> Smart($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Smart('Dave', True)\nFinish implied with rule1\nReuse rule4: Quiet($x, True) >>> Rough($x, True)\nBind $x to 'Dave'\nObtain an already known or implied fact: Rough('Dave', True)\nFinish implied with rule4\nFinish implied with rule8\nAll newly implied Facts: Cold('Charlie', True), Quiet('Dave', True), Red('Dave', True), Red('Fiona', True), Rough('Bob', True), Rough('Dave', True), Round('Bob', True), Round('Charlie', True), Round('Dave', True), Round('Fiona', True), Smart('Charlie', True), Smart('Fiona', True)\nFinish reasoning",
         "status_code": "success",
         "error_message": ""
       },
       "FOL": {
-        "predict": "B",
+        "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "A",
+      "SAT": {
+        "predict": "C",
         "reasoning": "",
         "status_code": "parsing error",
         "error_message": ""
@@ -42,21 +42,21 @@
     "answer": "A",
     "roles": {
       "LP": {
-        "predict": "A",
+        "predict": "C",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "invalid syntax (rules.krb, line 4)"
+        "error_message": "invalid syntax (rules.krb, line 3)"
       },
       "FOL": {
-        "predict": "B",
+        "predict": "C",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "A",
-        "reasoning": "",
-        "status_code": "parsing error",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -79,15 +79,15 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "C",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "parsing error",
+      "SAT": {
+        "predict": "B",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -113,13 +113,13 @@
         "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "A",
+      "SAT": {
+        "predict": "B",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   },
@@ -141,15 +141,15 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "A",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
         "error_message": "'NoneType' object has no attribute 'rstrip'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "B",
-        "reasoning": "",
-        "status_code": "parsing error",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -172,12 +172,12 @@
         "error_message": "invalid syntax (rules.krb, line 34)"
       },
       "FOL": {
-        "predict": "C",
+        "predict": "B",
         "reasoning": "",
         "status_code": "parsing error",
         "error_message": ""
       },
-      "CSP": {
+      "SAT": {
         "predict": "A",
         "reasoning": "",
         "status_code": "parsing error",
@@ -203,12 +203,12 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "A",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "A",
         "reasoning": "",
         "status_code": "parsing error",
@@ -228,22 +228,22 @@
     "answer": "C",
     "roles": {
       "LP": {
-        "predict": "B",
+        "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
         "error_message": "invalid syntax (rules.krb, line 9)"
       },
       "FOL": {
-        "predict": "C",
+        "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "B",
+      "SAT": {
+        "predict": "A",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   },
@@ -260,7 +260,7 @@
     "roles": {
       "LP": {
         "predict": "A",
-        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Green($x, bool) ::: Is x green?\n  Kind($x, bool) ::: Is x kind?\n  Blue($x, bool) ::: Is x blue?\n  Furry($x, bool) ::: Is x furry?\n  Round($x, bool) ::: Is x round?\n  Big($x, bool) ::: Is x big?\n  Cold($x, bool) ::: Is x cold?\nWe have following known facts from the context:\n  Green(Charlie, True)\n  Kind(Charlie, True)\n  Blue(Erin, True)\n  Kind(Erin, True)\n  Green(Fiona, True)\n  Blue(Gary, True)\n  Furry(Gary, True)\n  Green(Gary, True)\n  Kind(Gary, True)\n  Round(Gary, True)\nWe have following known rules from the context:\n  rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\n  rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\n  rule3: Round($x, True) >>> Big($x, True)\n  rule4: Kind($x, True) >>> Furry($x, True)\n  rule5: Blue($x, True) >>> Kind($x, True)\n  rule6: Green($x, True) >>> Big($x, True)\n  rule7: Cold($x, True) && Green($x, True) >>> Blue($x, True)\n  rule8: Cold($x, True) && Blue($x, True) >>> Kind($x, True)\n  rule9: Green($x, True) && Big($x, True) >>> Round($x, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Gary'\nObtain an already known or implied fact: Green('Gary', True)\nUnbind $x\nFinish implied with rule1\nUse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nUnbind $x\nBind $x to 'Fiona'\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Blue('Gary', True)\nUnbind $x\nFinish implied with rule2\nUse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Gary'\nObtain a new implied fact: Big('Gary', True)\nUse rule9: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule9\nFinish implied with rule3\nUse rule4: Kind($x, True) >>> Furry($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Furry('Charlie', True)\nUnbind $x\nBind $x to 'Erin'\nObtain a new implied fact: Furry('Erin', True)\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Furry('Gary', True)\nUnbind $x\nFinish implied with rule4\nUse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Kind('Erin', True)\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Kind('Gary', True)\nUnbind $x\nFinish implied with rule5\nUse rule6: Green($x, True) >>> Big($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Big('Charlie', True)\nReuse rule9: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule9\nReuse rule9: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule9\nFinish implied with rule6\nUse rule7: Cold($x, True) && Green($x, True) >>> Blue($x, True)\nFinish implied with rule7\nUse rule8: Cold($x, True) && Blue($x, True) >>> Kind($x, True)\nFinish implied with rule8\nReuse rule9: Green($x, True) && Big($x, True) >>> Round($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Round('Charlie', True)\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Green('Charlie', True)\nFinish implied with rule1\nReuse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Blue('Charlie', True)\nReuse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nFinish implied with rule5\nReuse rule8: Cold($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nFinish implied with rule8\nFinish implied with rule2\nReuse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Big('Charlie', True)\nFinish implied with rule3\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Fiona'\nFinish implied with rule1\nReuse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Blue('Fiona', True)\nReuse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Kind('Fiona', True)\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Green('Fiona', True)\nFinish implied with rule1\nReuse rule4: Kind($x, True) >>> Furry($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Furry('Fiona', True)\nFinish implied with rule4\nFinish implied with rule5\nReuse rule8: Cold($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Fiona'\nFinish implied with rule8\nFinish implied with rule2\nReuse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Big('Fiona', True)\nFinish implied with rule3\nFinish implied with rule9\nAll newly implied Facts: Big('Charlie', True), Big('Gary', True), Blue('Charlie', True), Blue('Fiona', True), Furry('Charlie', True), Furry('Erin', True), Furry('Fiona', True), Kind('Fiona', True), Round('Charlie', True)\nFinish reasoning",
+        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Green($x, bool) ::: Is x green?\n  Kind($x, bool) ::: Is x kind?\n  Blue($x, bool) ::: Is x blue?\n  Furry($x, bool) ::: Is x furry?\n  Round($x, bool) ::: Is x round?\n  Big($x, bool) ::: Is x big?\n  Cold($x, bool) ::: Is x cold?\nWe have following known facts from the context:\n  Green(Charlie, True)\n  Kind(Charlie, True)\n  Blue(Erin, True)\n  Kind(Erin, True)\n  Green(Fiona, True)\n  Blue(Gary, True)\n  Furry(Gary, True)\n  Green(Gary, True)\n  Kind(Gary, True)\n  Round(Gary, True)\nWe have following known rules from the context:\n  rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\n  rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\n  rule3: Round($x, True) >>> Big($x, True)\n  rule4: Kind($x, True) >>> Furry($x, True)\n  rule5: Blue($x, True) >>> Kind($x, True)\n  rule6: Green($x, True) >>> Big($x, True)\n  rule7: Cold($x, True) && Green($x, True) && Blue($x, True) >>> Kind($x, True)\n  rule8: Green($x, True) && Big($x, True) >>> Round($x, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Gary'\nObtain an already known or implied fact: Green('Gary', True)\nUnbind $x\nFinish implied with rule1\nUse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nUnbind $x\nBind $x to 'Fiona'\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Blue('Gary', True)\nUnbind $x\nFinish implied with rule2\nUse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Gary'\nObtain a new implied fact: Big('Gary', True)\nUse rule8: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule8\nFinish implied with rule3\nUse rule4: Kind($x, True) >>> Furry($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Furry('Charlie', True)\nUnbind $x\nBind $x to 'Erin'\nObtain a new implied fact: Furry('Erin', True)\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Furry('Gary', True)\nUnbind $x\nFinish implied with rule4\nUse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Kind('Erin', True)\nUnbind $x\nBind $x to 'Gary'\nObtain an already known or implied fact: Kind('Gary', True)\nUnbind $x\nFinish implied with rule5\nUse rule6: Green($x, True) >>> Big($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Big('Charlie', True)\nReuse rule8: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule8\nReuse rule8: Green($x, True) && Big($x, True) >>> Round($x, True)\nFinish implied with rule8\nFinish implied with rule6\nUse rule7: Cold($x, True) && Green($x, True) && Blue($x, True) >>> Kind($x, True)\nFinish implied with rule7\nReuse rule8: Green($x, True) && Big($x, True) >>> Round($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Round('Charlie', True)\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Green('Charlie', True)\nFinish implied with rule1\nReuse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Blue('Charlie', True)\nReuse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nFinish implied with rule5\nReuse rule7: Cold($x, True) && Green($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nFinish implied with rule7\nFinish implied with rule2\nReuse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Big('Charlie', True)\nFinish implied with rule3\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Fiona'\nFinish implied with rule1\nReuse rule2: Green($x, True) && Round($x, True) >>> Blue($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Blue('Fiona', True)\nReuse rule5: Blue($x, True) >>> Kind($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Kind('Fiona', True)\nReuse rule1: Round($x, True) && Kind($x, True) >>> Green($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Green('Fiona', True)\nFinish implied with rule1\nReuse rule4: Kind($x, True) >>> Furry($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Furry('Fiona', True)\nFinish implied with rule4\nFinish implied with rule5\nReuse rule7: Cold($x, True) && Green($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Fiona'\nFinish implied with rule7\nFinish implied with rule2\nReuse rule3: Round($x, True) >>> Big($x, True)\nBind $x to 'Fiona'\nObtain an already known or implied fact: Big('Fiona', True)\nFinish implied with rule3\nFinish implied with rule8\nAll newly implied Facts: Big('Charlie', True), Big('Gary', True), Blue('Charlie', True), Blue('Fiona', True), Furry('Charlie', True), Furry('Erin', True), Furry('Fiona', True), Kind('Fiona', True), Round('Charlie', True)\nFinish reasoning",
         "status_code": "success",
         "error_message": ""
       },
@@ -268,12 +268,12 @@
         "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "A",
-        "reasoning": "",
-        "status_code": "parsing error",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -290,22 +290,22 @@
     "answer": "C",
     "roles": {
       "LP": {
-        "predict": "B",
+        "predict": "C",
         "reasoning": "",
         "status_code": "execution error",
         "error_message": "invalid syntax (rules.krb, line 3)"
       },
       "FOL": {
-        "predict": "B",
+        "predict": "A",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "C",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   },
@@ -327,16 +327,16 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "B",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
-      },
-      "CSP": {
         "predict": "C",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+      },
+      "SAT": {
+        "predict": "A",
+        "reasoning": "",
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   },
@@ -358,16 +358,16 @@
         "error_message": "invalid syntax (rules.krb, line 9)"
       },
       "FOL": {
-        "predict": "A",
+        "predict": "B",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "C",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   },
@@ -383,22 +383,22 @@
     "answer": "C",
     "roles": {
       "LP": {
-        "predict": "C",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
         "error_message": "invalid syntax (rules.krb, line 3)"
       },
       "FOL": {
-        "predict": "A",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
+      "SAT": {
         "predict": "C",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "invalid character '∧' (U+2227) (<string>, line 32)"
+        "error_message": "No Output"
       }
     }
   },
@@ -423,12 +423,12 @@
         "predict": "C",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "parsing error",
+      "SAT": {
+        "predict": "A",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -451,16 +451,16 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "C",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "invalid character '∀' (U+2200) (<string>, line 19)"
+      "SAT": {
+        "predict": "A",
+        "reasoning": "N/A",
+        "status_code": "success",
+        "error_message": ""
       }
     }
   },
@@ -476,21 +476,21 @@
     "answer": "A",
     "roles": {
       "LP": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "invalid syntax (rules.krb, line 9)"
+        "predict": "A",
+        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Kind($x, bool) ::: Is x kind?\n  Quiet($x, bool) ::: Is x quiet?\n  Smart($x, bool) ::: Is x smart?\n  Nice($x, bool) ::: Is x nice?\n  Red($x, bool) ::: Is x red?\n  White($x, bool) ::: Is x white?\n  Green($x, bool) ::: Is x green?\nWe have following known facts from the context:\n  Kind(Anne, True)\n  Quiet(Anne, True)\n  Smart(Anne, True)\n  Kind(Bob, True)\n  Nice(Bob, True)\n  Smart(Bob, True)\n  Nice(Fiona, False)\n  Red(Fiona, True)\n  Nice(Gary, True)\n  White(Gary, True)\nWe have following known rules from the context:\n  rule1: Kind(Bob, True) >>> Smart(Bob, True)\n  rule2: Kind($x, True) && Nice($x, True) >>> Smart($x, True)\n  rule3: Nice($x, True) && Red($x, True) >>> Smart($x, True)\n  rule4: Quiet($x, True) && Nice($x, False) >>> Smart($x, True)\n  rule5: Green($x, True) >>> Kind($x, True)\n  rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\n  rule7: Nice(Fiona, False) >>> Green(Fiona, True)\n  rule8: Smart($x, True) && Kind($x, True) >>> White($x, True)\n  rule9: Kind($x, True) && Green($x, True) >>> Quiet($x, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Kind(Bob, True) >>> Smart(Bob, True)\nObtain an already known or implied fact: Smart('Bob', True)\nFinish implied with rule1\nUse rule2: Kind($x, True) && Nice($x, True) >>> Smart($x, True)\nBind $x to 'Anne'\nUnbind $x\nBind $x to 'Bob'\nObtain an already known or implied fact: Smart('Bob', True)\nUnbind $x\nFinish implied with rule2\nUse rule3: Nice($x, True) && Red($x, True) >>> Smart($x, True)\nBind $x to 'Bob'\nUnbind $x\nBind $x to 'Gary'\nUnbind $x\nFinish implied with rule3\nUse rule4: Quiet($x, True) && Nice($x, False) >>> Smart($x, True)\nBind $x to 'Anne'\nUnbind $x\nFinish implied with rule4\nUse rule5: Green($x, True) >>> Kind($x, True)\nFinish implied with rule5\nUse rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\nFinish implied with rule6\nUse rule7: Nice(Fiona, False) >>> Green(Fiona, True)\nObtain a new implied fact: Green('Fiona', True)\nReuse rule5: Green($x, True) >>> Kind($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Kind('Fiona', True)\nReuse rule1: Kind(Bob, True) >>> Smart(Bob, True)\nFinish implied with rule1\nReuse rule2: Kind($x, True) && Nice($x, True) >>> Smart($x, True)\nBind $x to 'Fiona'\nFinish implied with rule2\nUse rule8: Smart($x, True) && Kind($x, True) >>> White($x, True)\nFinish implied with rule8\nUse rule9: Kind($x, True) && Green($x, True) >>> Quiet($x, True)\nFinish implied with rule9\nFinish implied with rule5\nReuse rule9: Kind($x, True) && Green($x, True) >>> Quiet($x, True)\nFinish implied with rule9\nFinish implied with rule7\nReuse rule8: Smart($x, True) && Kind($x, True) >>> White($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: White('Anne', True)\nReuse rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\nObtain an already known or implied fact: Kind('Anne', True)\nFinish implied with rule6\nReuse rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\nFinish implied with rule6\nFinish implied with rule8\nReuse rule9: Kind($x, True) && Green($x, True) >>> Quiet($x, True)\nBind $x to 'Anne'\nUnbind $x\nBind $x to 'Bob'\nUnbind $x\nBind $x to 'Fiona'\nObtain a new implied fact: Quiet('Fiona', True)\nReuse rule4: Quiet($x, True) && Nice($x, False) >>> Smart($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: Smart('Fiona', True)\nReuse rule8: Smart($x, True) && Kind($x, True) >>> White($x, True)\nBind $x to 'Fiona'\nObtain a new implied fact: White('Fiona', True)\nReuse rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\nFinish implied with rule6\nFinish implied with rule8\nFinish implied with rule4\nReuse rule6: Quiet(Anne, True) && White(Anne, True) >>> Kind(Anne, True)\nFinish implied with rule6\nFinish implied with rule9\nAll newly implied Facts: Green('Fiona', True), Kind('Fiona', True), Quiet('Fiona', True), Smart('Fiona', True), White('Anne', True), White('Fiona', True)\nFinish reasoning",
+        "status_code": "success",
+        "error_message": ""
       },
       "FOL": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
-      },
-      "CSP": {
         "predict": "B",
         "reasoning": "",
-        "status_code": "parsing error",
+        "status_code": "execution error",
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+      },
+      "SAT": {
+        "predict": "A",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -508,20 +508,20 @@
     "roles": {
       "LP": {
         "predict": "C",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "invalid syntax (rules.krb, line 51)"
+        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Cold($x, bool) ::: Is x cold?\n  Kind($x, bool) ::: Is x kind?\n  Blue($x, bool) ::: Is x blue?\n  Round($x, bool) ::: Is x round?\n  Green($x, bool) ::: Is x green?\n  Quiet($x, bool) ::: Is x quiet?\n  Big($x, bool) ::: Is x big?\nWe have following known facts from the context:\n  Cold(Anne, True)\n  Kind(Anne, True)\n  Blue(Charlie, True)\n  Round(Charlie, True)\n  Blue(Dave, True)\n  Green(Fiona, False)\n  Kind(Fiona, True)\nWe have following known rules from the context:\n  rule1: Cold(Charlie, True) >>> Quiet(Charlie, True)\n  rule2: Big(Charlie, True) >>> Green(Charlie, False)\n  rule3: Kind(Anne, True) >>> Big(Anne, True)\n  rule4: Big($x, True) >>> Blue($x, True)\n  rule5: Blue($x, True) >>> Quiet($x, True)\n  rule6: Kind(Dave, True) >>> Cold(Dave, True)\n  rule7: Round($x, True) >>> Green($x, True)\n  rule8: Quiet($x, True) >>> Round($x, True)\n  rule9: Kind($x, True) && Blue($x, False) >>> Round($x, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Cold(Charlie, True) >>> Quiet(Charlie, True)\nFinish implied with rule1\nUse rule2: Big(Charlie, True) >>> Green(Charlie, False)\nFinish implied with rule2\nUse rule3: Kind(Anne, True) >>> Big(Anne, True)\nObtain a new implied fact: Big('Anne', True)\nReuse rule2: Big(Charlie, True) >>> Green(Charlie, False)\nFinish implied with rule2\nUse rule4: Big($x, True) >>> Blue($x, True)\nFinish implied with rule4\nFinish implied with rule3\nReuse rule4: Big($x, True) >>> Blue($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Blue('Anne', True)\nUse rule5: Blue($x, True) >>> Quiet($x, True)\nFinish implied with rule5\nUse rule9: Kind($x, True) && Blue($x, False) >>> Round($x, True)\nFinish implied with rule9\nFinish implied with rule4\nReuse rule5: Blue($x, True) >>> Quiet($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Quiet('Charlie', True)\nUse rule8: Quiet($x, True) >>> Round($x, True)\nFinish implied with rule8\nReuse rule8: Quiet($x, True) >>> Round($x, True)\nFinish implied with rule8\nReuse rule8: Quiet($x, True) >>> Round($x, True)\nFinish implied with rule8\nFinish implied with rule5\nUse rule6: Kind(Dave, True) >>> Cold(Dave, True)\nFinish implied with rule6\nUse rule7: Round($x, True) >>> Green($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Green('Charlie', True)\nUnbind $x\nFinish implied with rule7\nReuse rule8: Quiet($x, True) >>> Round($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Round('Charlie', True)\nUnbind $x\nBind $x to 'Dave'\nObtain a new implied fact: Round('Dave', True)\nReuse rule7: Round($x, True) >>> Green($x, True)\nBind $x to 'Dave'\nObtain a new implied fact: Green('Dave', True)\nFinish implied with rule7\nReuse rule7: Round($x, True) >>> Green($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Green('Anne', True)\nFinish implied with rule7\nFinish implied with rule8\nReuse rule9: Kind($x, True) && Blue($x, False) >>> Round($x, True)\nBind $x to 'Anne'\nUnbind $x\nBind $x to 'Fiona'\nUnbind $x\nFinish implied with rule9\nAll newly implied Facts: Big('Anne', True), Blue('Anne', True), Green('Anne', True), Green('Charlie', True), Green('Dave', True), Quiet('Charlie', True), Round('Dave', True)\nFinish reasoning",
+        "status_code": "success",
+        "error_message": ""
       },
       "FOL": {
         "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "C",
-        "reasoning": "",
-        "status_code": "parsing error",
+      "SAT": {
+        "predict": "A",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -544,15 +544,15 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "A",
+        "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "A",
-        "reasoning": "",
-        "status_code": "parsing error",
+      "SAT": {
+        "predict": "B",
+        "reasoning": "N/A",
+        "status_code": "success",
         "error_message": ""
       }
     }
@@ -575,16 +575,16 @@
         "error_message": ""
       },
       "FOL": {
-        "predict": "A",
-        "reasoning": "",
-        "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
-      },
-      "CSP": {
         "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "invalid character '∀' (U+2200) (<string>, line 24)"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+      },
+      "SAT": {
+        "predict": "A",
+        "reasoning": "N/A",
+        "status_code": "success",
+        "error_message": ""
       }
     }
   },
@@ -601,7 +601,7 @@
     "roles": {
       "LP": {
         "predict": "C",
-        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Green($x, bool) ::: Is x green?\n  Big($x, bool) ::: Is x big?\n  Quiet($x, bool) ::: Is x quiet?\n  Round($x, bool) ::: Is x round?\n  Kind($x, bool) ::: Is x kind?\n  Nice($x, bool) ::: Is x nice?\n  Blue($x, bool) ::: Is x blue?\nWe have following known facts from the context:\n  Green(Anne, True)\n  Big(Charlie, True)\n  Quiet(Charlie, True)\n  Round(Charlie, True)\n  Green(Erin, True)\n  Kind(Erin, True)\n  Nice(Erin, True)\n  Quiet(Erin, True)\n  Blue(Fiona, True)\n  Kind(Fiona, True)\n  Quiet(Fiona, True)\nWe have following known rules from the context:\n  rule1: Kind($x, True) >>> Nice($x, True)\n  rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\n  rule3: Kind(Charlie, True) >>> Big(Charlie, True)\n  rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\n  rule5: Nice($x, True) >>> Quiet($x, True)\n  rule6: Green($x, True) >>> Big($x, True)\n  rule7: Quiet($x, True) >>> Kind($x, True)\n  rule8: Big($x, True) >>> Kind($x, True)\n  rule9: Green(Anne, True) >>> Round(Anne, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Nice('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain a new implied fact: Nice('Fiona', True)\nUse rule5: Nice($x, True) >>> Quiet($x, True)\nFinish implied with rule5\nFinish implied with rule1\nUse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Blue('Charlie', True)\nUse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nFinish implied with rule4\nFinish implied with rule2\nUse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nFinish implied with rule3\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Kind('Charlie', True)\nReuse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Nice('Charlie', True)\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nFinish implied with rule5\nFinish implied with rule1\nReuse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nObtain an already known or implied fact: Big('Charlie', True)\nFinish implied with rule3\nFinish implied with rule4\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Quiet('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain an already known or implied fact: Quiet('Fiona', True)\nUnbind $x\nBind $x to 'Charlie'\nObtain an already known or implied fact: Quiet('Charlie', True)\nUnbind $x\nFinish implied with rule5\nUse rule6: Green($x, True) >>> Big($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Big('Anne', True)\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nFinish implied with rule4\nUse rule8: Big($x, True) >>> Kind($x, True)\nFinish implied with rule8\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Erin'\nFinish implied with rule4\nReuse rule8: Big($x, True) >>> Kind($x, True)\nFinish implied with rule8\nFinish implied with rule6\nUse rule7: Quiet($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nUnbind $x\nBind $x to 'Erin'\nObtain an already known or implied fact: Kind('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain an already known or implied fact: Kind('Fiona', True)\nUnbind $x\nFinish implied with rule7\nReuse rule8: Big($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nUnbind $x\nBind $x to 'Anne'\nObtain a new implied fact: Kind('Anne', True)\nReuse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Nice('Anne', True)\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Quiet('Anne', True)\nReuse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Anne'\nFinish implied with rule2\nReuse rule7: Quiet($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nObtain an already known or implied fact: Kind('Anne', True)\nFinish implied with rule7\nFinish implied with rule5\nFinish implied with rule1\nReuse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nFinish implied with rule3\nFinish implied with rule8\nUse rule9: Green(Anne, True) >>> Round(Anne, True)\nObtain a new implied fact: Round('Anne', True)\nReuse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Blue('Anne', True)\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nObtain an already known or implied fact: Kind('Anne', True)\nFinish implied with rule4\nFinish implied with rule2\nFinish implied with rule9\nAll newly implied Facts: Big('Anne', True), Blue('Anne', True), Blue('Charlie', True), Kind('Anne', True), Kind('Charlie', True), Nice('Anne', True), Nice('Charlie', True), Nice('Fiona', True), Quiet('Anne', True), Round('Anne', True)\nFinish reasoning",
+        "reasoning": "We first define following predicates and corresponding natural language explanations:\n  Green($x, bool) ::: Is x green?\n  Big($x, bool) ::: Is x big?\n  Quiet($x, bool) ::: Is x quiet?\n  Round($x, bool) ::: Is x round?\n  Kind($x, bool) ::: Is x kind?\n  Nice($x, bool) ::: Is x nice?\n  Blue($x, bool) ::: Is x blue?\nWe have following known facts from the context:\n  Green(Anne, True)\n  Big(Charlie, True)\n  Quiet(Charlie, True)\n  Round(Charlie, True)\n  Green(Erin, True)\n  Kind(Erin, True)\n  Nice(Erin, True)\n  Quiet(Erin, True)\n  Blue(Fiona, True)\n  Kind(Fiona, True)\n  Quiet(Fiona, True)\nWe have following known rules from the context:\n  rule1: Kind($x, True) >>> Nice($x, True)\n  rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\n  rule3: Kind(Charlie, True) >>> Big(Charlie, True)\n  rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\n  rule5: Nice($x, True) >>> Quiet($x, True)\n  rule6: Quiet($x, True) >>> Kind($x, True)\n  rule7: Big($x, True) >>> Kind($x, True)\n  rule8: Green($x, True) >>> Big($x, True)\n  rule9: Green(Anne, True) >>> Round(Anne, True)\nNow begin reasoning to obtain all implied facts:\nUse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Nice('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain a new implied fact: Nice('Fiona', True)\nUse rule5: Nice($x, True) >>> Quiet($x, True)\nFinish implied with rule5\nFinish implied with rule1\nUse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Blue('Charlie', True)\nUse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nFinish implied with rule4\nFinish implied with rule2\nUse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nFinish implied with rule3\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Kind('Charlie', True)\nReuse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Charlie'\nObtain a new implied fact: Nice('Charlie', True)\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nFinish implied with rule5\nFinish implied with rule1\nReuse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nObtain an already known or implied fact: Big('Charlie', True)\nFinish implied with rule3\nFinish implied with rule4\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Quiet('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain an already known or implied fact: Quiet('Fiona', True)\nUnbind $x\nBind $x to 'Charlie'\nObtain an already known or implied fact: Quiet('Charlie', True)\nUnbind $x\nFinish implied with rule5\nUse rule6: Quiet($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nUnbind $x\nBind $x to 'Erin'\nObtain an already known or implied fact: Kind('Erin', True)\nUnbind $x\nBind $x to 'Fiona'\nObtain an already known or implied fact: Kind('Fiona', True)\nUnbind $x\nFinish implied with rule6\nUse rule7: Big($x, True) >>> Kind($x, True)\nBind $x to 'Charlie'\nObtain an already known or implied fact: Kind('Charlie', True)\nUnbind $x\nFinish implied with rule7\nUse rule8: Green($x, True) >>> Big($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Big('Anne', True)\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nFinish implied with rule4\nReuse rule7: Big($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Kind('Anne', True)\nReuse rule1: Kind($x, True) >>> Nice($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Nice('Anne', True)\nReuse rule5: Nice($x, True) >>> Quiet($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Quiet('Anne', True)\nReuse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Anne'\nFinish implied with rule2\nReuse rule6: Quiet($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nObtain an already known or implied fact: Kind('Anne', True)\nFinish implied with rule6\nFinish implied with rule5\nFinish implied with rule1\nReuse rule3: Kind(Charlie, True) >>> Big(Charlie, True)\nFinish implied with rule3\nFinish implied with rule7\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Erin'\nFinish implied with rule4\nReuse rule7: Big($x, True) >>> Kind($x, True)\nBind $x to 'Erin'\nObtain an already known or implied fact: Kind('Erin', True)\nFinish implied with rule7\nFinish implied with rule8\nUse rule9: Green(Anne, True) >>> Round(Anne, True)\nObtain a new implied fact: Round('Anne', True)\nReuse rule2: Round($x, True) && Quiet($x, True) >>> Blue($x, True)\nBind $x to 'Anne'\nObtain a new implied fact: Blue('Anne', True)\nReuse rule4: Big($x, True) && Blue($x, True) >>> Kind($x, True)\nBind $x to 'Anne'\nObtain an already known or implied fact: Kind('Anne', True)\nFinish implied with rule4\nFinish implied with rule2\nFinish implied with rule9\nAll newly implied Facts: Big('Anne', True), Blue('Anne', True), Blue('Charlie', True), Kind('Anne', True), Kind('Charlie', True), Nice('Anne', True), Nice('Charlie', True), Nice('Fiona', True), Quiet('Anne', True), Round('Anne', True)\nFinish reasoning",
         "status_code": "success",
         "error_message": ""
       },
@@ -609,13 +609,13 @@
         "predict": "B",
         "reasoning": "",
         "status_code": "execution error",
-        "error_message": "[Errno 13] Permission denied: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
+        "error_message": "[Errno 8] Exec format error: '/Users/haochengyang/Desktop/logicalLLM/AAAI/multiagentdebate/solver_engine/src/symbolic_solvers/fol_solver/../Prover9/bin/prover9'"
       },
-      "CSP": {
-        "predict": "C",
+      "SAT": {
+        "predict": "B",
         "reasoning": "",
-        "status_code": "parsing error",
-        "error_message": ""
+        "status_code": "execution error",
+        "error_message": "No Output"
       }
     }
   }

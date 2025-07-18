@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import random
 # 添加项目根目录到 Python 路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
@@ -228,12 +229,32 @@ class Pyke_Program:
             engine.activate('rules')  # 激活规则
             engine.get_kb('facts')    # 加载事实
 
-            # 解析查询并执行推理
-            predicate, subject, value_to_check = self.parse_query(self.Query[0])
-            result = self.check_specific_predicate(subject, predicate, engine)
-            
-            # 根据数据集类型映射答案
-            answer = self.answer_map[self.dataset_name](result, value_to_check)
+            # 根据数据集类型处理查询
+            if self.dataset_name == 'LogicalDeduction':
+                # LogicalDeduction: 处理多个查询，找出所有True的选项
+                true_options = []
+                option_letters = ['A', 'B', 'C', 'D', 'E']
+                
+                for i, query in enumerate(self.Query):
+                    predicate, subject, value_to_check = self.parse_query(query)
+                    result = self.check_specific_predicate(subject, predicate, engine)
+                    
+                    # 如果结果匹配要检查的值，则该选项为True
+                    if result == value_to_check:
+                        true_options.append(option_letters[i])
+                
+                # 从True选项中随机选择，如果没有True选项则随机选择
+                if true_options:
+                    answer = random.choice(true_options)
+                else:
+                    answer = random.choice(option_letters)
+            else:
+                # 其他数据集: 处理单个查询
+                predicate, subject, value_to_check = self.parse_query(self.Query[0])
+                result = self.check_specific_predicate(subject, predicate, engine)
+                
+                # 根据数据集类型映射答案
+                answer = self.answer_map[self.dataset_name](result, value_to_check)
             
             # Clean up after successful execution
             complied_krb_dir = 'solver_engine/src/compiled_krb'
@@ -312,21 +333,69 @@ class Pyke_Program:
         else:
             return 'B'  # 错误
 
+
     # ------------------------------------------------------------------
     # Functions for revealing solver reasoning process using Pyke tracing
 
     def execute_program(self):
         rule_map = {f"rule{i+1}": r.split(':::')[0].strip() for i, r in enumerate(self.Rules_full)}
-        patch_pyke(rule_map)
-        answer, msg = self.execute_program_wo_reasoning()
-        reasoning = tracer.events
-        if tracer.new_facts:
-            reasoning.append("All newly implied Facts: " + ', '.join(sorted(tracer.new_facts)))
+        
+        if self.dataset_name == 'LogicalDeduction':
+            # For LogicalDeduction, first determine the chosen option without tracing
+            answer, msg = self.execute_program_wo_reasoning()
+            
+            # Then generate reasoning only for the chosen option
+            patch_pyke(rule_map)
+            
+            # Find which query corresponds to the chosen option
+            option_letters = ['A', 'B', 'C', 'D', 'E']
+            chosen_index = option_letters.index(answer)
+            chosen_query = self.Query[chosen_index]
+            
+            # Generate reasoning for only the chosen query
+            try:
+                # Re-initialize engine for reasoning generation
+                if os.path.exists(self.cache_dir):
+                    os.system(f'rm -rf {self.cache_dir}/*')
+                
+                # Recreate files for reasoning
+                self.create_fact_file(self.Facts)
+                self.create_rule_file(self.Rules)
+                
+                # 初始化Pyke推理引擎
+                engine = knowledge_engine.engine(self.cache_dir)
+                engine.reset()
+                engine.activate('rules')  # 激活规则
+                engine.get_kb('facts')    # 加载事实
+                
+                # 只处理选中的查询
+                predicate, subject, value_to_check = self.parse_query(chosen_query)
+                result = self.check_specific_predicate(subject, predicate, engine)
+                
+                reasoning = tracer.events
+                if tracer.new_facts:
+                    reasoning.append("All newly implied Facts: " + ', '.join(sorted(tracer.new_facts)))
+                else:
+                    reasoning.append("All newly implied Facts: None")
+                self.reasoning_process = reasoning
+                unpatch_pyke()
+                
+                return answer, msg, self.build_reasoning_string(reasoning)
+            except Exception as e:
+                unpatch_pyke()
+                return answer, str(e), ""
         else:
-            reasoning.append("All newly implied Facts: None")
-        self.reasoning_process = reasoning
-        unpatch_pyke()
-        return answer, msg, self.build_reasoning_string(reasoning)
+            # For other datasets, use the original logic
+            patch_pyke(rule_map)
+            answer, msg = self.execute_program_wo_reasoning()
+            reasoning = tracer.events
+            if tracer.new_facts:
+                reasoning.append("All newly implied Facts: " + ', '.join(sorted(tracer.new_facts)))
+            else:
+                reasoning.append("All newly implied Facts: None")
+            self.reasoning_process = reasoning
+            unpatch_pyke()
+            return answer, msg, self.build_reasoning_string(reasoning)
 
     def build_reasoning_string(self, reasoning):
         lines = []
@@ -485,17 +554,16 @@ SecondFromRight(red,    True)  ::: Option E
     # SecondFromRight(red,    True)  ::: Option E
 
 
-    #tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    tests = [logic_program_logic_deduction]
+    tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
+    #tests = [logic_program_logic_deduction]
    
     
-    import json
     for test in tests:
         pyke_program = Pyke_Program(test, 'ProofWriter')
         result, error, reasoning = pyke_program.execute_program()
-        print(error)
-        print(result)
-        #print(reasoning)
+        print(f"Error: {error}")
+        print(f"Result: {result}")
+        #print(f"Reasoning: {reasoning}")
 
     compiled_krb_dir = os.path.join(os.path.dirname(__file__), 'compiled_krb')
     if os.path.exists(compiled_krb_dir):

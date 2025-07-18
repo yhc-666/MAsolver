@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from code_translator import *
+from .code_translator import *
 import subprocess
 from subprocess import check_output
 from os.path import join
@@ -234,28 +234,7 @@ class LSAT_Z3_Program:
             return mapping.get(cleaned_answer, cleaned_answer)
 
 if __name__=="__main__":
-    logic_program = '''# Declarations
-people = EnumSort([Vladimir, Wendy])
-meals = EnumSort([breakfast, lunch, dinner, snack])
-foods = EnumSort([fish, hot_cakes, macaroni, omelet, poached_eggs])
-eats = Function([people, meals] -> [foods])
-
-# Constraints
-ForAll([m:meals], eats(Vladimir, m) != eats(Wendy, m)) ::: At no meal does Vladimir eat the same kind of food as Wendy
-ForAll([p:people, f:foods], Count([m:meals], eats(p, m) == f) <= 1) ::: Neither of them eats the same kind of food more than once during the day
-ForAll([p:people], Or(eats(p, breakfast) == hot_cakes, eats(p, breakfast) == poached_eggs, eats(p, breakfast) == omelet)) ::: For breakfast, each eats exactly one of the following: hot cakes, poached eggs, or omelet
-ForAll([p:people], Or(eats(p, lunch) == fish, eats(p, lunch) == hot_cakes, eats(p, lunch) == macaroni, eats(p, lunch) == omelet)) ::: For lunch, each eats exactly one of the following: fish, hot cakes, macaroni, or omelet
-ForAll([p:people], Or(eats(p, dinner) == fish, eats(p, dinner) == hot_cakes, eats(p, dinner) == macaroni, eats(p, dinner) == omelet)) ::: For dinner, each eats exactly one of the following: fish, hot cakes, macaroni, or omelet
-ForAll([p:people], Or(eats(p, snack) == fish, eats(p, snack) == omelet)) ::: For a snack, each eats exactly one of the following: fish or omelet
-eats(Wendy, lunch) == omelet ::: Wendy eats an omelet for lunch
-
-# Options
-Question ::: Vladimir must eat which one of the following foods?
-is_valid(Exists([m:meals], eats(Vladimir, m) == fish)) ::: (A)
-is_valid(Exists([m:meals], eats(Vladimir, m) == hot_cakes)) ::: (B)
-is_valid(Exists([m:meals], eats(Vladimir, m) == macaroni)) ::: (C)
-is_valid(Exists([m:meals], eats(Vladimir, m) == omelet)) ::: (D)
-is_valid(Exists([m:meals], eats(Vladimir, m) == poached_eggs)) ::: (E)'''
+    logic_program = '''# Declarations\nobjects = EnumSort([Bob, Charlie, Dave, Fiona])\nattributes = EnumSort([cold, quiet, red, smart, kind, rough, round])\nhas_attribute = Function([objects, attributes] -> [bool])\n# Constraints\nhas_attribute(Bob, cold) == True\nhas_attribute(Bob, quiet) == True\nhas_attribute(Bob, red) == True\nhas_attribute(Bob, smart) == True\nhas_attribute(Charlie, kind) == True\nhas_attribute(Charlie, quiet) == True\nhas_attribute(Charlie, red) == True\nhas_attribute(Charlie, rough) == True\nhas_attribute(Dave, cold) == True\nhas_attribute(Dave, kind) == True\nhas_attribute(Dave, smart) == True\nhas_attribute(Fiona, quiet) == True\nForAll([x:objects], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, rough) == True))\nForAll([x:objects], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, rough) == True))\nForAll([x:objects], Implies(And(has_attribute(x, red) == True, has_attribute(x, cold) == True), has_attribute(x, round) == True))\nForAll([x:objects], Implies(And(has_attribute(x, kind) == True, has_attribute(x, rough) == True), has_attribute(x, red) == True))\nForAll([x:objects], Implies(has_attribute(x, quiet) == True, has_attribute(x, rough) == True))\nForAll([x:objects], Implies(And(has_attribute(x, cold) == True, has_attribute(x, smart) == True), has_attribute(x, red) == True))\nForAll([x:objects], Implies(has_attribute(x, rough) == True, has_attribute(x, cold) == True))\nForAll([x:objects], Implies(has_attribute(x, red) == True, has_attribute(x, rough) == True))\nImplies(And(has_attribute(Dave, smart) == True, has_attribute(Dave, kind) == True), has_attribute(Dave, quiet) == True)\n# Options\nis_valid(has_attribute(Charlie, kind) == True)\nis_unsat(has_attribute(Charlie, kind) == True)'''
 
 
     sampel_proofwriter = """
@@ -363,7 +342,7 @@ is_valid(pos(Red) == 4)  ::: E) The red book is the second from the right.
     z3_program = LSAT_Z3_Program(logic_program_folio, 'FOLIO')
     print(z3_program.standard_code)
 
-    output, error_message = z3_program.execute_program()
+    output, error_message, reasoning = z3_program.execute_program()
     print("Output:", output)
     print("Error message:", error_message)
     
