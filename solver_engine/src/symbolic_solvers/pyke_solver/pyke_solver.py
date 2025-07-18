@@ -220,9 +220,8 @@ class Pyke_Program:
         Returns:
             tuple: (答案, 错误信息)
         """
-
+        answer = None
         try:
-
             # 初始化Pyke推理引擎
             engine = knowledge_engine.engine(self.cache_dir)
             engine.reset()
@@ -256,41 +255,12 @@ class Pyke_Program:
                 # 根据数据集类型映射答案
                 answer = self.answer_map[self.dataset_name](result, value_to_check)
             
-            # Clean up after successful execution
-            complied_krb_dir = 'solver_engine/src/compiled_krb'
-            if os.path.exists(complied_krb_dir):
-                print('removing compiled_krb')
-                # Preserve __init__.py file while removing compiled files
-                for file in os.listdir(complied_krb_dir):
-                    if file != '__init__.py':
-                        file_path = os.path.join(complied_krb_dir, file)
-                        if os.path.isfile(file_path):
-                            os.remove(file_path)
-                        elif os.path.isdir(file_path):
-                            os.system(f'rm -rf {file_path}')
-
-            if os.path.exists(self.cache_dir):
-                print('removing cache_program')
-                os.system(f'rm -rf {self.cache_dir}/*')
+            return answer, ""
         except Exception as e:
-            complied_krb_dir = 'solver_engine/src/compiled_krb'
-            if os.path.exists(complied_krb_dir):
-                print('removing compiled_krb')
-                # Preserve __init__.py file while removing compiled files
-                for file in os.listdir(complied_krb_dir):
-                    if file != '__init__.py':
-                        file_path = os.path.join(complied_krb_dir, file)
-                        if os.path.isfile(file_path):
-                            os.remove(file_path)
-                        elif os.path.isdir(file_path):
-                            os.system(f'rm -rf {file_path}')
-
-            if os.path.exists(self.cache_dir):
-                print('removing cache_program')
-                os.system(f'rm -rf {self.cache_dir}/*')
             return None, e
-        
-        return answer, ""
+        finally:
+            # 确保清理工作始终执行
+            self.cleanup_directories()
 
     def answer_mapping(self, answer):
         """答案映射函数（基础版本）"""
@@ -348,6 +318,27 @@ class Pyke_Program:
         else:
             return 'B'  # 错误
 
+    def cleanup_directories(self):
+        """
+        清理缓存和编译目录
+        """
+        # 清理 compiled_krb 目录
+        compiled_krb_dir = 'solver_engine/src/compiled_krb'
+        if os.path.exists(compiled_krb_dir):
+            print('removing compiled_krb')
+            for file in os.listdir(compiled_krb_dir):
+                if file != '__init__.py':
+                    file_path = os.path.join(compiled_krb_dir, file)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                    elif os.path.isdir(file_path):
+                        os.system(f'rm -rf {file_path}')
+        
+        # 清理 cache 目录
+        if os.path.exists(self.cache_dir):
+            print('removing cache_program')
+            os.system(f'rm -rf {self.cache_dir}/*')
+
 
     # ------------------------------------------------------------------
     # Functions for revealing solver reasoning process using Pyke tracing
@@ -369,9 +360,8 @@ class Pyke_Program:
             
             # Generate reasoning for only the chosen query
             try:
-                # Re-initialize engine for reasoning generation
-                if os.path.exists(self.cache_dir):
-                    os.system(f'rm -rf {self.cache_dir}/*')
+                # Clear directories before reasoning
+                self.cleanup_directories()
                 
                 # Recreate files for reasoning
                 self.create_fact_file(self.Facts)
@@ -393,24 +383,27 @@ class Pyke_Program:
                 else:
                     reasoning.append("All newly implied Facts: None")
                 self.reasoning_process = reasoning
-                unpatch_pyke()
                 
                 return answer, msg, self.build_reasoning_string(reasoning)
             except Exception as e:
-                unpatch_pyke()
                 return answer, str(e), ""
+            finally:
+                unpatch_pyke()
+                self.cleanup_directories()
         else:
             # For other datasets, use the original logic
-            patch_pyke(rule_map)
-            answer, msg = self.execute_program_wo_reasoning()
-            reasoning = tracer.events
-            if tracer.new_facts:
-                reasoning.append("All newly implied Facts: " + ', '.join(sorted(tracer.new_facts)))
-            else:
-                reasoning.append("All newly implied Facts: None")
-            self.reasoning_process = reasoning
-            unpatch_pyke()
-            return answer, msg, self.build_reasoning_string(reasoning)
+            try:
+                patch_pyke(rule_map)
+                answer, msg = self.execute_program_wo_reasoning()
+                reasoning = tracer.events
+                if tracer.new_facts:
+                    reasoning.append("All newly implied Facts: " + ', '.join(sorted(tracer.new_facts)))
+                else:
+                    reasoning.append("All newly implied Facts: None")
+                self.reasoning_process = reasoning
+                return answer, msg, self.build_reasoning_string(reasoning)
+            finally:
+                unpatch_pyke()
 
     def build_reasoning_string(self, reasoning):
         lines = []
@@ -488,33 +481,36 @@ if __name__ == "__main__":
 
     # Answer: B
     logic_program7 = """Predicates:
-Book($x, bool)                  ::: $x is one of the five books.
-LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
-RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
-SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
-SecondFromLeft($x, bool)        ::: Book $x is the second book from the left.
+Furry($x, bool) ::: Is x furry?
+Nice($x, bool) ::: Is x nice?
+Smart($x, bool) ::: Is x smart?
+Young($x, bool) ::: Is x young?
+Green($x, bool) ::: Is x green?
+Big($x, bool) ::: Is x big?
+Round($x, bool) ::: Is x round?
+
 Facts:
-Book(green,  True)              ::: The green book.
-Book(blue,   True)              ::: The blue book.
-Book(white,  True)              ::: The white book.
-Book(purple, True)              ::: The purple book.
-Book(yellow, True)              ::: The yellow book.
-RightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.
-LeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.
-SecondFromRight(blue, True)     ::: The blue book is the second from the right.
-SecondFromLeft(purple, True)    ::: The purple book is the second from the left.
+Furry(Anne, True) ::: Anne is furry.
+Nice(Anne, True) ::: Anne is nice.
+Smart(Anne, True) ::: Anne is smart.
+Young(Bob, True) ::: Bob is young.
+Nice(Erin, True) ::: Erin is nice.
+Smart(Harry, True) ::: Harry is smart.
+Young(Harry, True) ::: Harry is young.
+
 Rules:
-LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
-RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
-RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
-SecondFromRight($a, True) >>> RightOf($rm, $a, True) && RightOf($a, $others, True) ::: $a is second from the right if it is immediately left of the rightmost book and right of the remaining books.
-SecondFromLeft($a, True) >>> LeftOf($lm, $a, True) && LeftOf($a, $others, True) ::: $a is second from the left if it is immediately right of the leftmost book and left of the remaining books.
+Young($x, True) >>> Furry($x, True) ::: Young things are furry.
+Nice($x, True) && Furry($x, True) >>> Green($x, True) ::: Nice, furry things are green.
+Green($x, True) >>> Nice($x, True) ::: All green things are nice.
+Nice($x, True) && Green($x, True) >>> Big($x, True) ::: Nice, green things are big.
+Green($x, True) >>> Smart($x, True) ::: All green things are smart.
+Big($x, True) && Young($x, True) >>> Round($x, True) ::: If something is big and young then it is round.
+Green($x, True) >>> Big($x, True) ::: All green things are big.
+Young(Harry, True) >>> Furry(Harry, True) ::: If Harry is young then Harry is furry.
+Furry($x, True) && Smart($x, True) >>> Nice($x, True) ::: Furry, smart things are nice.
+
 Query:
-SecondFromLeft(green,  True)  ::: Option A
-SecondFromLeft(blue,   True)  ::: Option B
-SecondFromLeft(white,  True)  ::: Option C
-SecondFromLeft(purple, True)  ::: Option D
-SecondFromLeft(yellow, True)  ::: Option E"""
+Green(Harry, False) ::: Harry is not green."""
 
     sample_logic_deduction = """ "id": "logical_deduction_35",
         "context": "The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.",
@@ -565,11 +561,12 @@ SecondFromRight(red,    True)  ::: Option E
     # SecondFromRight(blue,   True)  ::: Option D
     # SecondFromRight(red,    True)  ::: Option E
 
+    logic_program_l = "Predicates:\nBook($x, bool)                  ::: $x is one of the five books.\nLeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.\nRightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.\nSecondFromRight($x, bool)       ::: Book $x is the second book from the right.\nSecondFromLeft($x, bool)        ::: Book $x is the second book from the left.\nFacts:\nBook(green,  True)              ::: The green book.\nBook(blue,   True)              ::: The blue book.\nBook(white,  True)              ::: The white book.\nBook(purple, True)              ::: The purple book.\nBook(yellow, True)              ::: The yellow book.\nRightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.\nLeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.\nSecondFromRight(blue, True)     ::: The blue book is the second from the right.\nSecondFromLeft(purple, True)    ::: The purple book is the second from the left.\nRules:\nLeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.\nRightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.\nRightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right\u2011of is transitive.\nSecondFromRight($a, True) >>> RightOf($rm, $a, True) && RightOf($a, $others, True) ::: $a is second from the right if it is immediately left of the rightmost book and right of the remaining books.\nSecondFromLeft($a, True) >>> LeftOf($lm, $a, True) && LeftOf($a, $others, True) ::: $a is second from the left if it is immediately right of the leftmost book and left of the remaining books.\nQuery:\nSecondFromLeft(green,  True)  ::: Option A\nSecondFromLeft(blue,   True)  ::: Option B\nSecondFromLeft(white,  True)  ::: Option C\nSecondFromLeft(purple, True)  ::: Option D\nSecondFromLeft(yellow, True)  ::: Option E"
 
-    #tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6]
-    tests = [logic_program_logic_deduction]
+    tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
+    tests = [logic_program_l]
    
-    
+
     for test in tests:
         pyke_program = Pyke_Program(test, 'LogicalDeduction')
         result, error, reasoning = pyke_program.execute_program()
