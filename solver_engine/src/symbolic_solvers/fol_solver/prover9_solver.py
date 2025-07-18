@@ -556,10 +556,10 @@ Rank(watermelon, three) ::: Option E
 """
     
     
-
+    demo_logic_program = "Predicates:\nBird($x) ::: $x is one of the five birds.\nLeftOf($x, $y) ::: Bird $x is strictly to the left of bird $y.\nPosition($x, $n) ::: Bird $x is at position $n from the left (1-based index).\nPremises:\nBird(crow) ::: The crow.\nBird(robin) ::: The robin.\nBird(quail) ::: The quail.\nBird(blue_jay) ::: The blue jay.\nBird(falcon) ::: The falcon.\nLeftOf(robin, quail) ::: The robin is to the left of the quail.\nPosition(falcon, 3) ::: The falcon is the third from the left.\nLeftOf(crow, falcon) ::: The crow is to the left of the falcon.\nPosition(blue_jay, 1) ::: The blue jay is the leftmost.\n\u2200x \u2200y (LeftOf(x, y) \u2192 \u00acLeftOf(y, x)) ::: Left-of is asymmetric.\n\u2200x \u2200y \u2200z (LeftOf(x, y) \u2227 LeftOf(y, z) \u2192 LeftOf(x, z)) ::: Left-of is transitive.\n\u2200x \u2200n \u2200m (Position(x, n) \u2227 Position(x, m) \u2192 n = m) ::: One position per bird.\n\u2200n \u2200x \u2200y (Position(x, n) \u2227 Position(y, n) \u2192 x = y) ::: One bird per position.\n\u2200x \u2200y (LeftOf(x, y) \u2194 \u2203n \u2203m (Position(x, n) \u2227 Position(y, m) \u2227 n < m)) ::: Left-of corresponds to position ordering.\nConclusion:\nPosition(crow, 3) ::: Option A\nPosition(robin, 3) ::: Option B\nPosition(quail, 3) ::: Option C\nPosition(blue_jay, 3) ::: Option D\nPosition(falcon, 3) ::: Option E"
     
     # Test LogicalDeduction functionality
-    prover9_program = FOL_Prover9_Program(logic_program_logic_deduction, dataset_name='LogicalDeduction')
+    prover9_program = FOL_Prover9_Program(demo_logic_program, dataset_name='LogicalDeduction')
     result, error_message, reasoning = prover9_program.execute_program()
     print('LogicalDeduction Test Results:')
     print('result:', result)

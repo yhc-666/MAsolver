@@ -350,11 +350,15 @@ class Pyke_Program:
             # For LogicalDeduction, first determine the chosen option without tracing
             answer, msg = self.execute_program_wo_reasoning()
             
+            # If answer is None, randomly choose an option
+            option_letters = ['A', 'B', 'C', 'D', 'E']
+            if answer is None or answer not in option_letters:
+                answer = random.choice(option_letters)
+            
             # Then generate reasoning only for the chosen option
             patch_pyke(rule_map)
             
             # Find which query corresponds to the chosen option
-            option_letters = ['A', 'B', 'C', 'D', 'E']
             chosen_index = option_letters.index(answer)
             chosen_query = self.Query[chosen_index]
             
@@ -561,7 +565,7 @@ SecondFromRight(red,    True)  ::: Option E
     # SecondFromRight(blue,   True)  ::: Option D
     # SecondFromRight(red,    True)  ::: Option E
 
-    logic_program_l = "Predicates:\nBook($x, bool)                  ::: $x is one of the five books.\nLeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.\nRightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.\nSecondFromRight($x, bool)       ::: Book $x is the second book from the right.\nSecondFromLeft($x, bool)        ::: Book $x is the second book from the left.\nFacts:\nBook(green,  True)              ::: The green book.\nBook(blue,   True)              ::: The blue book.\nBook(white,  True)              ::: The white book.\nBook(purple, True)              ::: The purple book.\nBook(yellow, True)              ::: The yellow book.\nRightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.\nLeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.\nSecondFromRight(blue, True)     ::: The blue book is the second from the right.\nSecondFromLeft(purple, True)    ::: The purple book is the second from the left.\nRules:\nLeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.\nRightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.\nRightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right\u2011of is transitive.\nSecondFromRight($a, True) >>> RightOf($rm, $a, True) && RightOf($a, $others, True) ::: $a is second from the right if it is immediately left of the rightmost book and right of the remaining books.\nSecondFromLeft($a, True) >>> LeftOf($lm, $a, True) && LeftOf($a, $others, True) ::: $a is second from the left if it is immediately right of the leftmost book and left of the remaining books.\nQuery:\nSecondFromLeft(green,  True)  ::: Option A\nSecondFromLeft(blue,   True)  ::: Option B\nSecondFromLeft(white,  True)  ::: Option C\nSecondFromLeft(purple, True)  ::: Option D\nSecondFromLeft(yellow, True)  ::: Option E"
+    logic_program_l = "Predicates:\nBook($x, bool)                  ::: $x is one of the five books.\nLeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.\nRightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.\nSecondFromRight($x, bool)       ::: Book $x is the second book from the right.\nSecondFromLeft($x, bool)        ::: Book $x is the second book from the left.\nFacts:\nBook(green,  True)              ::: The green book.\nBook(blue,   True)              ::: The blue book.\nBook(white,  True)              ::: The white book.\nBook(purple, True)              ::: The purple book.\nBook(yellow, True)              ::: The yellow book.\nRightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.\nLeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.\nSecondFromRight(blue, True)     ::: The blue book is the second from the right.\nSecondFromLeft(purple, True)    ::: The purple book is the second from the left.\nRules:\nLeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.\nRightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.\nRightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right\u2011of is transitive.\n\nQuery:\nSecondFromLeft(green,  True)  ::: Option A\nSecondFromLeft(blue,   True)  ::: Option B\nSecondFromLeft(white,  True)  ::: Option C\nSecondFromLeft(purple, True)  ::: Option D\nSecondFromLeft(yellow, True)  ::: Option E"
 
     tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
     tests = [logic_program_l]

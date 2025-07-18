@@ -55,6 +55,8 @@ class CodeTranslator:
             return "BoolSort()"
         elif arg == "int":
             return "IntSort()"
+        elif arg.endswith("()"):  # Already a Z3 sort function call
+            return arg
         else:
             return f"{arg}_sort"
 

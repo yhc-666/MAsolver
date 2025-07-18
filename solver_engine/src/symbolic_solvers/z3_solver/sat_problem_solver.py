@@ -70,17 +70,7 @@ class LSAT_Z3_Program:
         pure_declaration_statements = [x for x in declaration_statements if "Sort" in x or "Function" in x]
         variable_constrant_statements = [x for x in declaration_statements if not "Sort" in x and not "Function" in x]
         for s in pure_declaration_statements:
-            if "EnumSort" in s:
-                sort_name = s.split("=")[0].strip()
-                sort_member_str = s.split("=")[1].strip()[len("EnumSort("):-1]
-                sort_members = [x.strip() for x in sort_member_str[1:-1].split(",")]
-                enum_sort_declarations[sort_name] = sort_members
-            elif "IntSort" in s:
-                sort_name = s.split("=")[0].strip()
-                sort_member_str = s.split("=")[1].strip()[len("IntSort("):-1]
-                sort_members = [x.strip() for x in sort_member_str[1:-1].split(",")]
-                int_sort_declarations[sort_name] = sort_members
-            elif "Function" in s:
+            if "Function" in s:
                 function_name = s.split("=")[0].strip()
                 if "->" in s and "[" not in s:
                     function_args_str = s.split("=")[1].strip()[len("Function("):]
@@ -97,6 +87,16 @@ class LSAT_Z3_Program:
                     function_args_str = s.split("=")[1].strip()[len("Function("):-1]
                     function_args = [x.strip() for x in function_args_str.split(",")]
                     function_declarations[function_name] = function_args
+            elif "EnumSort" in s:
+                sort_name = s.split("=")[0].strip()
+                sort_member_str = s.split("=")[1].strip()[len("EnumSort("):-1]
+                sort_members = [x.strip() for x in sort_member_str[1:-1].split(",")]
+                enum_sort_declarations[sort_name] = sort_members
+            elif "IntSort" in s:
+                sort_name = s.split("=")[0].strip()
+                sort_member_str = s.split("=")[1].strip()[len("IntSort("):-1]
+                sort_members = [x.strip() for x in sort_member_str[1:-1].split(",")]
+                int_sort_declarations[sort_name] = sort_members
             else:
                 raise RuntimeError("Unknown declaration statement: {}".format(s))
 
@@ -339,7 +339,11 @@ is_valid(pos(Blue) == 4)  ::: D) The blue book is the second from the right.
 is_valid(pos(Red) == 4)  ::: E) The red book is the second from the right.
     """
 
-    z3_program = LSAT_Z3_Program(logic_program, 'ProofWriter')
+
+    test = "# Declarations\nfruits = EnumSort([Watermelons, Plums, Apples, Peaches, Kiwis])\nprice = Function([fruits] -> [IntSort()])\n# Constraints\nDistinct([f:fruits], price(f)) ::: Each fruit has a unique price\nprice(Apples) < price(Peaches) ::: The apples are less expensive than the peaches.\nprice(Plums) == 1 ::: The plums are the cheapest.\nprice(Kiwis) == 2 ::: The kiwis are the second-cheapest.\nprice(Peaches) < price(Watermelons) ::: The watermelons are more expensive than the peaches.\n# Options\nis_valid(price(Watermelons) == 5) ::: A) The watermelons are the most expensive.\nis_valid(price(Plums) == 5) ::: B) The plums are the most expensive.\nis_valid(price(Apples) == 5) ::: C) The apples are the most expensive.\nis_valid(price(Peaches) == 5) ::: D) The peaches are the most expensive.\nis_valid(price(Kiwis) == 5) ::: E) The kiwis are the most expensive."
+
+
+    z3_program = LSAT_Z3_Program(test, 'LogicalDeduction')
     print(z3_program.standard_code)
 
     output, error_message, reasoning = z3_program.execute_program()

@@ -1,40 +1,36 @@
 from z3 import *
 
-objects_sort, (Anne, Charlie, Erin, Fiona) = EnumSort('objects', ['Anne', 'Charlie', 'Erin', 'Fiona'])
-attributes_sort, (kind, big, green, white, quiet, red, rough) = EnumSort('attributes', ['kind', 'big', 'green', 'white', 'quiet', 'red', 'rough'])
-objects = [Anne, Charlie, Erin, Fiona]
-attributes = [kind, big, green, white, quiet, red, rough]
+objects_sort, (Charlie, Dave, Erin, Fiona) = EnumSort('objects', ['Charlie', 'Dave', 'Erin', 'Fiona'])
+attributes_sort, (cold, young, white, nice, blue, green, round) = EnumSort('attributes', ['cold', 'young', 'white', 'nice', 'blue', 'green', 'round'])
+objects = [Charlie, Dave, Erin, Fiona]
+attributes = [cold, young, white, nice, blue, green, round]
 has_attribute = Function('has_attribute', objects_sort, attributes_sort, BoolSort())
 
 pre_conditions = []
-pre_conditions.append(has_attribute(Anne, kind) == True)
-pre_conditions.append(has_attribute(Charlie, big) == False)
-pre_conditions.append(has_attribute(Charlie, green) == False)
-pre_conditions.append(has_attribute(Charlie, white) == True)
-pre_conditions.append(has_attribute(Erin, big) == True)
-pre_conditions.append(has_attribute(Erin, green) == True)
+pre_conditions.append(has_attribute(Charlie, cold) == True)
+pre_conditions.append(has_attribute(Charlie, young) == True)
+pre_conditions.append(has_attribute(Dave, cold) == True)
 pre_conditions.append(has_attribute(Erin, white) == True)
-pre_conditions.append(has_attribute(Fiona, green) == True)
-pre_conditions.append(has_attribute(Fiona, kind) == True)
-pre_conditions.append(has_attribute(Fiona, quiet) == True)
-pre_conditions.append(has_attribute(Fiona, red) == True)
+pre_conditions.append(has_attribute(Fiona, nice) == True)
 pre_conditions.append(has_attribute(Fiona, white) == True)
-pre_conditions.append(Implies(And(has_attribute(Erin, big) == True, has_attribute(Erin, red) == True), has_attribute(Erin, kind) == True))
+pre_conditions.append(has_attribute(Fiona, young) == True)
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(has_attribute(x, rough) == True, has_attribute(x, green) == True)))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, blue) == True, has_attribute(x, white) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(has_attribute(x, kind) == True, has_attribute(x, green) == True)))
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, nice) == True, has_attribute(x, blue) == True), has_attribute(x, white) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, green) == True), has_attribute(x, big) == True)))
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, young) == True, has_attribute(x, blue) == True), has_attribute(x, green) == False)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, rough) == True, has_attribute(x, green) == True), has_attribute(x, red) == True)))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, white) == True, has_attribute(x, nice) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(has_attribute(x, green) == True, has_attribute(x, rough) == True)))
-pre_conditions.append(Implies(has_attribute(Erin, red) == True, has_attribute(Erin, green) == True))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, nice) == True, has_attribute(x, round) == True)))
+pre_conditions.append(Implies(has_attribute(Charlie, round) == True, has_attribute(Charlie, white) == True))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, red) == True, has_attribute(x, rough) == True), has_attribute(x, quiet) == True)))
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, blue) == True, has_attribute(x, young) == True)))
 x = Const('x', objects_sort)
-pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, red) == False), has_attribute(x, white) == False)))
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, cold) == True, has_attribute(x, green) == True), has_attribute(x, young) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, round) == True, has_attribute(x, blue) == True)))
 
 def is_valid(option_constraints):
     solver = Solver()
@@ -61,5 +57,5 @@ def is_exception(x):
     return not x
 
 
-if is_valid(has_attribute(Anne, white) == True): print('(A)')
-if is_unsat(has_attribute(Anne, white) == True): print('(B)')
+if is_valid(has_attribute(Fiona, cold) == False): print('(A)')
+if is_unsat(has_attribute(Fiona, cold) == False): print('(B)')
