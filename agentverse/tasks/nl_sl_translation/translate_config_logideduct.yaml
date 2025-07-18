@@ -1,17 +1,18 @@
 task:
   translate
 dataset:
-  name: "ProofWriter" # ProntoQA # FOLIO
+  name: "LogicalDeduction" #ProofWriter #ProntoQA #LogicalDeduction #FOLIO
 data_path:
-  data/ProofWriter/dev.json
+  data/LogicalDeduction/dev.json
 output_dir:
-  outputs/deepseek/ProofWriter/translation
+  outputs/deepseek/LogicalDeduction/translation
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
     You are given a logic problem including a context and a question as follows:
     Context: ${context}
     Question: ${question}
+    Options: ${options}
     From your perspective, please give your understanding of the question and context,and discuss with your opponent about the parsing of the question.
     Think about the advantages and disadvantages of each language, and keep the original format of each language, correct the current language by referring to other languages.
     Here is your discussion history:
@@ -78,27 +79,42 @@ agents:
       4. parse the question into the logic form (Use && to represent AND)
       ----------------
       Example:
-      Context: Each jompus is fruity.
-      (... more context here ...)
-      Rompuses are zumpuses. Alex is a tumpus.
-
-      Question: True or false: Alex is not shy.
-
+      context: The following paragraphs each describe a set of five objects arranged in a fixed order. The statements are logically consistent within each paragraph.\n\nOn a shelf, there are five books: a white book, an orange book, a yellow book, a blue book, and a red book. The yellow book is to the left of the white book. The red book is to the right of the blue book. The yellow book is to the right of the orange book. The blue book is to the right of the white book.
+      question: Which of the following is true?
+      options: 
+            A) The white book is the second from the right.
+            B) The orange book is the second from the right.
+            C) The yellow book is the second from the right.
+            D) The blue book is the second from the right.
+            E) The red book is the second from the right.
       Predicates:
-      Jompus($x, bool) ::: Does x belong to Jompus?
-      (... more predicates here ...)
-      Zumpus($x, bool) ::: Does x belong to Zumpuses?
-
+      Book($x, bool)                  ::: $x is one of the five books.
+      LeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.
+      RightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.
+      RightMost($x, bool)             ::: Book $x is the right‑most book on the shelf.
+      SecondFromRight($x, bool)       ::: Book $x is the second book from the right.
       Facts:
-      Tumpuses(Alex, True)
-
+      Book(white,  True)              ::: The white book.
+      Book(orange, True)              ::: The orange book.
+      Book(yellow, True)              ::: The yellow book.
+      Book(blue,   True)              ::: The blue book.
+      Book(red,    True)              ::: The red book.
+      LeftOf(yellow, white,  True)    ::: The yellow book is to the left of the white book.
+      RightOf(red,   blue,   True)    ::: The red book is to the right of the blue book.
+      RightOf(yellow, orange, True)   ::: The yellow book is to the right of the orange book.
+      RightOf(blue,  white,  True)    ::: The blue book is to the right of the white book.
       Rules:
-      Jompus($x, True) >>> Fruity($x, True)
-      (... more rules here ...)
-      Dumpus($x, True) >>> Rompus($x, True)
-
+      LeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.
+      RightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.
+      RightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right‑of is transitive.
+      RightOf($b, white,  True) && RightOf($b, orange, True) && RightOf($b, yellow, True) && RightOf($b, blue,   True)  >>> RightMost($b, True) ::: A book that is to the right of all the other four is the right‑most book.
+      RightMost($rm, True) && RightOf($rm, $s, True) && RightOf($s, white,  True) && RightOf($s, orange, True) && RightOf($s, yellow, True) >>> SecondFromRight($s, True) ::: The book immediately left of the right‑most—and still right of the remaining three—is second from the right.
       Query:
-      Shy(Alex, False)
+      SecondFromRight(white,  True)  ::: Option A
+      SecondFromRight(orange, True)  ::: Option B
+      SecondFromRight(yellow, True)  ::: Option C
+      SecondFromRight(blue,   True)  ::: Option D
+      SecondFromRight(red,    True)  ::: Option E
     memory:
       memory_type: chat_history
     memory_manipulator:

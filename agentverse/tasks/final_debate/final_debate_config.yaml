@@ -3,11 +3,11 @@ task:
 data_path: # AgentVerse 原代码需要，放这占位
   outputs/
 symbolic_slover_results_path:
-  outputs/deepseek-chat/ProofWriter/symbolic_solver/train/proof_writer_results.json
+  outputs/deepseek/ProofWriter/symbolic_solver/results.json
 llm_solver_results_path:
-  outputs/deepseek-chat/ProofWriter/llm_solver/train/llm_solver_results.json
+  outputs/deepseek/ProofWriter/llm_solver/llm_solver_results.json
 output_dir:
-  outputs/deepseek-chat/ProofWriter/final_debate/train
+  outputs/deepseek/ProofWriter/final_debate
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -33,7 +33,7 @@ llm_config:
   api_settings:
     model: "deepseek-chat"    # 选择model, 会被传给API client.chat.completions
     llm_type: "deepseek-chat"  # 传给llm_registry
-    max_tokens: 512
+    max_tokens: 1250
     
   # 本地LLM模式配置  
   local_settings:
@@ -50,7 +50,7 @@ llm_config:
 
 environment:
   env_type: llm_eval
-  max_turns: 10 # 5的倍数
+  max_turns: 15 # 5的倍数
   rule:
     order:
       type: sequential
@@ -161,7 +161,7 @@ agents:
     name: Plan-and-Solve supporter
     final_prompt_to_use: |-
       After discussion, now you need to give your final output. Return **only** your answer in the format:
-      <answer>YOUR_CHOSEN_OPTION</answer>'
+      <answer>YOUR_CHOSEN_OPTION</answer>
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-

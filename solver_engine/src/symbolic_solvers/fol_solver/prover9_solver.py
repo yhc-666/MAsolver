@@ -122,11 +122,16 @@ def _summarise_log(log: str, max_lines: int | None = None) -> str:
 class FOL_Prover9_Program:
     def __init__(self, logic_program:str, dataset_name = 'FOLIO') -> None:
         self.logic_program = logic_program
-        self.flag = self.parse_logic_program()
         self.dataset_name = dataset_name
+        self.flag = self.parse_logic_program()
 
     def parse_logic_program(self):
         try:        
+            # Handle LogicalDeduction dataset separately
+            if self.dataset_name == 'LogicalDeduction':
+                return self._parse_logical_deduction_program()
+            
+            # Original parsing logic for other datasets
             # Split the string into premises and conclusion
             premises_string = self.logic_program.split("Conclusion:")[0].split("Premises:")[1].strip()
             conclusion_string = self.logic_program.split("Conclusion:")[1].strip()
@@ -155,11 +160,63 @@ class FOL_Prover9_Program:
         except:
             return False
 
+    def _parse_logical_deduction_program(self):
+        """Parse LogicalDeduction multi-choice format separately"""
+        try:
+            # Split the string into premises and conclusion
+            premises_string = self.logic_program.split("Conclusion:")[0].split("Premises:")[1].strip()
+            conclusion_string = self.logic_program.split("Conclusion:")[1].strip()
+
+            # Extract each premise
+            premises = premises_string.strip().split('\n')
+            self.logic_premises = [premise.split(':::')[0].strip() for premise in premises]
+
+            # Extract multiple conclusions for LogicalDeduction
+            conclusion_lines = conclusion_string.strip().split('\n')
+            self.multiple_conclusions = {}
+            
+            # Look for "Option A", "Option B", etc. patterns
+            option_pattern = re.compile(r'.*:::\s*Option\s+([A-E])\s*$')
+            
+            for line in conclusion_lines:
+                if ':::' in line:
+                    match = option_pattern.match(line)
+                    if match:
+                        option_letter = match.group(1)
+                        conclusion_formula = line.split(':::')[0].strip()
+                        self.multiple_conclusions[option_letter] = conclusion_formula
+
+            # convert premises to prover9 format
+            self.prover9_premises = []
+            for premise in self.logic_premises:
+                fol_rule = FOL_Formula(premise)
+                if fol_rule.is_valid == False:
+                    return False
+                prover9_rule = Prover9_FOL_Formula(fol_rule)
+                self.prover9_premises.append(prover9_rule.formula)
+
+            # Convert multiple conclusions to prover9 format
+            self.prover9_multiple_conclusions = {}
+            for option_letter, conclusion_formula in self.multiple_conclusions.items():
+                fol_conclusion = FOL_Formula(conclusion_formula)
+                if fol_conclusion.is_valid == False:
+                    return False
+                prover9_rule = Prover9_FOL_Formula(fol_conclusion)
+                self.prover9_multiple_conclusions[option_letter] = prover9_rule.formula
+
+            return True
+        except Exception:
+            return False
+
     def execute_program(self):
         # Check if logic program parsing was successful
         if not self.flag:
             return None, "Logic program parsing failed", ''
         
+        # Handle LogicalDeduction dataset separately
+        if self.dataset_name == 'LogicalDeduction':
+            return self._execute_logical_deduction_program()
+            
         try:
             goal = Expression.fromstring(self.prover9_conclusion)
             assumptions = [Expression.fromstring(a) for a in self.prover9_premises]
@@ -207,7 +264,55 @@ class FOL_Prover9_Program:
                                    f"So: Unknown")
                     return 'Unknown', '', proof_trace
         except Exception as e:
-            return None, str(e), '' 
+            return None, str(e), ''
+    
+    def _execute_logical_deduction_program(self):
+        """Execute program for LogicalDeduction multi-choice format"""
+        try:
+            assumptions = [Expression.fromstring(a) for a in self.prover9_premises]
+            timeout = 10
+            
+            # Try to prove each option
+            proven_options = []
+            
+            for option_letter in ['A', 'B', 'C', 'D', 'E']:
+                if option_letter in self.prover9_multiple_conclusions:
+                    conclusion_formula = self.prover9_multiple_conclusions[option_letter]
+                    result, reasoning = self._prove_single_conclusion(conclusion_formula, assumptions, timeout)
+                    if result == 'True':
+                        proven_options.append((option_letter, reasoning))
+            
+            # If any option is proven true, return the first one
+            if proven_options:
+                chosen_option, reasoning = proven_options[0]
+                return chosen_option, '', reasoning
+            
+            # If no option is proven true, randomly choose one
+            chosen_option = random.choice(['A', 'B', 'C', 'D', 'E'])
+            return chosen_option, '', ''
+            
+        except Exception as e:
+            return None, str(e), ''
+    
+    def _prove_single_conclusion(self, conclusion_formula, assumptions, timeout):
+        """
+        Prove a single conclusion and return result and reasoning.
+        Returns ('True', reasoning) if proven, ('False', '') otherwise.
+        """
+        try:
+            goal = Expression.fromstring(conclusion_formula)
+            prover = Prover9Command(goal, assumptions, timeout=timeout)
+            result = prover.prove()
+            
+            if result:
+                proof_core = self._extract_proof_steps_ture_false(prover.proof(simplify=True))
+                reasoning = f'prove option conclusion:\n{proof_core}'
+                return 'True', reasoning
+            else:
+                return 'False', ''
+                
+        except Exception:
+            return 'False', ''
         
     def answer_mapping(self, answer):
         """
@@ -244,6 +349,9 @@ class FOL_Prover9_Program:
                 return 'B'
             elif answer == 'Unknown':
                 return 'C'
+        elif self.dataset_name == 'LogicalDeduction':
+            # LogicalDeduction returns the option letter directly (A, B, C, D, E)
+            return answer
         else:
             raise ValueError(f'Unsupported dataset: {self.dataset_name}')
         
@@ -450,11 +558,17 @@ Rank(watermelon, three) ::: Option E
     
 
     
-    # ground-truth: True
-    prover9_program = FOL_Prover9_Program(logic_program_logic_deduction)
+    # Test LogicalDeduction functionality
+    prover9_program = FOL_Prover9_Program(logic_program_logic_deduction, dataset_name='LogicalDeduction')
     result, error_message, reasoning = prover9_program.execute_program()
-    print('error_message:', error_message)
+    print('LogicalDeduction Test Results:')
     print('result:', result)
-    print('reasoning:', reasoning)
-
+    print('error_message:', error_message)
+    if reasoning:
+        print('reasoning:', reasoning)
+    
+    # Test answer mapping for LogicalDeduction
+    if result:
+        mapped_answer = prover9_program.answer_mapping(result)
+        print('mapped_answer:', mapped_answer)
     

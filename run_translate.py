@@ -79,7 +79,7 @@ elif "ProofWriter" in args_data_path:
     # 处理ProofWriter数据集
     proof_writer_output = []
 
-    for num, ins in enumerate(data[:20]):
+    for num, ins in enumerate(data[:30]):
         print(f"================================instance {num}====================================")
 
         for agent_id in range(len(agentverse.agents)):

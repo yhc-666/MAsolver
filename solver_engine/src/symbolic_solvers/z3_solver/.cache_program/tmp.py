@@ -1,38 +1,38 @@
 from z3 import *
 
-entities_sort, (cat, cow, rabbit, squirrel) = EnumSort('entities', ['cat', 'cow', 'rabbit', 'squirrel'])
-properties_sort, (eats, sees, round, cold, needs, green, kind, rough) = EnumSort('properties', ['eats', 'sees', 'round', 'cold', 'needs', 'green', 'kind', 'rough'])
-entities = [cat, cow, rabbit, squirrel]
-properties = [eats, sees, round, cold, needs, green, kind, rough]
-relation = Function('relation', entities_sort, properties_sort, entities_sort, BoolSort())
-attribute = Function('attribute', entities_sort, properties_sort, BoolSort())
+objects_sort, (Anne, Erin, Fiona, Harry) = EnumSort('objects', ['Anne', 'Erin', 'Fiona', 'Harry'])
+attributes_sort, (furry, nice, rough, white, big, round, red) = EnumSort('attributes', ['furry', 'nice', 'rough', 'white', 'big', 'round', 'red'])
+objects = [Anne, Erin, Fiona, Harry]
+attributes = [furry, nice, rough, white, big, round, red]
+has_attribute = Function('has_attribute', objects_sort, attributes_sort, BoolSort())
 
 pre_conditions = []
-pre_conditions.append(relation(cat, eats, squirrel) == True)
-pre_conditions.append(relation(cat, sees, squirrel) == True)
-pre_conditions.append(relation(cow, eats, squirrel) == True)
-pre_conditions.append(relation(cow, sees, cat) == True)
-pre_conditions.append(attribute(rabbit, round) == True)
-pre_conditions.append(relation(rabbit, sees, cat) == True)
-pre_conditions.append(relation(squirrel, eats, rabbit) == True)
-pre_conditions.append(attribute(squirrel, cold) == True)
-pre_conditions.append(relation(squirrel, needs, rabbit) == True)
-pre_conditions.append(relation(squirrel, sees, cat) == True)
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(And(relation(x, sees, cat) == True, attribute(x, green) == False), relation(x, sees, cow) == True)))
-pre_conditions.append(Implies(And(attribute(rabbit, kind) == True, relation(rabbit, sees, squirrel) == True), relation(squirrel, needs, rabbit) == True))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(attribute(x, rough) == True, attribute(x, cold) == True)))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(relation(x, sees, rabbit) == True, attribute(x, round) == False)))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(And(relation(x, sees, squirrel) == True, attribute(x, green) == False), relation(x, needs, squirrel) == True)))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(relation(x, eats, cow) == True, relation(x, sees, rabbit) == True)))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(relation(x, eats, squirrel) == True, attribute(x, rough) == True)))
-x = Const('x', entities_sort)
-pre_conditions.append(ForAll([x], Implies(attribute(x, cold) == True, relation(x, eats, cow) == True)))
+pre_conditions.append(has_attribute(Anne, furry) == True)
+pre_conditions.append(has_attribute(Anne, nice) == True)
+pre_conditions.append(has_attribute(Anne, rough) == True)
+pre_conditions.append(has_attribute(Anne, white) == True)
+pre_conditions.append(has_attribute(Erin, furry) == True)
+pre_conditions.append(has_attribute(Erin, rough) == True)
+pre_conditions.append(has_attribute(Erin, white) == True)
+pre_conditions.append(has_attribute(Fiona, big) == True)
+pre_conditions.append(has_attribute(Fiona, nice) == True)
+pre_conditions.append(has_attribute(Fiona, round) == True)
+pre_conditions.append(has_attribute(Harry, nice) == True)
+pre_conditions.append(has_attribute(Harry, rough) == True)
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, furry) == True, has_attribute(x, white) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, red) == True, has_attribute(x, round) == True), has_attribute(x, furry) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, nice) == True, has_attribute(x, white) == True), has_attribute(x, red) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, round) == True, has_attribute(x, furry) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(has_attribute(x, rough) == True, has_attribute(x, round) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, nice) == True, has_attribute(x, red) == True), has_attribute(x, big) == True)))
+x = Const('x', objects_sort)
+pre_conditions.append(ForAll([x], Implies(And(has_attribute(x, round) == True, has_attribute(x, red) == True), has_attribute(x, white) == True)))
 
 def is_valid(option_constraints):
     solver = Solver()
@@ -59,5 +59,5 @@ def is_exception(x):
     return not x
 
 
-if is_valid(attribute(cat, round) == False): print('(A)')
-if is_unsat(attribute(cat, round) == False): print('(B)')
+if is_valid(has_attribute(Erin, big) == False): print('(A)')
+if is_unsat(has_attribute(Erin, big) == False): print('(B)')
