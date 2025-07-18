@@ -74,7 +74,15 @@ class LogicInferenceEngine:
 
         # answer 为各solver原始输出, 需要通过answer_mapping映射为option
         mapped = program.answer_mapping(answer)
-        return mapped, 'success', '', reasoning
+        
+        # 修正空 reasoning 的状态码 - 如果 reasoning 为空，说明是执行错误
+        status_code = 'success'
+        error_message = ''
+        if reasoning == '' and key in ['LP', 'FOL']:
+            status_code = 'execution error'
+            error_message = 'Empty reasoning indicates execution failure'
+        
+        return mapped, status_code, error_message, reasoning
 
     def inference_on_dataset(self):
         outputs = []

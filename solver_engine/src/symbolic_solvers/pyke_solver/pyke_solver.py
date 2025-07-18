@@ -134,12 +134,17 @@ class Pyke_Program:
         """
         premise, conclusion = rule.split('>>>')
         premise = premise.strip()
-        
+        # 移除前提两端的括号（如果存在）
+        if premise.startswith('(') and premise.endswith(')'):
+            premise = premise[1:-1].strip()
         # 将前提条件按'&&'分割成多个条件
         premise = premise.split('&&')
         premise_list = [p.strip() for p in premise]
 
         conclusion = conclusion.strip()
+        # 移除结论两端的括号（如果存在）
+        if conclusion.startswith('(') and conclusion.endswith(')'):
+            conclusion = conclusion[1:-1].strip()
         # 将结论按'&&'分割成多个结论
         conclusion = conclusion.split('&&')
         conclusion_list = [c.strip() for c in conclusion]
@@ -213,9 +218,12 @@ class Pyke_Program:
         else:
             raise ValueError(f'Invalid query: {query}')
 
-    def execute_program_wo_reasoning(self):
+    def execute_program_wo_reasoning(self, cleanup=True):
         """
         执行逻辑程序，进行推理
+        
+        Args:
+            cleanup (bool): Whether to cleanup directories after execution
         
         Returns:
             tuple: (答案, 错误信息)
@@ -259,8 +267,9 @@ class Pyke_Program:
         except Exception as e:
             return None, e
         finally:
-            # 确保清理工作始终执行
-            self.cleanup_directories()
+            # 只在需要时清理
+            if cleanup:
+                self.cleanup_directories()
 
     def answer_mapping(self, answer):
         """答案映射函数（基础版本）"""
@@ -348,7 +357,7 @@ class Pyke_Program:
         
         if self.dataset_name == 'LogicalDeduction':
             # For LogicalDeduction, first determine the chosen option without tracing
-            answer, msg = self.execute_program_wo_reasoning()
+            answer, msg = self.execute_program_wo_reasoning(cleanup=False)
             
             # If answer is None, randomly choose an option
             option_letters = ['A', 'B', 'C', 'D', 'E']
@@ -568,11 +577,11 @@ SecondFromRight(red,    True)  ::: Option E
     logic_program_l = "Predicates:\nBook($x, bool)                  ::: $x is one of the five books.\nLeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.\nRightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.\nSecondFromRight($x, bool)       ::: Book $x is the second book from the right.\nSecondFromLeft($x, bool)        ::: Book $x is the second book from the left.\nFacts:\nBook(green,  True)              ::: The green book.\nBook(blue,   True)              ::: The blue book.\nBook(white,  True)              ::: The white book.\nBook(purple, True)              ::: The purple book.\nBook(yellow, True)              ::: The yellow book.\nRightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.\nLeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.\nSecondFromRight(blue, True)     ::: The blue book is the second from the right.\nSecondFromLeft(purple, True)    ::: The purple book is the second from the left.\nRules:\nLeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.\nRightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.\nRightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right\u2011of is transitive.\n\nQuery:\nSecondFromLeft(green,  True)  ::: Option A\nSecondFromLeft(blue,   True)  ::: Option B\nSecondFromLeft(white,  True)  ::: Option C\nSecondFromLeft(purple, True)  ::: Option D\nSecondFromLeft(yellow, True)  ::: Option E"
 
     tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    tests = [logic_program_l]
+    #tests = [logic_program_l]
    
 
     for test in tests:
-        pyke_program = Pyke_Program(test, 'LogicalDeduction')
+        pyke_program = Pyke_Program(test, 'ProofWriter')
         result, error, reasoning = pyke_program.execute_program()
         print(f"Error: {error}")
         print(f"Result: {result}")
