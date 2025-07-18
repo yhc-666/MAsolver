@@ -165,47 +165,51 @@ agents:
 
   -
     agent_type: llm_eval_multi
-    name: CSP translator
+    name: SAT translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. Return **only** domain, variables, and constraints. 
+      After discussion, now you need to give your final output. Return **only** the declarations, constraints, and options sections. 
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
       Task Description: You are given a problem description.
-      The task is to parse the problem as a constraint satisfaction problem, defining the domain, variables, and constraints.
+      The task is to parse the problem as a SAT problem using Z3 syntax, defining declarations, constraints, and options.
 
       -----------
       Example：
-      Context: The following paragraphs each describe a
-      set of three objects arranged in a fixed order.
-      (... more context here ...)
-      The minivan is newer than the convertible.
+      Context: Bob is cold. Bob is quiet. Bob is red. Bob is smart. Charlie is kind. Charlie is quiet. Charlie is red. Charlie is rough. Dave is cold. Dave is kind. Dave is smart. Fiona is quiet. If something is quiet and cold then it is smart. Red, cold things are round. If something is kind and rough then it is red. All quiet things are rough. Cold, smart things are red. If something is rough then it is cold. All red things are rough. If Dave is smart and Dave is kind then Dave is quiet.
 
-      Question: Which of the following is true?
+      Question: True or false: Charlie is kind.
 
-      Options:
-      A) The station wagon is the second-newest.
-      B) The convertible is the second-newest.
-      C) The minivan is the second-newest.
-
-      Domain:
-      1: oldest
-      3: newest
-
-      Variables:
-      station_wagon [IN] [1, 2, 3]
-      convertible [IN] [1, 2, 3]
-      minivan [IN] [1, 2, 3]
-
-      Constraints:
-      station_wagon == 1 ::: The station wagon is the oldest.
-      minivan > convertible ::: The minivan is newer than the convertible.
-      AllDifferentConstraint([station_wagon, convertible, minivan]) ::: All vehicles have different values.
-
-      Query:
-      A) station_wagon == 2 ::: The station wagon is the second-newest.
-      B) convertible == 2 ::: The convertible is the second-newest.
-      C) minivan == 2 ::: The minivan is the second-newest.
+      # Declarations
+      objects = EnumSort([Bob, Charlie, Dave, Fiona])
+      attributes = EnumSort([cold, quiet, red, smart, kind, rough, round])
+      has_attribute = Function([objects, attributes] -> [bool])
+      
+      # Constraints
+      has_attribute(Bob, cold) == True ::: Bob is cold.
+      has_attribute(Bob, quiet) == True ::: Bob is quiet.
+      has_attribute(Bob, red) == True ::: Bob is red.
+      has_attribute(Bob, smart) == True ::: Bob is smart.
+      has_attribute(Charlie, kind) == True ::: Charlie is kind.
+      has_attribute(Charlie, quiet) == True ::: Charlie is quiet.
+      has_attribute(Charlie, red) == True ::: Charlie is red.
+      has_attribute(Charlie, rough) == True ::: Charlie is rough.
+      has_attribute(Dave, cold) == True ::: Dave is cold.
+      has_attribute(Dave, kind) == True ::: Dave is kind.
+      has_attribute(Dave, smart) == True ::: Dave is smart.
+      has_attribute(Fiona, quiet) == True ::: Fiona is quiet.
+      ForAll([x:objects], Implies(And(has_attribute(x, quiet) == True, has_attribute(x, cold) == True), has_attribute(x, smart) == True)) ::: If something is quiet and cold then it is smart.
+      ForAll([x:objects], Implies(And(has_attribute(x, red) == True, has_attribute(x, cold) == True), has_attribute(x, round) == True)) ::: Red, cold things are round.
+      ForAll([x:objects], Implies(And(has_attribute(x, kind) == True, has_attribute(x, rough) == True), has_attribute(x, red) == True)) ::: If something is kind and rough then it is red.
+      ForAll([x:objects], Implies(has_attribute(x, quiet) == True, has_attribute(x, rough) == True)) ::: All quiet things are rough.
+      ForAll([x:objects], Implies(And(has_attribute(x, cold) == True, has_attribute(x, smart) == True), has_attribute(x, red) == True)) ::: Cold, smart things are red.
+      ForAll([x:objects], Implies(has_attribute(x, rough) == True, has_attribute(x, cold) == True)) ::: If something is rough then it is cold.
+      ForAll([x:objects], Implies(has_attribute(x, red) == True, has_attribute(x, rough) == True)) ::: All red things are rough.
+      Implies(And(has_attribute(Dave, smart) == True, has_attribute(Dave, kind) == True), has_attribute(Dave, quiet) == True) ::: If Dave is smart and Dave is kind then Dave is quiet.
+      
+      # Options
+      is_valid(has_attribute(Charlie, kind) == True) ::: Charlie is kind is True (A).
+      is_unsat(has_attribute(Charlie, kind) == True) ::: Charlie is kind is False (B).
 
     memory:
       memory_type: chat_history

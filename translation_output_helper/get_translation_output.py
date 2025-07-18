@@ -24,7 +24,7 @@ def get_translation_output(setting: Optional[str] = None, messages: Optional[Lis
     agent_type_mapping = {
         "LP translator": "LP",
         "FOL translator": "FOL", 
-        "CSP translator": "CSP"
+        "SAT translator": "SAT"
     }
     
     if setting == "every_agent" and messages is not None and agent_nums is not None:

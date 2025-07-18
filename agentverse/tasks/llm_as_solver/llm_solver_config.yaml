@@ -1,9 +1,9 @@
 task:
   llm_solver
 data_path:
-  data/ProofWriter/train.json
+  data/ProofWriter/dev.json
 output_dir: 
-  outputs/deepseek-chat/ProofWriter/llm_solver/train
+  outputs/deepseek/ProofWriter/llm_solver
 
 # ---------- Execution Settings ----------
 execution:
@@ -44,23 +44,44 @@ llm_config:
 # ---------- Prompt Templates ----------
 prompt_templates:
   cot_prompt: &cot_prompt |-
-    You are given a logic problem that contains a context, a question, and multiple-choice options.
+    Given a problem statement as contexts, the task is to answer a logical reasoning question. 
+    ------
+    Context:
+    The cow is blue. The cow is round. The cow likes the lion. The cow visits the tiger. The lion is cold. The lion is nice. The lion likes the squirrel. The squirrel is round. The squirrel sees the lion. The squirrel visits the cow. The tiger likes the cow. The tiger likes the squirrel. If something is cold then it visits the tiger. If something visits the tiger then it is nice. If something sees the tiger and it is young then it is blue. If something is nice then it sees the tiger. If something likes the squirrel and it likes the cow then it visits the tiger. If something is nice and it sees the tiger then it is young. If the cow is cold and the cow visits the lion then the lion sees the squirrel.
 
-    [Logic Problem]
+    Question: Based on the above information, is the following statement true, false, or unknown? The tiger is not young.
+
+    Options:
+    A) True
+    B) False
+    C) Unknown
+
+    <Reasoning>
+    The tiger likes the cow. The tiger likes the squirrel. If something likes the squirrel and it likes the cow, then it visits the tiger. So the tiger visits the tiger. If something visits the tiger then it is nice. So the tiger is nice. If something is nice and it sees the tiger then it is young. So the tiger is young.
+    <Answer>B
+    ------
+    Context:
+    The dog sees the rabbit. The dog sees the squirrel. The dog sees the tiger. The rabbit eats the dog. The rabbit does not eat the tiger. The rabbit does not like the tiger. The squirrel does not see the rabbit. The tiger does not eat the rabbit. The tiger is not kind. The tiger likes the dog. The tiger sees the dog. If something is cold then it likes the rabbit. If something eats the tiger and it is nice then it likes the rabbit. If something likes the squirrel then the squirrel likes the rabbit. If something likes the rabbit and the rabbit is kind then it sees the tiger. If something likes the tiger then the tiger is young. If something is young and it eats the rabbit then it likes the tiger. If something sees the rabbit then the rabbit is cold. If something likes the rabbit then it likes the squirrel. If something likes the squirrel then the squirrel is cold.
+
+    Question: Based on the above information, is the following statement true, false, or unknown? The rabbit is cold.
+
+    Options:
+    A) True
+    B) False
+    C) Uncertain
+
+    <Reasoning>
+    The dog sees the rabbit. If something sees the rabbit then the rabbit is cold. So the rabbit is cold.
+    <Answer>A
+    ------
     Context: ${context}
     Question: ${question}
-    Options:
-    ${options}
+    Options: ${options}
 
     ${role_description}
-    
     ${instruction}
-
-    Return **only** your final choice in the format:
-    <answer>ANSWER_LETTER<reason>YOUR_REASONING
-
-    Example:
-    <answer>B<reason>Based on the provided facts and rules, the statement "The tiger is not young" is **unknown**. None of the given rules allow us to confirm or deny the tiger's age, so the correct choice is "Unknown".
+    Return your reasoning and final choice in the format:
+    <Reasoning>YOUR_REASONING<Answer>ANSWER_LETTER
 
   plan_and_solve_prompt: &plan_and_solve_prompt |-
     Q: ${context}
@@ -74,23 +95,7 @@ roles:
     display_name: "COT Solver"
     parser_type: "cot"
     role_description: |-
-      You are an intelligent forward reasoner who performs strict deductive reasoning from premises to conclusion.
     instruction: |-
-      Follow the chain "Premise → Rule → Conclusion".
-      1. Extract explicit rules and facts from the text.
-      2. Derive intermediate statements step by step.
-      3. Produce the final answer and include your reasoning trace.
-
-      Example approach:
-      • Extracted rules:
-          (1) Mammal → Vertebrate
-          (2) Vertebrate → Has Skeleton
-          (3) Cat is a mammal
-      • Reasoning:
-          - From (3) and (1): Cat is a vertebrate.
-          - From "Cat is a vertebrate" and (2): Cat has a skeleton.
-      • Output:
-          <answer>A<reason>The cat must have a skeleton because it is a mammal, and all mammals are vertebrates, and all vertebrates have skeletons.
     prompt_template: *cot_prompt
 
   - name: "plan-and-solve"

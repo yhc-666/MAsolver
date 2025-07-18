@@ -54,7 +54,7 @@ def load_solver_results(symbolic_path: str, llm_path: str) -> List[Dict]:
             "symbolic_results": {
                 "LP": symbolic_item["roles"].get("LP", {}),  
                 "FOL": symbolic_item["roles"].get("FOL", {}), 
-                "CSP": symbolic_item["roles"].get("CSP", {})
+                "SAT": symbolic_item["roles"].get("SAT", {})
             },
             "llm_results": llm_item["roles"]  # COT Solver, Plan-and-Solve
         }
@@ -80,7 +80,7 @@ def assign_agent_data(agentverse, merged_instance: Dict) -> None:
     agent_mapping = {
         "LP supporter": ("symbolic", "LP"),
         "FOL supporter": ("symbolic", "FOL"), 
-        "CSP supporter": ("symbolic", "CSP"),
+        "SAT supporter": ("symbolic", "SAT"),
         "COT Solver supporter": ("llm", "COT Solver"),
         "Plan-and-Solve supporter": ("llm", "Plan-and-Solve")
     }

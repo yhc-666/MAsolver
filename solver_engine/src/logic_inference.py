@@ -6,7 +6,6 @@ from tqdm import tqdm
 
 from symbolic_solvers.pyke_solver.pyke_solver import Pyke_Program
 from symbolic_solvers.fol_solver.prover9_solver import FOL_Prover9_Program
-from symbolic_solvers.csp_solver.csp_solver import CSP_Program
 from symbolic_solvers.z3_solver.sat_problem_solver import LSAT_Z3_Program
 from backup_answer_generation import Backup_Answer_Generator
 
@@ -16,7 +15,6 @@ from backup_answer_generation import Backup_Answer_Generator
 SOLVER_CLASSES = {
     'LP': Pyke_Program,
     'FOL': FOL_Prover9_Program,
-    'CSP': CSP_Program,
     'SAT': LSAT_Z3_Program,
 }
 
@@ -38,7 +36,6 @@ class LogicInferenceEngine:
         self.backup_generators = {
             'LP': Backup_Answer_Generator(self.dataset_name, self.backup_strategy, self.backup_LLM_result_path),
             'FOL': Backup_Answer_Generator(self.dataset_name, self.backup_strategy, self.backup_LLM_result_path),
-            'CSP': Backup_Answer_Generator(self.dataset_name, self.backup_strategy, self.backup_LLM_result_path),
             'SAT': Backup_Answer_Generator(self.dataset_name, self.backup_strategy, self.backup_LLM_result_path),
         }
 
@@ -85,7 +82,7 @@ class LogicInferenceEngine:
         stats = {
             'LP': {'success': 0, 'parsing error': 0, 'execution error': 0},
             'FOL': {'success': 0, 'parsing error': 0, 'execution error': 0},
-            'CSP': {'success': 0, 'parsing error': 0, 'execution error': 0},
+            'SAT': {'success': 0, 'parsing error': 0, 'execution error': 0},
             'total': 0
         }
         
@@ -109,7 +106,7 @@ class LogicInferenceEngine:
                         'status_code': '',
                         'error_message': ''
                     },
-                    'CSP': {
+                    'SAT': {
                         'predict': '',
                         'reasoning': '',
                         'status_code': '',
@@ -121,7 +118,7 @@ class LogicInferenceEngine:
             # 从translation字段获取逻辑程序
             translation = example.get('translation', [{}])[0]
             
-            for key in ['LP', 'FOL', 'CSP']: # TODO: SAT shut down for now
+            for key in ['LP', 'FOL', 'SAT']:
                 logic_str = translation.get(key, '')
                 if logic_str:  # 只有当逻辑程序存在时才执行
                     predicted, status_code, err, reasoning = self.safe_execute_program(key, logic_str, example['id'])

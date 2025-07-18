@@ -40,7 +40,7 @@ OPENAI_BASE_URL="your_api_base_url"
 - `tasks/`: Task-specific configurations and output parsers for different debate scenarios
 
 **Solver Engine** (`solver_engine/`):
-- `symbolic_solvers/`: Multiple reasoning approaches including CSP, FOL (with Prover9), Logic Programming (Pyke), and SAT (Z3)
+- `symbolic_solvers/`: Multiple reasoning approaches including FOL (with Prover9), Logic Programming (Pyke), and SAT (Z3)
 - `logic_inference.py`: Main inference orchestration
 - Integration with external theorem provers and constraint solvers
 
@@ -48,7 +48,6 @@ OPENAI_BASE_URL="your_api_base_url"
 The system implements structured debates between AI agents with different reasoning philosophies:
 - **LP supporter**: Logic Programming approach using predicates and rules
 - **FOL supporter**: First-Order Logic with quantifiers and formal reasoning
-- **CSP supporter**: Constraint Satisfaction Problem modeling
 - **LLM supporters**: Various LLM-based reasoning approaches (forward reasoning, contradiction-based, random)
 
 ### Data Flow
@@ -82,6 +81,6 @@ The project includes specific development rules in `.cursor/rules/my-rules.mdc`:
 ### Key Dependencies
 - `scitools-pyke`: Logic Programming solver
 - `z3-solver`: SAT solver
-- `python-constraint`: CSP solver  
+  
 - `openai`: LLM API integration
 - `langchain`: LLM framework components

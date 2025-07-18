@@ -61,7 +61,7 @@ def main():
         print(f"{'Solver':<8} {'Success':<10} {'Parsing Error':<15} {'Execution Error':<17} {'Total':<8}")
         print("-" * 75)
         
-        for solver in ['LP', 'FOL', 'CSP']:
+        for solver in ['LP', 'FOL', 'SAT']:
             success = stats[solver]['success']
             parsing_error = stats[solver]['parsing error']
             execution_error = stats[solver]['execution error']

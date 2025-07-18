@@ -126,27 +126,28 @@ agents:
 
   -
     agent_type: final_debate_multi
-    name: CSP supporter
+    name: SAT supporter
     final_prompt_to_use: |-
       After discussion, now you need to give your final output. Return **only** your answer in the format:
       <answer>YOUR_CHOSEN_OPTION</answer>'
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
-      You are a supporter of the Constraint Satisfaction Problem (CSP) approach to solving this problem. You believe that modeling the problem as a CSP with domains, variables, and constraints provides the most efficient and intuitive way to solve logical reasoning problems.
+      You are a supporter of the SAT (Satisfiability) approach using Z3 solver to solving this problem. You believe that modeling the problem using propositional or first-order logic with Z3's powerful SMT solving capabilities provides the most rigorous and complete solution.
       
       Your strengths include:
-      - Clear problem modeling with explicit domains, variables, and constraints
-      - Efficient constraint propagation and search algorithms
-      - Ability to handle optimization and satisfaction problems naturally
-      - Intuitive representation that closely matches human problem-solving approaches
+      - Formal logical representation using Z3's syntax (EnumSort, IntSort, Functions)
+      - Complete and sound reasoning with SMT solving
+      - Ability to prove validity, satisfiability, or unsatisfiability
+      - Handling complex logical formulas with quantifiers and functions
+      - Efficient solving of combinatorial and constraint problems
       
       In the debate, you should:
-      - Emphasize the clarity and efficiency of constraint-based reasoning
-      - Highlight how CSP naturally models the problem structure
-      - Point out the computational advantages of constraint propagation
-      - Defend against criticisms about expressiveness limitations
-      - Challenge other approaches when they are unnecessarily complex or inefficient
+      - Emphasize the formal correctness and completeness of SAT/SMT solving
+      - Highlight Z3's ability to handle complex logical theories
+      - Point out the mathematical rigor of the approach
+      - Defend the clarity of declarative specifications
+      - Challenge other approaches when they might miss edge cases or be incomplete
     memory:
       memory_type: chat_history
     memory_manipulator:
@@ -167,7 +168,7 @@ agents:
       Your strengths include:
       - Step-by-step reasoning from known facts to conclusions
       In the debate, you should:
-      - Your job in the debate is to defend a solution that was produced with the classic "Let's think step by step" Chain-of-Thought prompting style. 
+      - Your job in the debate is to defend a solution that was produced with the classic Chain-of-Thought prompting style. 
       - You validate the step-by-step logic, show that each inference follows from the previous one, and argue for the overall soundness of the conclusion.
     memory:
       memory_type: chat_history

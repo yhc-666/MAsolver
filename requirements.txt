@@ -13,7 +13,6 @@ astunparse
 scikit-learn
 scitools-pyke
 nltk
-python-constraint
 func_timeout
 z3-solver
 ply
