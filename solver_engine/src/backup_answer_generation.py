@@ -18,19 +18,26 @@ class Backup_Answer_Generator:
                 LLM_result = json.load(f)
             self.backup_results = {sample['id'] : sample['predicted_answer'] for sample in LLM_result}
 
-    def get_backup_answer(self, id):
+    def get_backup_answer(self, id, num_options=None):
         if self.backup_strategy == 'random':
-            return self.random_backup()
+            return self.random_backup(num_options)
         elif self.backup_strategy == 'LLM':
             return self.LLM_backup(id)
         
-    def random_backup(self):
+    def random_backup(self, num_options=None):
         if self.dataset_name == 'ProntoQA':
             return random.choice(['A', 'B'])
         elif self.dataset_name == 'ProofWriter' or self.dataset_name == 'FOLIO':
             return random.choice(['A', 'B', 'C'])
-        elif self.dataset_name == 'AR-LSAT' or self.dataset_name == 'LogicalDeduction':
+        elif self.dataset_name == 'AR-LSAT':
             return random.choice(['A', 'B', 'C', 'D', 'E'])
+        elif self.dataset_name == 'LogicalDeduction':
+            # For LogicalDeduction, use num_options if provided, otherwise default to 5
+            if num_options is not None:
+                options = [chr(ord('A') + i) for i in range(num_options)]
+            else:
+                options = ['A', 'B', 'C', 'D', 'E']  # Default fallback
+            return random.choice(options)
         else:
             raise ValueError(f'Invalid dataset name: {self.dataset_name}')
         

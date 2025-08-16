@@ -22,9 +22,21 @@ try:
     from openai import OpenAI, AsyncOpenAI
     from openai import OpenAIError
     
-
-    client = OpenAI()  # 自动从环境变量读取 OPENAI_API_KEY 和 OPENAI_BASE_URL
-    aclient = AsyncOpenAI()  # 自动从环境变量读取
+    # 延迟初始化客户端，避免在模块导入时就要求环境变量
+    client = None
+    aclient = None
+    
+    def get_client():
+        global client
+        if client is None:
+            client = OpenAI()  # 自动从环境变量读取 OPENAI_API_KEY 和 OPENAI_BASE_URL
+        return client
+    
+    def get_async_client():
+        global aclient
+        if aclient is None:
+            aclient = AsyncOpenAI()  # 自动从环境变量读取
+        return aclient
     
     is_openai_available = True
 except ImportError:
@@ -32,6 +44,12 @@ except ImportError:
     logging.warning("openai package is not installed")
     client = None
     aclient = None
+    
+    def get_client():
+        return None
+    
+    def get_async_client():
+        return None
 
 
 class OpenAIChatArgs(BaseModelArgs):
@@ -139,7 +157,7 @@ class OpenAIChat(BaseChatModel):
     def generate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         messages = self._construct_messages(structured_prompt, chat_memory)
         try:
-            response = client.chat.completions.create(messages=messages, **self.args.dict())
+            response = get_client().chat.completions.create(messages=messages, **self.args.dict())
         except (OpenAIError, KeyboardInterrupt) as error:
             raise
         return LLMResult(
@@ -155,7 +173,7 @@ class OpenAIChat(BaseChatModel):
         #io_logger.info("➡️Input Messages JSON:\n%s", json.dumps(messages, ensure_ascii=False, indent=2))
         
         try:
-            response = await aclient.chat.completions.create(messages=messages, **self.args.dict())
+            response = await get_async_client().chat.completions.create(messages=messages, **self.args.dict())
         except (OpenAIError, KeyboardInterrupt) as error:
             raise
         
@@ -179,7 +197,7 @@ def get_embedding(text: str, attempts=3) -> np.array:
     while attempt < attempts:
         try:
             text = text.replace("\n", " ")
-            embedding = client.embeddings.create(input=[text], model="text-embedding-ada-002")["data"][0]["embedding"]
+            embedding = get_client().embeddings.create(input=[text], model="text-embedding-ada-002")["data"][0]["embedding"]
             return tuple(embedding)
         except Exception as e:
             attempt += 1

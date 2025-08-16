@@ -1,7 +1,8 @@
 import os
 
-os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
-os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+# 移除硬编码的环境变量设置，现在通过YAML配置文件处理
+# os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 # always remember to put these lines at the top of your code if you are using clash
 # os.environ["http_proxy"] = "http://127.0.0.1:7890"
@@ -52,7 +53,17 @@ from agentverse.parser import output_parser_registry
 llm_config = config['llm_config']
 roles = config['roles']
 
+# 处理API凭证配置（与agentverse/initialization.py中的逻辑保持一致）
 mode = llm_config.get('mode', 'api')
+if mode == "api" and "api_credentials" in llm_config:
+    credentials = llm_config["api_credentials"]
+    if "openai_api_key" in credentials:
+        os.environ["OPENAI_API_KEY"] = credentials["openai_api_key"]
+        print(f"🔑 Set OPENAI_API_KEY from config")
+    if "openai_base_url" in credentials:
+        os.environ["OPENAI_BASE_URL"] = credentials["openai_base_url"]
+        print(f"🌐 Set OPENAI_BASE_URL to: {credentials['openai_base_url']}")
+
 if mode == 'api':
     llm_settings = llm_config['api_settings']
 else:

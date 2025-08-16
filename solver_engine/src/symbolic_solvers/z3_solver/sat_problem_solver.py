@@ -175,7 +175,7 @@ class LSAT_Z3_Program:
         # each block should express one option
         option_blocks = [CodeTranslator.translate_constraint(option, scoped_list_to_type) for option in self.options]
 
-        return CodeTranslator.assemble_standard_code(declaration_lines, pre_condidtion_lines, option_blocks)
+        return CodeTranslator.assemble_standard_code(declaration_lines, pre_condidtion_lines, option_blocks, len(self.options))
     
     def execute_program(self):
         # 检查解析是否成功，如果失败则返回错误信息
@@ -204,9 +204,13 @@ class LSAT_Z3_Program:
         cleaned_answer = answer[0].strip()
         
         if self.dataset_name == 'LogicalDeduction':
-            # Keep original logic for LogicalDeduction
-            mapping = {'(A)': 'A', '(B)': 'B', '(C)': 'C', '(D)': 'D', '(E)': 'E',
-                       'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E'}
+            # Dynamic mapping for LogicalDeduction based on option count
+            num_options = len(self.options)
+            mapping = {}
+            for i in range(num_options):
+                letter = chr(ord('A') + i)
+                mapping[f'({letter})'] = letter
+                mapping[letter] = letter
             return mapping[cleaned_answer]
         
         elif self.dataset_name in ['FOLIO', 'ProofWriter']:

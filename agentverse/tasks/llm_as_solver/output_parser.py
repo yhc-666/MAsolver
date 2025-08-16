@@ -79,8 +79,8 @@ class COTParser(OutputParser):
         # Convert to uppercase for consistency
         answer = answer.upper()
         
-        # Valid single letter answers
-        if answer in ['A', 'B', 'C', 'D', 'E']:
+        # Valid single letter answers (support A-Z for flexibility)
+        if len(answer) == 1 and answer.isalpha():
             return answer
         
         # Valid True/False/Unknown answers
@@ -203,8 +203,8 @@ class PlanAndSolveParser(OutputParser):
         # Convert to uppercase for consistency
         answer = answer.upper()
         
-        # Valid single letter answers (most common case)
-        if answer in ['A', 'B', 'C', 'D', 'E']:
+        # Valid single letter answers (support A-Z for flexibility)
+        if len(answer) == 1 and answer.isalpha():
             return answer
         
         # Valid True/False/Unknown answers
@@ -221,7 +221,7 @@ class PlanAndSolveParser(OutputParser):
             return 'Unknown'
         
         # Extract first valid letter if answer contains more text
-        match = re.search(r'[A-E]', answer)
+        match = re.search(r'[A-Z]', answer)
         if match:
             return match.group(0)
         

@@ -39,7 +39,7 @@ class FinalDebateParser(OutputParser):
             text: Raw text from LLM response
             
         Returns:
-            Extracted answer option (A, B, C, D, E) or mapped answer
+            Extracted answer option (A, B, C, D, E, F, G, ...) or mapped answer
         """
         # Pattern to match <answer>OPTION</answer> format
         pattern = r'<answer>\s*([^<]+)\s*</answer>'
@@ -52,15 +52,12 @@ class FinalDebateParser(OutputParser):
                 "true": "A",
                 "false": "B", 
                 "unknown": "C",
-                "a": "A",
-                "b": "B",
-                "c": "C",
-                "d": "D",
-                "e": "E"
+                "a": "A", "b": "B", "c": "C", "d": "D", "e": "E",
+                "f": "F", "g": "G", "h": "H", "i": "I", "j": "J"
             }
             
-            # Check if it's already a standard option
-            if answer.upper() in ['A', 'B', 'C', 'D', 'E']:
+            # Check if it's already a standard option (support A-Z for flexibility)
+            if len(answer) == 1 and answer.upper().isalpha():
                 return answer.upper()
             
             # Try to map from text to option
@@ -71,7 +68,7 @@ class FinalDebateParser(OutputParser):
             return answer.upper()
         
         # Fallback: try to match simple <answer>OPTION format without closing tag
-        pattern = r'<answer>\s*([A-E])\s*'
+        pattern = r'<answer>\s*([A-Z])\s*'
         match = re.search(pattern, text, re.IGNORECASE)
         
         if match:

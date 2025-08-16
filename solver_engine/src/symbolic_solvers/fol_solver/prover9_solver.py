@@ -175,14 +175,15 @@ class FOL_Prover9_Program:
             conclusion_lines = conclusion_string.strip().split('\n')
             self.multiple_conclusions = {}
             
-            # Look for "Option A", "Option B", etc. patterns
-            option_pattern = re.compile(r'.*:::\s*Option\s+([A-E])\s*$')
+            # Look for flexible option patterns: option/Option, options/Options, with optional period
+            # Supports: "Option A", "option A", "Options A", "options A", "Option A.", "option A.", etc.
+            option_pattern = re.compile(r'.*:::\s*options?\s+([A-Z])\.?\s*$', re.IGNORECASE)
             
             for line in conclusion_lines:
                 if ':::' in line:
                     match = option_pattern.match(line)
                     if match:
-                        option_letter = match.group(1)
+                        option_letter = match.group(1).upper()  # Ensure uppercase for consistency
                         conclusion_formula = line.split(':::')[0].strip()
                         self.multiple_conclusions[option_letter] = conclusion_formula
 
@@ -274,13 +275,13 @@ class FOL_Prover9_Program:
             
             # Try to prove each option
             proven_options = []
+            available_options = list(self.prover9_multiple_conclusions.keys())
             
-            for option_letter in ['A', 'B', 'C', 'D', 'E']:
-                if option_letter in self.prover9_multiple_conclusions:
-                    conclusion_formula = self.prover9_multiple_conclusions[option_letter]
-                    result, reasoning = self._prove_single_conclusion(conclusion_formula, assumptions, timeout)
-                    if result == 'True':
-                        proven_options.append((option_letter, reasoning))
+            for option_letter in available_options:
+                conclusion_formula = self.prover9_multiple_conclusions[option_letter]
+                result, reasoning = self._prove_single_conclusion(conclusion_formula, assumptions, timeout)
+                if result == 'True':
+                    proven_options.append((option_letter, reasoning))
             
             # If any option is proven true, return the first one
             if proven_options:
@@ -288,7 +289,7 @@ class FOL_Prover9_Program:
                 return chosen_option, '', reasoning
             
             # If no option is proven true, randomly choose one
-            chosen_option = random.choice(['A', 'B', 'C', 'D', 'E'])
+            chosen_option = random.choice(available_options)
             return chosen_option, '', ''
             
         except Exception as e:

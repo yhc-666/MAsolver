@@ -16,6 +16,7 @@ class LLMEvalParser(OutputParser):
         text = output.content
         cleaned_output = text.strip()
         cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
+        cleaned_output = cleaned_output.replace("**", "")
         cleaned_output = cleaned_output.split("\n")
 
         # TODO chimin modify here

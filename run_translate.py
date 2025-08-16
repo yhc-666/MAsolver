@@ -1,7 +1,8 @@
 import os
 
-os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
-os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+# 移除硬编码的环境变量设置，现在通过YAML配置文件处理
+# os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 # os.environ["OPENAI_API_KEY"] = "***"
 # os.environ["OPENAI_BASE_URL"] = "***"
@@ -13,6 +14,7 @@ os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 
 import json
+from tqdm import tqdm
 from eval_helper.get_evaluation import get_evaluation
 from translation_output_helper.get_translation_output import get_translation_output
 
@@ -46,7 +48,7 @@ with open(args_data_path) as f:
 if "ruozhiba" in args_data_path:
     pair_comparison_output = []
 
-    for num, ins in enumerate(data):
+    for num, ins in enumerate(tqdm(data, desc="Processing ruozhiba", unit="instance")):
 
         print(f"================================instance {num}====================================")
 
@@ -79,7 +81,7 @@ elif "ProofWriter" in args_data_path:
     # 处理ProofWriter数据集
     proof_writer_output = []
 
-    for num, ins in enumerate(data[:30]):
+    for num, ins in enumerate(tqdm(data[:30], desc="Processing ProofWriter", unit="instance")):
         print(f"================================instance {num}====================================")
 
         for agent_id in range(len(agentverse.agents)):
@@ -110,7 +112,7 @@ elif "FOLIO" in args_data_path:
 # 处理ProofWriter数据集
     smoketest_output = []
 
-    for num, ins in enumerate(data):
+    for num, ins in enumerate(tqdm(data, desc="Processing FOLIO", unit="instance")):
         print(f"================================instance {num}====================================")
 
         for agent_id in range(len(agentverse.agents)):
@@ -141,7 +143,7 @@ elif "LogicalDeduction" in args_data_path:
     # 处理LogicalDeduction数据集
     logical_deduction_output = []
 
-    for num, ins in enumerate(data):
+    for num, ins in enumerate(tqdm(data, desc="Processing LogicalDeduction", unit="instance")):
         print(f"================================instance {num}====================================")
 
         # 将options数组转换为格式化的字符串

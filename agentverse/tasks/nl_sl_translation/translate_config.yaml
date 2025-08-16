@@ -23,6 +23,11 @@ llm_config:
   # 模式选择: 'api' 使用API调用, 'local' 使用本地LLM
   mode: 'api'  # 可选: 'api' 或 'local'
   
+  # API凭证配置
+  api_credentials:
+    openai_api_key: "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+    openai_base_url: "https://api.deepseek.com/v1"
+  
   # API模式配置
   api_settings:
     model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
@@ -75,7 +80,7 @@ agents:
       1. define all the predicates in the problem
       2. parse the problem into logic rules based on the defined predicates
       3. write all the facts mentioned in the problem
-      4. parse the question into the logic form (Use && to represent AND)
+      4. parse the question into the logic form (Use && to represent AND, and you cannot use 'NOT' or other negations)
       ----------------
       Example:
       Context: Each jompus is fruity.
@@ -111,6 +116,7 @@ agents:
       After discussion, now you need to give your final output.
       Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
       Return **only** Predicates, Premises, and Conclusion.
+      Do not add ID numbers such as 1., 2., etc.
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-

@@ -3,7 +3,10 @@ from enum import Enum
 import re
 
 TAB_STR = "    "
-CHOICE_INDEXES = ["(A)", "(B)", "(C)", "(D)", "(E)"]
+
+def generate_choice_indexes(num_options):
+    """Generate choice indexes based on number of options"""
+    return [f"({chr(ord('A') + i)})" for i in range(num_options)]
 
 class CodeTranslator:
     class LineType(Enum):
@@ -212,7 +215,7 @@ class CodeTranslator:
         return lines
 
     @staticmethod
-    def assemble_standard_code(declaration_lines, pre_condidtion_lines, option_blocks):
+    def assemble_standard_code(declaration_lines, pre_condidtion_lines, option_blocks, num_options=None):
         lines = []
 
         header_lines = [
@@ -262,8 +265,12 @@ class CodeTranslator:
         lines += function_lines
         lines += [""]
 
-        # handle option blocks
-        for option_block, choice_name in zip(option_blocks, CHOICE_INDEXES):
+        # handle option blocks - use dynamic choice indexes
+        if num_options is None:
+            num_options = len(option_blocks)
+        choice_indexes = generate_choice_indexes(num_options)
+        
+        for option_block, choice_name in zip(option_blocks, choice_indexes):
             assert len([l for l in option_block if l.line_type == CodeTranslator.LineType.CONS]) == 1
             for line in option_block:
                 if line.line_type == CodeTranslator.LineType.DECL:

@@ -5,8 +5,9 @@ from argparse import ArgumentParser
 from typing import Dict, List
 from tqdm import tqdm
 
-os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
-os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
+# 移除硬编码的环境变量设置，现在通过YAML配置文件处理
+# os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 from agentverse.agentverse import AgentVerse
 
@@ -75,7 +76,7 @@ def assign_agent_data(agentverse, merged_instance: Dict) -> None:
     Args:
         agentverse: AgentVerse instance
         merged_instance: Merged data instance with solver results
-    """
+    """   
     # Agent mapping to solver results
     agent_mapping = {
         "LP supporter": ("symbolic", "LP"),
@@ -154,6 +155,27 @@ def collect_final_predictions(agents) -> Dict:
     return final_predictions
 
 
+def collect_original_predictions(agents) -> Dict:
+    """
+    收集所有agent在辩论前的原始预测
+    
+    Args:
+        agents: List of agent instances
+        
+    Returns:
+        Dictionary of original predictions by agent name
+    """
+    original_predictions = {}
+    
+    for agent in agents:
+        # 使用agent.predict属性（来自solver results）
+        original_predictions[agent.name] = {
+            "predict": agent.predict
+        }
+    
+    return original_predictions
+
+
 # extract_answer_from_content function removed - now using agent.final_answer directly
 
 
@@ -197,6 +219,9 @@ def main():
         # Assign agent data
         assign_agent_data(agentverse, merged_instance)
         
+        # Collect original predictions before debate
+        original_predictions = collect_original_predictions(agentverse.agents)
+        
         # Run debate
         agentverse.run()
         
@@ -209,6 +234,7 @@ def main():
             "question": merged_instance["question"],
             "options": merged_instance["options"],
             "gold_answer": merged_instance["gold_answer"],
+            "Original predictions": original_predictions,
             "chat_history": chat_history,
             "Final predictions": final_predictions
         }

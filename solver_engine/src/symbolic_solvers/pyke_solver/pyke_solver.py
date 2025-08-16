@@ -240,7 +240,8 @@ class Pyke_Program:
             if self.dataset_name == 'LogicalDeduction':
                 # LogicalDeduction: 处理多个查询，找出所有True的选项
                 true_options = []
-                option_letters = ['A', 'B', 'C', 'D', 'E']
+                # Generate option letters dynamically based on number of queries
+                option_letters = [chr(ord('A') + i) for i in range(len(self.Query))]
                 
                 for i, query in enumerate(self.Query):
                     predicate, subject, value_to_check = self.parse_query(query)
@@ -360,7 +361,7 @@ class Pyke_Program:
             answer, msg = self.execute_program_wo_reasoning(cleanup=False)
             
             # If answer is None, randomly choose an option
-            option_letters = ['A', 'B', 'C', 'D', 'E']
+            option_letters = [chr(ord('A') + i) for i in range(len(self.Query))]
             if answer is None or answer not in option_letters:
                 answer = random.choice(option_letters)
             
@@ -576,12 +577,12 @@ SecondFromRight(red,    True)  ::: Option E
 
     logic_program_l = "Predicates:\nBook($x, bool)                  ::: $x is one of the five books.\nLeftOf($x, $y, bool)            ::: Book $x is strictly to the left of book $y.\nRightOf($x, $y, bool)           ::: Book $x is strictly to the right of book $y.\nSecondFromRight($x, bool)       ::: Book $x is the second book from the right.\nSecondFromLeft($x, bool)        ::: Book $x is the second book from the left.\nFacts:\nBook(green,  True)              ::: The green book.\nBook(blue,   True)              ::: The blue book.\nBook(white,  True)              ::: The white book.\nBook(purple, True)              ::: The purple book.\nBook(yellow, True)              ::: The yellow book.\nRightOf(blue, yellow, True)     ::: The blue book is to the right of the yellow book.\nLeftOf(white, yellow, True)     ::: The white book is to the left of the yellow book.\nSecondFromRight(blue, True)     ::: The blue book is the second from the right.\nSecondFromLeft(purple, True)    ::: The purple book is the second from the left.\nRules:\nLeftOf($a, $b, True) >>> RightOf($b, $a, True) ::: If $a is left of $b, then $b is right of $a.\nRightOf($a, $b, True) >>> LeftOf($b, $a, True) ::: If $a is right of $b, then $b is left of $a.\nRightOf($a, $b, True) && RightOf($b, $c, True) >>> RightOf($a, $c, True) ::: Right\u2011of is transitive.\n\nQuery:\nSecondFromLeft(green,  True)  ::: Option A\nSecondFromLeft(blue,   True)  ::: Option B\nSecondFromLeft(white,  True)  ::: Option C\nSecondFromLeft(purple, True)  ::: Option D\nSecondFromLeft(yellow, True)  ::: Option E"
 
-    tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
-    #tests = [logic_program_l]
+    #tests = [logic_program1, logic_program2, logic_program3, logic_program4, logic_program5, logic_program6, logic_program7]
+    tests = [logic_program_logic_deduction, logic_program_l]
    
 
     for test in tests:
-        pyke_program = Pyke_Program(test, 'ProofWriter')
+        pyke_program = Pyke_Program(test, 'LogicalDeduction')
         result, error, reasoning = pyke_program.execute_program()
         print(f"Error: {error}")
         print(f"Result: {result}")

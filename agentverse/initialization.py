@@ -35,6 +35,7 @@ def load_memory(memory_config: Dict):
     memory_type = memory_config.pop("memory_type", "chat_history")
     return memory_registry.build(memory_type, **memory_config)
 
+
 def load_memory_manipulator(memory_manipulator_config: Dict):
     memory_manipulator_type = memory_manipulator_config.pop("memory_manipulator_type", "basic")
     return memory_manipulator_registry.build(memory_manipulator_type, **memory_manipulator_config)
@@ -85,6 +86,16 @@ def prepare_task_config(taskwithyaml):
     if "llm_config" in task_config:
         llm_config = task_config["llm_config"]
         mode = llm_config.get("mode", "api")
+        
+        # 处理API凭证配置
+        if mode == "api" and "api_credentials" in llm_config:
+            credentials = llm_config["api_credentials"]
+            if "openai_api_key" in credentials:
+                os.environ["OPENAI_API_KEY"] = credentials["openai_api_key"]
+                print(f"🔑 Set OPENAI_API_KEY from config")
+            if "openai_base_url" in credentials:
+                os.environ["OPENAI_BASE_URL"] = credentials["openai_base_url"]
+                print(f"🌐 Set OPENAI_BASE_URL to: {credentials['openai_base_url']}")
         
         if mode == "api":
             selected_llm_config = llm_config.get("api_settings", {})

@@ -24,6 +24,11 @@ llm_config:
   # 模式选择: 'api' 使用API调用, 'local' 使用本地LLM
   mode: 'api'  # 可选: 'api' 或 'local'
   
+  # API凭证配置
+  api_credentials:
+    openai_api_key: "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+    openai_base_url: "https://api.deepseek.com/v1"
+  
   # API模式配置
   api_settings:
     model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
@@ -48,10 +53,10 @@ llm_config:
 
 environment:
   env_type: llm_eval
-  max_turns: 3    # 必须是3的倍数
+  max_turns: 6    # 必须是3的倍数
   rule:
     order:
-      type: sequential
+      type: concurrent # concurrent/sequential
     visibility:
       type: all
     selector:

@@ -50,8 +50,16 @@ Note: config each session's .yaml accordingly
 python run_translate.py
 ```
 
+2. Run LLM as Solver session to directly generate (answer, reasoning_path) and BACKUP ANSWER from NL
 
-2. Run solver engine to generate (answer, reasoning_path) from SL
+    Configure in `agentverse/tasks/llm_as_solver/llm_solver_config.yaml` 
+
+```bash
+python run_llmsolver.py
+```
+
+
+3. Run solver engine to generate (answer, reasoning_path) from SL
 
     Configure in `solver_engine/symbolic_solver_config.yaml` 
 
@@ -59,13 +67,6 @@ python run_translate.py
 python run_symbolicsolver.py 
 ```
 
-3. Run LLM as Solver session to directly generate (answer, reasoning_path) from NL
-
-    Configure in `agentverse/tasks/llm_as_solver/llm_solver_config.yaml` 
-
-```bash
-python run_llmsolver.py
-```
 
 4. Run a debate session for final result
 
