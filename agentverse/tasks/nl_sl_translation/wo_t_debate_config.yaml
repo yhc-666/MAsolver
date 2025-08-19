@@ -74,11 +74,11 @@ agents:
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-
-      You are given a problem description and a question. The task is to:
+      You are given a problem description and a question. The task is to translate it into LP symbolic format:
       1. define all the predicates in the problem
       2. parse the problem into logic rules based on the defined predicates
       3. write all the facts mentioned in the problem
-      4. parse the question into the logic form (Use && to represent AND, and you cannot use 'NOT' or other negations)
+      4. parse the question into the logic form (Use && to represent AND, and you cannot use 'NOT' or other negations in LP)
       ----------------
       Example:
       Context: Each jompus is fruity.

@@ -1,17 +1,5 @@
 import os
 
-# 移除硬编码的环境变量设置，现在通过YAML配置文件处理
-# os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
-# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
-
-# os.environ["OPENAI_API_KEY"] = "***"
-# os.environ["OPENAI_BASE_URL"] = "***"
-
-# always remember to put these lines at the top of your code if you are using clash
-# os.environ["http_proxy"] = "http://127.0.0.1:7890"
-# os.environ["https_proxy"] = "http://127.0.0.1:7890"
-# os.environ["all_proxy"] = "socks5://127.0.0.1:7890"
-
 
 import json
 from tqdm import tqdm
@@ -54,7 +42,7 @@ def extract_memory_token_usage(agents) -> Dict:
 
 parser = ArgumentParser()
 
-parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/logideduct_translate_config.yaml")
+parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/translate_config.yaml")
 parser.add_argument("--reverse_input", default=False, action="store_true")
 
 

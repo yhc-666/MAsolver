@@ -24,12 +24,15 @@ prompts:
     You are now in a collaborative debate with other reasoning agents. Your goal is to reach the correct answer through discussion.
 
     IMPORTANT DEBATE RULES:
-    1. Listen carefully to other agents' arguments in the discussion history
+    1. Review other agents' arguments in the discussion history first
     2. Identify specific points of agreement or disagreement
     3. Challenge weak reasoning with concrete counterexamples
-    4. Acknowledge other arguments when you find them correct, even if they contradict your initial position
-    5. Be willing to change your answer if you are convinced by other arguments
-    6. Reference specific agents and their arguments when responding
+    4. There is no need reapeat your whole reasoning if your argument remains unchanged.
+    5. Acknowledge other arguments when you find them correct, even if they contradict your initial position
+    6. If you change your answer from previous one, **always** remember to indicate reasons that you change your answer!
+    7. Be willing to change your answer if you are convinced by other arguments
+    8. Reference specific agents and their arguments when responding
+    9. Be interactive and engaging with other agents!
 
     Here is your discussion history:
     ${chat_history}
@@ -69,7 +72,7 @@ llm_config:
 
 environment:
   env_type: llm_eval
-  max_turns: 5 # 5的倍数
+  max_turns: 6 # 5的倍数
   rule:
     order:
       type: concurrent

@@ -9,17 +9,11 @@ output_dir:
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
-    You are given a logic problem in natural language including a context and a question as follows:
+    You are given a logic problem including a context and a question as follows:
     Context: ${context}
     Question: ${question}
-    
-    Please discuss with other translators about parsing this problem, following these Rules of Discussion:
-    
-    1. **Syntax Verification**: Carefully review previous discussions to understand others' translations. While maintaining YOUR OWN symbolic language system, check and correct any syntax errors in your translation (e.g., unclosed parentheses, malformed expressions).
-    
-    2. **Completeness Check**: Review others' translations to understand their interpretation of the natural language problem. While keeping YOUR OWN symbolic language system, verify and correct the information completeness of your translation (no missing/extra facts, rules, predicates, or statements from the original problem).
-    
-    3. **Language Independence**: When referencing others' translations, you MUST maintain your own symbolic language system. DO NOT adopt symbols or syntax from other languages (e.g., LP uses ">>>", FOL uses "→", SAT uses "==" - never mix these).
+    From your perspective, please give your understanding of the question and context,and discuss with your opponent about the parsing of the question.
+    Think about the advantages and disadvantages of each language, and keep the original format of each language, correct the current language by referring to other languages.
     Here is your discussion history:
     ${chat_history} 
     ${role_description}
@@ -31,12 +25,12 @@ llm_config:
   
   # API凭证配置
   api_credentials:
-    openai_api_key: "sk-c54acf253a834d25a8cddec234dd6ccc"
-    openai_base_url: "https://api.deepseek.com/v1"
+    openai_api_key: "1789931624457855004"
+    openai_base_url: "https://aigc.sankuai.com/v1/openai/native"
   
   # API模式配置
   api_settings:
-    model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
+    model: "gpt-4-0613"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
     llm_type: "gpt-4.1" #"deepseek-chat"  # LLM类选择：在 agentverse/initialization.py 的 load_llm() 函数中，通过 llm_registry.build(llm_type, **llm_config) 来选择具体的LLM实现类   注册系统：通过装饰器 @llm_registry.register() 将不同的LLM类注册到系统中
     temperature: 0
     max_tokens: 4000
@@ -58,7 +52,7 @@ llm_config:
 
 environment:
   env_type: llm_eval
-  max_turns: 9    # 必须是3的倍数
+  max_turns: 3    # 必须是3的倍数
   rule:
     order:
       type: concurrent
@@ -82,8 +76,10 @@ agents:
       Do not include unnecessary symbols/ such as "**", "1.", " - " .etc
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+      At the end of your response, provide your confidence level:
+      Confidence: [0.0-1.0]
     role_description: |-
-      Your final task is to translate the logic problem in natural language into LP logic formulas:
+      You are given a problem description and a question. The task is to translate it into LP logic formulas:
       1. define all the predicates in the problem
       2. parse the problem into logic rules based on the defined predicates
       3. write all the facts mentioned in the problem
@@ -128,8 +124,10 @@ agents:
       Do not include unnecessary symbols/ such as "**", "1.", " - " .etc
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+      At the end of your response, provide your confidence level:
+      Confidence: [0.0-1.0]
     role_description: |-
-       Your final task is to translate the logic problem in natural language into first-order logic formulas. The grammar of first-order logic is defined as follows:
+       Task Description: Given a problem description and a question. The task is to parse the problem and the question into first-order logic formulas. The grammar of first-order logic is defined as follows:
 
         logical conjunction: expr1 ∧ expr2
         logical disjunction: expr1 ∨ expr2
@@ -193,8 +191,11 @@ agents:
       Return **only** the declarations, constraints, and options. 
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
+      At the end of your response, provide your confidence level:
+      Confidence: [0.0-1.0]
     role_description: |-
-      Your final task is to parse the logic problem in natural language as a SAT problem using Z3 syntax, defining declarations, constraints, and options.
+      Task Description: You are given a problem description.
+      The task is to parse the problem as a SAT problem using Z3 syntax, defining declarations, constraints, and options.
         1. Always include all three section headers in order: # Declarations, # Constraints, # Options
         2. Declarations must follow exact patterns:
         - name = EnumSort([items, ...])  for non-numeric items
