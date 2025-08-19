@@ -7,6 +7,12 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
+try:
+    import tiktoken
+except ImportError:
+    tiktoken = None
+    logging.warning("tiktoken not installed, memory token counting will use approximation")
+
 from agentverse.llms.base import LLMResult
 
 from . import llm_registry
@@ -118,6 +124,7 @@ class OpenAIChat(BaseChatModel):
         if len(kwargs) > 0:
             logging.warning(f"Unused arguments: {kwargs}")
         super().__init__(args=args, max_retry=max_retry)
+        self._memory_token_count = 0  # Track memory tokens only
 
     def _construct_messages(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]):
         """
@@ -125,18 +132,30 @@ class OpenAIChat(BaseChatModel):
         - system message: 来自structured_prompt.system_content
         - assistant messages with name: 来自chat_memory
         - user message: 来自structured_prompt.user_content
+        Also counts memory tokens.
         """
         
         messages = []
+        memory_token_count = 0
         
-        # 1. 添加system message
+        # 1. 添加system message (no token counting for system)
         if structured_prompt.system_content:
             messages.append({
                 "role": "system",
                 "content": structured_prompt.system_content
             })
         
-        # 2. 添加历史对话作为assistant messages
+        # 2. 添加历史对话作为assistant messages and count memory tokens
+        if tiktoken:
+            try:
+                # Try to get encoding for the specific model
+                encoding = tiktoken.encoding_for_model(self.args.model)
+            except:
+                # Fallback to cl100k_base encoding (used by GPT-4 and newer models)
+                encoding = tiktoken.get_encoding("cl100k_base")
+        else:
+            encoding = None
+        
         for message in chat_memory:
             if message.content.strip() and message.content != "[Silence]":
                 messages.append({
@@ -144,13 +163,24 @@ class OpenAIChat(BaseChatModel):
                     "name": message.sender.replace(" ", "_"),  # 确保name符合API要求
                     "content": message.content
                 })
+                
+                # Count memory tokens
+                if encoding:
+                    # Accurate token counting with tiktoken
+                    memory_token_count += len(encoding.encode(message.content))
+                else:
+                    # Approximation: ~4 characters per token
+                    memory_token_count += len(message.content) // 4
         
-        # 3. 添加用户消息
+        # 3. 添加用户消息 (no token counting for user prompt)
         if structured_prompt.user_content:
             messages.append({
                 "role": "user",
                 "content": structured_prompt.user_content
             })
+        
+        # Store memory token count for later use
+        self._memory_token_count = memory_token_count
         
         return messages
 
@@ -162,15 +192,16 @@ class OpenAIChat(BaseChatModel):
             raise
         return LLMResult(
             content=response.choices[0].message.content,
-            send_tokens=response.usage.prompt_tokens,
-            recv_tokens=response.usage.completion_tokens,
-            total_tokens=response.usage.total_tokens,
+            send_tokens=0,  # Not tracking API tokens
+            recv_tokens=0,  # Not tracking API tokens
+            total_tokens=0,  # Not tracking API tokens
+            memory_tokens=self._memory_token_count  # Only memory tokens
         )
 
     async def agenerate_response(self, structured_prompt: "StructuredPrompt", chat_memory: List[Message]) -> LLMResult:
         messages = self._construct_messages(structured_prompt, chat_memory)
         
-        #io_logger.info("➡️Input Messages JSON:\n%s", json.dumps(messages, ensure_ascii=False, indent=2))
+        io_logger.info("➡️Input Messages JSON:\n%s", json.dumps(messages, ensure_ascii=False, indent=2))
         
         try:
             response = await get_async_client().chat.completions.create(messages=messages, **self.args.dict())
@@ -186,9 +217,10 @@ class OpenAIChat(BaseChatModel):
         
         return LLMResult(
             content=result_content,
-            send_tokens=response.usage.prompt_tokens,
-            recv_tokens=response.usage.completion_tokens,
-            total_tokens=response.usage.total_tokens,
+            send_tokens=0,  # Not tracking API tokens
+            recv_tokens=0,  # Not tracking API tokens
+            total_tokens=0,  # Not tracking API tokens
+            memory_tokens=self._memory_token_count  # Only memory tokens
         )
 
 

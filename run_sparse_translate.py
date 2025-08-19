@@ -18,21 +18,9 @@ from tqdm import tqdm
 from eval_helper.get_evaluation import get_evaluation
 from translation_output_helper.get_translation_output import get_translation_output
 
-from agentverse.agentverse import AgentVerse
-from argparse import ArgumentParser
-from typing import Dict, List
 
-
-def extract_memory_token_usage(agents) -> Dict:
-    """
-    Extract ONLY memory token usage from agents.
-    
-    Args:
-        agents: List of agent instances
-        
-    Returns:
-        Dictionary with memory token usage statistics
-    """
+def extract_memory_token_usage(agents):
+    """Extract ONLY memory token usage from agents"""
     total_memory_tokens = 0
     per_agent_memory = {}
     
@@ -52,9 +40,27 @@ def extract_memory_token_usage(agents) -> Dict:
     }
 
 
+def extract_gate_history(visibility_rule):
+    """Extract gate statistics from sparse visibility rule"""
+    if not hasattr(visibility_rule, 'gates'):
+        return {}
+    
+    gate_history = {}
+    
+    # Get cumulative sparse rate
+    if hasattr(visibility_rule, 'get_cumulative_sparse_rate'):
+        gate_history["cumulative_sparse_rate"] = visibility_rule.get_cumulative_sparse_rate()
+        gate_history["cumulative_open_gates"] = visibility_rule.cumulative_open_gates
+        gate_history["cumulative_total_gates"] = visibility_rule.cumulative_total_gates
+    
+    return gate_history
+
+from agentverse.agentverse import AgentVerse
+from argparse import ArgumentParser
+
 parser = ArgumentParser()
 
-parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/logideduct_translate_config.yaml")
+parser.add_argument("--config", type=str, default="agentverse/tasks/nl_sl_translation/sparse_translate_config.yaml")
 parser.add_argument("--reverse_input", default=False, action="store_true")
 
 
@@ -128,8 +134,11 @@ elif "ProofWriter" in args_data_path:
         _, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
                                     agent_nums=len(agentverse.agents))
         
-        # Extract memory token usage
+        # Extract memory tokens and gate statistics
         memory_usage = extract_memory_token_usage(agentverse.agents)
+        gate_history = {}
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            gate_history = extract_gate_history(agentverse.environment.rule.visibility)
 
         proof_writer_output.append({
             "id": ins["id"],
@@ -139,12 +148,15 @@ elif "ProofWriter" in args_data_path:
             "answer": ins["answer"],
             "chat_history": chat_history,
             "translation": translations,
-            "memory_token_usage": memory_usage
+            "memory_token_usage": memory_usage,
+            "gate_statistics": gate_history
         })
         
-        # Reset agents for next instance
+        # Reset for next instance
         for agent in agentverse.agents:
             agent.reset()
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            agentverse.environment.rule.visibility.reset()
 
         os.makedirs(args_output_dir, exist_ok=True)
         with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
@@ -170,8 +182,11 @@ elif "FOLIO" in args_data_path:
         _, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
                                     agent_nums=len(agentverse.agents))
         
-        # Extract memory token usage
+        # Extract memory tokens and gate statistics
         memory_usage = extract_memory_token_usage(agentverse.agents)
+        gate_history = {}
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            gate_history = extract_gate_history(agentverse.environment.rule.visibility)
 
         smoketest_output.append({
             "id": ins["id"],
@@ -181,12 +196,15 @@ elif "FOLIO" in args_data_path:
             "answer": ins["answer"],
             "chat_history": chat_history,
             "translation": translations,
-            "memory_token_usage": memory_usage
+            "memory_token_usage": memory_usage,
+            "gate_statistics": gate_history
         })
         
-        # Reset agents for next instance
+        # Reset for next instance
         for agent in agentverse.agents:
             agent.reset()
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            agentverse.environment.rule.visibility.reset()
 
         os.makedirs(args_output_dir, exist_ok=True)
         with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:
@@ -216,8 +234,11 @@ elif "LogicalDeduction" in args_data_path:
         _, translations = get_translation_output(setting="every_agent", messages=agentverse.agents[0].memory.messages,
                                     agent_nums=len(agentverse.agents))
         
-        # Extract memory token usage
+        # Extract memory tokens and gate statistics
         memory_usage = extract_memory_token_usage(agentverse.agents)
+        gate_history = {}
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            gate_history = extract_gate_history(agentverse.environment.rule.visibility)
 
         logical_deduction_output.append({
             "id": ins["id"],
@@ -227,12 +248,15 @@ elif "LogicalDeduction" in args_data_path:
             "answer": ins["answer"],
             "chat_history": chat_history,
             "translation": translations,
-            "memory_token_usage": memory_usage
+            "memory_token_usage": memory_usage,
+            "gate_statistics": gate_history
         })
         
-        # Reset agents for next instance
+        # Reset for next instance
         for agent in agentverse.agents:
             agent.reset()
+        if hasattr(agentverse.environment.rule, 'visibility'):
+            agentverse.environment.rule.visibility.reset()
 
         os.makedirs(args_output_dir, exist_ok=True)
         with open(os.path.join(args_output_dir, "translation_results.json"), "w") as f:

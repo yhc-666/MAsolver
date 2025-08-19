@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 from agentverse.agents.conversation_agent import BaseAgent
 from agentverse.environments.rules.base import Rule
 from agentverse.message import Message
+from pydantic import Field
 
 from . import env_registry as EnvironmentRegistry
 from .base import BaseEnvironment
@@ -29,7 +30,7 @@ class BasicEnvironment(BaseEnvironment):
     rule: Rule
     max_turns: int = 10
     cnt_turn: int = 0
-    last_messages: List[Message] = []
+    last_messages: List[Message] = Field(default_factory=list)
     rule_params: Dict = {}
 
     def __init__(self, rule, **kwargs):
@@ -65,13 +66,17 @@ class BasicEnvironment(BaseEnvironment):
         # Some rules will select certain messages from all the messages
         selected_messages = self.rule.select_message(self, messages)
         self.last_messages = selected_messages
+        
+        # Add messages to centralized chat history with real-time logging
+        self.add_to_chat_history(selected_messages)
+        
         self.print_messages(selected_messages)
-
-        # Update the memory of the agents
-        self.rule.update_memory(self)
 
         # Update the set of visible agents for each agent
         self.rule.update_visible_agents(self)
+
+        # Update the memory of the agents
+        self.rule.update_memory(self)
 
         self.cnt_turn += 1
 
@@ -87,6 +92,7 @@ class BasicEnvironment(BaseEnvironment):
     def reset(self) -> None:
         """Reset the environment"""
         self.cnt_turn = 0
+        self.complete_chat_history = []  # Clear centralized chat history
         self.rule.reset()
         for agent in self.agents:
             agent.reset()

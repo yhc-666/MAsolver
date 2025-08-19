@@ -1,13 +1,23 @@
 task:
   final_debate
-data_path: # AgentVerse 原代码需要，放这占位
+
+# Data path (required by AgentVerse placeholder)
+data_path:
   outputs/
+  
+# Input/Output paths
 symbolic_slover_results_path:
   outputs/deepseek/ProofWriter/symbolic_solver/results.json
 llm_solver_results_path:
   outputs/deepseek/ProofWriter/llm_solver/llm_solver_results.json
 output_dir:
-  outputs/deepseek/ProofWriter/final_debate
+  outputs/deepseek/ProofWriter/sparse_final_debate
+
+# Sparse communication settings
+sparse_config:
+  lambda_param: 0.5
+  bert_model: "prajjwal1/bert-tiny"  # Can upgrade to bert-base-uncased if needed
+
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -28,7 +38,7 @@ prompts:
     2. Identify specific points of agreement or disagreement
     3. Challenge weak reasoning with concrete counterexamples
     4. Acknowledge other arguments when you find them correct, even if they contradict your initial position
-    5. Be willing to change your answer if you are convinced by other arguments
+    5. Be willing to change your answer if presented with compelling evidence
     6. Reference specific agents and their arguments when responding
 
     Here is your discussion history:
@@ -36,51 +46,36 @@ prompts:
 
     ${turn_specific_instruction}
 
-
-# LLM Configuration - 选择使用API还是本地LLM
+# LLM Configuration
 llm_config:
-  # 模式选择: 'api' 使用API调用, 'local' 使用本地LLM
-  mode: 'api'  # 可选: 'api' 或 'local'
+  mode: 'api'
   
-  # API凭证配置
   api_credentials:
     openai_api_key: "sk-c54acf253a834d25a8cddec234dd6ccc"
     openai_base_url: "https://api.deepseek.com/v1"
   
-  # API模式配置
   api_settings:
-    model: "deepseek-chat"    # 选择model, 会被传给API client.chat.completions
-    llm_type: "deepseek-chat"  # 传给llm_registry
+    model: "deepseek-chat"
+    llm_type: "gpt-4.1"
     max_tokens: 5000
     max_retry: 3
-    
-  # 本地LLM模式配置  
-  local_settings:
-    model_path: "/mnt/sdb/ssuser/llm_models/Deepseek-14B"
-    llm_type: "deepseek-local"
-    temperature: 0.7
-    top_p: 0.9
-    top_k: 50
-    max_tokens: 5120
-    tensor_parallel_size: 1
-    gpu_memory_utilization: 0.9
-    max_model_len: 4096
-    trust_remote_code: true
 
 environment:
   env_type: llm_eval
-  max_turns: 5 # 5的倍数
+  max_turns: 5  # D rounds of communication 
   rule:
     order:
-      type: concurrent
+      type: concurrent  # Required for sparse communication
     visibility:
-      type: all
+      type: sparse  # Use sparse visibility with gating
+      bert_model: "prajjwal1/bert-tiny"
+      lambda_param: 0.5
     selector:
-      type: basic
+      type: basic  # Keep basic selector
     updater:
-      type: basic
+      type: sparse  # Use sparse updater
     describer:
-      type: basic
+      type: basic  # Keep basic describer
 
 output_parser:
   parser_type: "final_debate"
@@ -116,6 +111,7 @@ agents:
     memory_manipulator:
       memory_manipulator_type: basic
     prompt_template: *prompt
+    
   -
     agent_type: final_debate_multi
     name: FOL supporter
@@ -179,8 +175,6 @@ agents:
       memory_manipulator_type: basic
     prompt_template: *prompt
 
-
-
   -
     agent_type: final_debate_multi
     name: Plan-and-Solve supporter
@@ -225,5 +219,4 @@ agents:
       memory_manipulator_type: basic
     prompt_template: *prompt
 
-
-tools: ~ 
+tools: ~

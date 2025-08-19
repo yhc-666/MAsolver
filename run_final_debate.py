@@ -5,11 +5,38 @@ from argparse import ArgumentParser
 from typing import Dict, List
 from tqdm import tqdm
 
-# 移除硬编码的环境变量设置，现在通过YAML配置文件处理
-# os.environ["OPENAI_API_KEY"] = "sk-733e47bc35da4b49b0bc7ca99ede48f8"
-# os.environ["OPENAI_BASE_URL"] = "https://api.deepseek.com/v1"
 
 from agentverse.agentverse import AgentVerse
+
+
+def extract_memory_token_usage(agents) -> Dict:
+    """
+    Extract ONLY memory token usage from agents.
+    
+    Args:
+        agents: List of agent instances
+        
+    Returns:
+        Dictionary with memory token usage statistics
+    """
+    total_memory_tokens = 0
+    per_agent_memory = {}
+    
+    for agent in agents:
+        if hasattr(agent, 'memory_token_usage'):
+            agent_memory_tokens = agent.memory_token_usage.get("total_memory_tokens", 0)
+            total_memory_tokens += agent_memory_tokens
+            per_agent_memory[agent.name] = {
+                "memory_tokens": agent_memory_tokens,
+                "rounds": agent.memory_token_usage.get("rounds", [])
+            }
+    
+    return {
+        "total_memory_tokens_all_agents": total_memory_tokens,
+        "average_memory_tokens_per_agent": total_memory_tokens / len(agents) if agents else 0,
+        "per_agent": per_agent_memory
+    }
+
 
 def load_solver_results(symbolic_path: str, llm_path: str) -> List[Dict]:
     """
@@ -90,7 +117,6 @@ def assign_agent_data(agentverse, merged_instance: Dict) -> None:
         agent.context = merged_instance["context"]
         agent.question = merged_instance["question"]
         agent.options = '\n'.join(merged_instance["options"])
-        print('agent.options', agent.options)
         agent.final_prompt = ""
         
         if agent.name in agent_mapping:
@@ -104,32 +130,10 @@ def assign_agent_data(agentverse, merged_instance: Dict) -> None:
                 solver_result = merged_instance["llm_results"].get(solver_name, {})
                 agent.predict = solver_result.get("predict", "")
                 agent.reasoning = solver_result.get("reasoning", "")
-                
-            print(f"Assigned to {agent.name}: predict='{agent.predict}', reasoning_length={len(agent.reasoning)}")
         else:
             print(f"Warning: No mapping found for agent: {agent.name}")
 
 
-def extract_chat_history(messages) -> List[Dict]:
-    """
-    Extract chat history from AgentVerse memory messages.
-    
-    Args:
-        messages: List of memory messages
-        
-    Returns:
-        List of chat history entries
-    """
-    chat_history = []
-    
-    for message in messages:
-        if hasattr(message, 'sender') and hasattr(message, 'content'):
-            chat_history.append({
-                "role": message.sender,
-                "content": message.content
-            })
-    
-    return chat_history
 
 
 def collect_final_predictions(agents) -> Dict:
@@ -225,18 +229,23 @@ def main():
         # Run debate
         agentverse.run()
         
-        chat_history = extract_chat_history(agentverse.agents[0].memory.messages)
+        # Get chat history from environment's centralized logging
+        chat_history = agentverse.environment.get_chat_history()
         final_predictions = collect_final_predictions(agentverse.agents)
+        
+        # Extract memory token usage
+        memory_usage = extract_memory_token_usage(agentverse.agents)
         
         result = {
             "id": merged_instance["id"],
             "context": merged_instance["context"],
             "question": merged_instance["question"],
             "options": merged_instance["options"],
+            "chat_history": chat_history,
             "gold_answer": merged_instance["gold_answer"],
             "Original predictions": original_predictions,
-            "chat_history": chat_history,
-            "Final predictions": final_predictions
+            "Final predictions": final_predictions,
+            "memory_token_usage": memory_usage
         }
         
         final_debate_output.append(result)

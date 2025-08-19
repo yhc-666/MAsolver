@@ -4,10 +4,11 @@ import logging
 import bdb
 import re
 from string import Template
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict
 
 from agentverse.message import Message, StructuredPrompt
 from openai import RateLimitError
+from pydantic import Field
 
 from . import agent_registry
 from .base import BaseAgent
@@ -34,12 +35,19 @@ class LLMEvalAgent(BaseAgent):
     final_prompt: str = ""
     final_prompt_to_use: str = ""
     normal_turn_instruction: str = ""
+    
+    # Memory token tracking
+    memory_token_usage: Dict = Field(default_factory=lambda: {
+        "total_memory_tokens": 0,
+        "rounds": []  # List of memory tokens per round
+    })
 
     def _clean_output(self, text: str) -> str:
         """Clean the output text similar to output_parser.py"""
         cleaned_output = text.strip()
         cleaned_output = re.sub(r"\n+", "\n", cleaned_output)
         cleaned_output = re.sub(r"\n-", "\n", cleaned_output)  # Remove dash after newline
+        cleaned_output = cleaned_output.replace("**", "")
         return cleaned_output
 
     def step(self, env_description: str = "") -> Message:
@@ -88,7 +96,18 @@ class LLMEvalAgent(BaseAgent):
         # Coherence:
         # Thought: (your thought)
 
-        if env.cnt_turn >= env.max_turns - len(env.agents):
+        # Check if using concurrent order for final round detection
+        is_final_round = False
+        if hasattr(env, 'rule') and hasattr(env.rule, 'order'):
+            order_type = env.rule.order.__class__.__name__.lower()
+            if 'concurrent' in order_type:
+                is_final_round = env.cnt_turn >= env.max_turns - 1
+            else:
+                is_final_round = env.cnt_turn >= env.max_turns - len(env.agents)
+        else:
+            is_final_round = env.cnt_turn >= env.max_turns - len(env.agents)
+        
+        if is_final_round:
             # self.final_prompt = "Now, please give your final judgement, and you must use the following format, first start with 'This is my final judgement!' and briefly give the thought on why you give this rate, then finally give the rate of the summary of the above 4 aspects." \
             #                     "This is my final judgement!\n" \
             #                     "Thought: (your thought)\n" \
@@ -109,6 +128,15 @@ class LLMEvalAgent(BaseAgent):
             for i in range(self.max_retry):
                 try:
                     response = await self.llm.agenerate_response(structured_prompt, self.memory.messages)
+                    
+                    # Track memory tokens if available
+                    if hasattr(response, 'memory_tokens'):
+                        self.memory_token_usage["total_memory_tokens"] += response.memory_tokens
+                        self.memory_token_usage["rounds"].append({
+                            "round": env.cnt_turn if env else 0,
+                            "memory_tokens": response.memory_tokens
+                        })
+                    
                     parsed_response = self.output_parser.parse(response, env.cnt_turn, env.max_turns, len(env.agents), self.name)
                     should_break = True
                     break
@@ -158,10 +186,21 @@ class LLMEvalAgent(BaseAgent):
         """
         # Determine turn-specific instruction based on current turn
         if env and hasattr(env, 'cnt_turn') and hasattr(env, 'max_turns') and hasattr(env, 'agents'):
-            if env.cnt_turn < env.max_turns - len(env.agents):
-                turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
+            # Check if using concurrent order
+            is_final = False
+            if hasattr(env, 'rule') and hasattr(env.rule, 'order'):
+                order_type = env.rule.order.__class__.__name__.lower()
+                if 'concurrent' in order_type:
+                    # For concurrent: all agents speak in same round, so final round is just max_turns - 1
+                    is_final = env.cnt_turn >= env.max_turns - 1
+                else:
+                    # For sequential: original logic
+                    is_final = env.cnt_turn >= env.max_turns - len(env.agents)
             else:
-                turn_specific_instruction = self.final_prompt
+                # Default to sequential logic if no order rule found
+                is_final = env.cnt_turn >= env.max_turns - len(env.agents)
+            
+            turn_specific_instruction = self.final_prompt if is_final else Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
         else:
             # Fallback for when env is not available
             turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
@@ -215,4 +254,9 @@ class LLMEvalAgent(BaseAgent):
     def reset(self) -> None:
         """Reset the agent"""
         self.memory.reset()
+        # Reset memory token tracking
+        self.memory_token_usage = {
+            "total_memory_tokens": 0,
+            "rounds": []
+        }
         # TODO: reset receiver

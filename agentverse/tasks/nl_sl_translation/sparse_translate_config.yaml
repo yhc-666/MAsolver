@@ -57,11 +57,11 @@ environment:
     order:
       type: concurrent
     visibility:
-      type: all
+      type: sparse
     selector:
       type: basic
     updater:
-      type: basic
+      type: sparse
     describer:
       type: basic
 

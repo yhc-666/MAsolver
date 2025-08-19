@@ -5,7 +5,7 @@ dataset:
 data_path:
   data/LogicalDeduction/dev.json
 output_dir:
-  outputs/deepseek/LogicalDeduction/translation
+  outputs/gpt4/LogicalDeduction/translation
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -13,9 +13,6 @@ prompts:
     Context: ${context}
     Question: ${question}
     Options: ${options}
-    From your perspective, please give your understanding of the question and context,and discuss with your opponent about the parsing of the question.
-    Think about the advantages and disadvantages of each language, and keep the original format of each language, correct the current language by referring to other languages.
-    Here is your discussion history:
     ${chat_history} 
     ${role_description}
     ${turn_specific_instruction}
@@ -26,15 +23,15 @@ llm_config:
   
   # API凭证配置
   api_credentials:
-    openai_api_key: "sk-c54acf253a834d25a8cddec234dd6ccc"
-    openai_base_url: "https://api.deepseek.com/v1"
+    openai_api_key: "1789931624457855004"
+    openai_base_url: "https://aigc.sankuai.com/v1/openai/native"
   
   # API模式配置
   api_settings:
-    model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
+    model: "gpt-4-0613"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
     llm_type: "gpt-4.1" #"deepseek-chat"  # LLM类选择：在 agentverse/initialization.py 的 load_llm() 函数中，通过 llm_registry.build(llm_type, **llm_config) 来选择具体的LLM实现类   注册系统：通过装饰器 @llm_registry.register() 将不同的LLM类注册到系统中
     temperature: 0
-    max_tokens: 4000
+    max_tokens: 1250
     max_retry: 3
     
   # 本地LLM模式配置  
@@ -71,7 +68,7 @@ agents:
     agent_type: llm_eval_multi
     name: LP translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. 
+      Now you need to give your final output. 
       Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
       Return **only** Predicates, Facts, Rules, and Query.
       Do not include unnecessary symbols/ such as "**", "1.", " - " .etc
@@ -128,7 +125,6 @@ agents:
       SecondFromRight(blue,   True)  ::: Option D
       SecondFromRight(red,    True)  ::: Option E
       ---------------
-
     memory:
       memory_type: chat_history
     memory_manipulator:
@@ -138,7 +134,7 @@ agents:
     agent_type: llm_eval_multi
     name: FOL translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output.
+      Now you need to give your final output. 
       Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
       Return **only** Predicates, Premises, and Conclusion.
       Do not include unnecessary symbols/ such as "**", "1.", " - " .etc
@@ -212,9 +208,10 @@ agents:
     agent_type: llm_eval_multi
     name: SAT translator
     final_prompt_to_use: |-
-      After discussion, now you need to give your final output. 
+      Now you need to give your final output. 
       Please ensure that the output format has no syntax error, such as unclosed parentheses, etc.
       Return **only** the declarations, constraints, and options. 
+      
     normal_turn_instruction: |-
       Now it's your turn to speak. Please speak as concisely and clearly as possible, ${agent_name} !
     role_description: |-

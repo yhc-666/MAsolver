@@ -7,9 +7,10 @@ from agentverse.message import Message, StructuredPrompt
 
 class LLMResult(BaseModel):
     content: str
-    send_tokens: int
-    recv_tokens: int
-    total_tokens: int
+    send_tokens: int = 0  # Not tracking API tokens
+    recv_tokens: int = 0  # Not tracking API tokens
+    total_tokens: int = 0  # Not tracking API tokens
+    memory_tokens: int = 0  # NEW: memory-only tokens
 
 
 class BaseModelArgs(BaseModel):

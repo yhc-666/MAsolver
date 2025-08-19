@@ -5,7 +5,11 @@
       "Bash(find:*)",
       "Bash(python:*)",
       "Bash(pip show:*)",
-      "mcp__ide__executeCode"
+      "mcp__ide__executeCode",
+      "Bash(cp:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(conda activate:*)",
+      "Bash(source:*)"
     ],
     "deny": []
   }

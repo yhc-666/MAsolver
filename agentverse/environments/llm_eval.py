@@ -34,13 +34,17 @@ class LLMEvalEnvironment(BasicEnvironment):
         # Some rules will select certain messages from all the messages
         selected_messages = self.rule.select_message(self, messages)
         self.last_messages = selected_messages
+        
+        # Add messages to centralized chat history with real-time logging
+        self.add_to_chat_history(selected_messages)
+        
         self.print_messages(selected_messages)
-
-        # Update the memory of the agents
-        self.rule.update_memory(self)
 
         # Update the set of visible agents for each agent
         self.rule.update_visible_agents(self)
+
+        # Update the memory of the agents
+        self.rule.update_memory(self)
 
         self.cnt_turn += 1
 

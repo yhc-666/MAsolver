@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 import bdb
 from string import Template
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, Dict
 
 from agentverse.message import Message, StructuredPrompt
+from pydantic import Field
 
 from . import agent_registry
 from .llm_eval_multi_agent import LLMEvalAgent
@@ -31,6 +32,12 @@ class FinalDebateMultiAgent(LLMEvalAgent):
     options: str = ""      # Question options
     final_answer: str = ""  # Final answer parsed from output
     
+    # Memory token tracking
+    memory_token_usage: Dict = Field(default_factory=lambda: {
+        "total_memory_tokens": 0,
+        "rounds": []  # List of memory tokens per round
+    })
+    
     def _fill_prompt_template(self, env_description: str = "", env=None) -> StructuredPrompt:
         """
         Fill the placeholders in the prompt template and return structured prompt components.
@@ -45,10 +52,21 @@ class FinalDebateMultiAgent(LLMEvalAgent):
         """
         # Determine turn-specific instruction based on current turn
         if env and hasattr(env, 'cnt_turn') and hasattr(env, 'max_turns') and hasattr(env, 'agents'):
-            if env.cnt_turn < env.max_turns - len(env.agents):
-                turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
+            # Check if using concurrent order
+            is_final = False
+            if hasattr(env, 'rule') and hasattr(env.rule, 'order'):
+                order_type = env.rule.order.__class__.__name__.lower()
+                if 'concurrent' in order_type:
+                    # For concurrent: all agents speak in same round, so final round is just max_turns - 1
+                    is_final = env.cnt_turn >= env.max_turns - 1
+                else:
+                    # For sequential: original logic
+                    is_final = env.cnt_turn >= env.max_turns - len(env.agents)
             else:
-                turn_specific_instruction = self.final_prompt_to_use
+                # Default to sequential logic if no order rule found
+                is_final = env.cnt_turn >= env.max_turns - len(env.agents)
+            
+            turn_specific_instruction = self.final_prompt_to_use if is_final else Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
         else:
             turn_specific_instruction = Template(self.normal_turn_instruction).safe_substitute(agent_name=self.name)
         
@@ -126,8 +144,20 @@ class FinalDebateMultiAgent(LLMEvalAgent):
 
     async def astep(self, env: Optional["BaseEnvironment"] = None, env_description: str = "") -> Message:
         """Override astep to save final_answer from parser"""
-        if env and env.cnt_turn >= env.max_turns - len(env.agents):
-            self.final_prompt = self.final_prompt_to_use
+        # Check if using concurrent order for final round detection
+        if env:
+            is_final_round = False
+            if hasattr(env, 'rule') and hasattr(env.rule, 'order'):
+                order_type = env.rule.order.__class__.__name__.lower()
+                if 'concurrent' in order_type:
+                    is_final_round = env.cnt_turn >= env.max_turns - 1
+                else:
+                    is_final_round = env.cnt_turn >= env.max_turns - len(env.agents)
+            else:
+                is_final_round = env.cnt_turn >= env.max_turns - len(env.agents)
+            
+            if is_final_round:
+                self.final_prompt = self.final_prompt_to_use
 
         structured_prompt = self._fill_prompt_template(env_description, env)
 
@@ -138,6 +168,15 @@ class FinalDebateMultiAgent(LLMEvalAgent):
             for i in range(self.max_retry):
                 try:
                     response = await self.llm.agenerate_response(structured_prompt, self.memory.messages)
+                    
+                    # Track memory tokens if available
+                    if hasattr(response, 'memory_tokens'):
+                        self.memory_token_usage["total_memory_tokens"] += response.memory_tokens
+                        self.memory_token_usage["rounds"].append({
+                            "round": env.cnt_turn if env else 0,
+                            "memory_tokens": response.memory_tokens
+                        })
+                    
                     if env:
                         parsed_response = self.output_parser.parse(response, env.cnt_turn, env.max_turns, len(env.agents))
                     else:
@@ -188,4 +227,9 @@ class FinalDebateMultiAgent(LLMEvalAgent):
         # self.reasoning = ""   # Keep solver reasoning
         # Don't reset options - it's instance data that should persist
         # self.options = ""  # Remove this line - options should not be reset
-        self.final_answer = ""  # Reset final_answer for new conversation 
+        self.final_answer = ""  # Reset final_answer for new conversation
+        # Reset memory token tracking
+        self.memory_token_usage = {
+            "total_memory_tokens": 0,
+            "rounds": []
+        } 
