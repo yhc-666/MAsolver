@@ -100,7 +100,7 @@ elif "ProofWriter" in args_data_path:
     # 处理ProofWriter数据集
     proof_writer_output = []
 
-    for num, ins in enumerate(tqdm(data[:30], desc="Processing ProofWriter", unit="instance")):
+    for num, ins in enumerate(tqdm(data, desc="Processing ProofWriter", unit="instance")):
         print(f"================================instance {num}====================================")
 
         for agent_id in range(len(agentverse.agents)):

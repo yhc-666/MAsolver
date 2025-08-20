@@ -24,6 +24,7 @@ class SparseVisibility(BaseVisibility):
     # Declare all fields for Pydantic compatibility
     bert_model: str = Field(default="cross-encoder/stsb-TinyBERT-L4")
     lambda_param: float = Field(default=0.5)
+    alpha: float = Field(default=1.0)  # Sparsity control parameter
     tokenizer: Optional[Any] = Field(default=None)
     model: Optional[Any] = Field(default=None)
     gates: Dict[int, Any] = Field(default_factory=dict)
@@ -36,17 +37,19 @@ class SparseVisibility(BaseVisibility):
     cumulative_total_gates: int = Field(default=0)
     cumulative_open_gates: int = Field(default=0)
     
-    def __init__(self, bert_model: str = "cross-encoder/stsb-TinyBERT-L4", lambda_param: float = 0.5, **kwargs):
+    def __init__(self, bert_model: str = "cross-encoder/stsb-TinyBERT-L4", lambda_param: float = 0.5, alpha: float = 1.0, **kwargs):
         """
         Initialize sparse visibility with BERT model for similarity computation.
         
         Args:
             bert_model: Name of the BERT model to use for similarity computation
             lambda_param: Hyperparameter λ from the algorithm for preference computation
+            alpha: Sparsity control parameter (>1.0 for more sparse, <1.0 for less sparse)
         """
         super().__init__(
             bert_model=bert_model,
             lambda_param=lambda_param,
+            alpha=alpha,
             **kwargs
         )
         
@@ -216,13 +219,13 @@ class SparseVisibility(BaseVisibility):
                     
                     self.historical_preferences[round][i, j] = pre_ij_hat
                     
-                    # Update gate: Close if current preference < previous round's historical average
+                    # Update gate: Close if current preference < alpha * previous round's historical average
                     if round > 0:
                         prev_round_hat = self.historical_preferences[round - 1][i, j]
-                        if pre_ij < prev_round_hat:
+                        if pre_ij < self.alpha * prev_round_hat:
                             # Close the gate (set O_i→j = 0)
                             self.gates[round][i, j] = 0
-                            logging.info(f"Round {round}: Closing gate from agent {i} to agent {j} (Pre={pre_ij:.3f} < Pre_hat_prev={prev_round_hat:.3f})")
+                            logging.info(f"Round {round}: Closing gate from agent {i} to agent {j} (Pre={pre_ij:.3f} < α*Pre_hat_prev={self.alpha*prev_round_hat:.3f}, α={self.alpha})")
         
         # Store current round gates for updater to access
         # We'll access this through the visibility object itself

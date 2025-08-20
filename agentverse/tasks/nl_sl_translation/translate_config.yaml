@@ -12,6 +12,8 @@ prompts:
     You are given a logic problem in natural language including a context and a question as follows:
     Context: ${context}
     Question: ${question}
+
+    ${role_description}
     
     Please discuss with other translators about parsing this problem, following these Rules of Discussion:
     
@@ -22,7 +24,6 @@ prompts:
     3. **Language Independence**: When referencing others' translations, you MUST maintain your own symbolic language system. DO NOT adopt symbols or syntax from other languages (e.g., LP uses ">>>", FOL uses "→", SAT uses "==" - never mix these).
     Here is your discussion history:
     ${chat_history} 
-    ${role_description}
     ${turn_specific_instruction}
 
 llm_config:

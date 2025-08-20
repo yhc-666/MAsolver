@@ -16,6 +16,7 @@ output_dir:
 # Sparse communication settings
 sparse_config:
   lambda_param: 0.5
+  alpha: 1.0  # Sparsity control: >1.0 for more sparse, <1.0 for less sparse
   bert_model: "prajjwal1/bert-tiny"  # Can upgrade to bert-base-uncased if needed
 
 prompts:
@@ -73,6 +74,7 @@ environment:
       type: sparse  # Use sparse visibility with gating
       bert_model: "prajjwal1/bert-tiny"
       lambda_param: 0.5
+      alpha: 1.0  # Sparsity control parameter
     selector:
       type: basic  # Keep basic selector
     updater:
