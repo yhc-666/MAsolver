@@ -1,9 +1,9 @@
 task:
   llm_solver
 data_path:
-  data/ProofWriter/dev.json
+  data/ProntoQA/dev.json
 output_dir: 
-  outputs/deepseek/ProofWriter/llm_solver
+  outputs/deepseek/ProntoQA/llm_solver
 
 # ---------- Execution Settings ----------
 execution:

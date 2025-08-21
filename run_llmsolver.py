@@ -223,7 +223,32 @@ async def main_async():
             gold_answer = ins.get('answer', '')
 
         elif "ProntoQA" in args_data_path:
-            pass
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "LogicalDeduction" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "AR-LSAT" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "FOLIO" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
 
         elif "smoketest" in args_data_path:
             question_id = ins.get('id', f'Q{num:05d}')
@@ -262,11 +287,36 @@ def main_sync():
             question_id = ins.get('id', f'Q{num:05d}')
             context = ins.get('context', '')
             question = ins.get('question', '')
-            options = '\n'.join([opt.strip() for opt in ins.get['options']])
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
             gold_answer = ins.get('answer', '')
 
         elif "ProntoQA" in args_data_path:
-            pass
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "LogicalDeduction" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "AR-LSAT" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
+
+        elif "FOLIO" in args_data_path:
+            question_id = ins.get('id', f'Q{num:05d}')
+            context = ins.get('context', '')
+            question = ins.get('question', '')
+            options = '\n'.join([opt.strip() for opt in ins.get('options', [])])
+            gold_answer = ins.get('answer', '')
         
         elif "smoketest" in args_data_path:
             question_id = ins.get('id', f'Q{num:05d}')

@@ -346,7 +346,7 @@ def main():
     parser.add_argument(
         '--input_path', 
         type=str,
-        default='outputs/deepseek/ProofWriter/final_debate/final_debate_results.json',
+        default='outputs/deepseek/ProofWriter/sparse_final_debate/sparse_final_debate_results.json',
         help='Path to the final debate results JSON file'
     )
     parser.add_argument(

@@ -13,12 +13,6 @@ llm_solver_results_path:
 output_dir:
   outputs/deepseek/ProofWriter/sparse_final_debate
 
-# Sparse communication settings
-sparse_config:
-  lambda_param: 0.5
-  alpha: 1.0  # Sparsity control: >1.0 for more sparse, <1.0 for less sparse
-  bert_model: "prajjwal1/bert-tiny"  # Can upgrade to bert-base-uncased if needed
-
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -72,9 +66,9 @@ environment:
       type: concurrent  # Required for sparse communication
     visibility:
       type: sparse  # Use sparse visibility with gating
-      bert_model: "prajjwal1/bert-tiny"
+      bert_model: "sentence-transformers/all-MiniLM-L6-v2"
       lambda_param: 0.5
-      alpha: 1.0  # Sparsity control parameter
+      alpha: 1  # Sparsity control parameter (>1.0 for more sparse, <1.0 for less)
     selector:
       type: basic  # Keep basic selector
     updater:

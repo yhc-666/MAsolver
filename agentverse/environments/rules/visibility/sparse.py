@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import numpy as np
 from typing import TYPE_CHECKING, Dict, Tuple, Optional, Any
-from transformers import AutoTokenizer, AutoModel
+from sentence_transformers import SentenceTransformer, util
 import torch
 import logging
 from pydantic import Field
@@ -22,10 +22,9 @@ class SparseVisibility(BaseVisibility):
     """
     
     # Declare all fields for Pydantic compatibility
-    bert_model: str = Field(default="cross-encoder/stsb-TinyBERT-L4")
+    bert_model: str = Field(default="sentence-transformers/all-MiniLM-L6-v2")
     lambda_param: float = Field(default=0.5)
     alpha: float = Field(default=1.0)  # Sparsity control parameter
-    tokenizer: Optional[Any] = Field(default=None)
     model: Optional[Any] = Field(default=None)
     gates: Dict[int, Any] = Field(default_factory=dict)
     confidences: Dict[int, Dict[int, float]] = Field(default_factory=dict)
@@ -37,7 +36,7 @@ class SparseVisibility(BaseVisibility):
     cumulative_total_gates: int = Field(default=0)
     cumulative_open_gates: int = Field(default=0)
     
-    def __init__(self, bert_model: str = "cross-encoder/stsb-TinyBERT-L4", lambda_param: float = 0.5, alpha: float = 1.0, **kwargs):
+    def __init__(self, bert_model: str = "sentence-transformers/all-MiniLM-L6-v2", lambda_param: float = 0.5, alpha: float = 1.0, **kwargs):
         """
         Initialize sparse visibility with BERT model for similarity computation.
         
@@ -54,14 +53,12 @@ class SparseVisibility(BaseVisibility):
         )
         
         try:
-            self.tokenizer = AutoTokenizer.from_pretrained(bert_model)
-            self.model = AutoModel.from_pretrained(bert_model)
-            self.model.eval()  # Set to evaluation mode
+            self.model = SentenceTransformer(bert_model)
             logging.info(f"Loaded BERT model: {bert_model}")
         except Exception as e:
             logging.error(f"Failed to load BERT model {bert_model}: {e}")
             logging.warning("Falling back to random similarity scores")
-            # tokenizer and model already None from field defaults
+            # model already None from field defaults
     
     def extract_confidence(self, message_content: str) -> float:
         """
@@ -87,40 +84,30 @@ class SparseVisibility(BaseVisibility):
     
     def compute_similarity(self, text1: str, text2: str) -> float:
         """
-        Compute cosine similarity between two texts using BERT CLS tokens.
+        Compute cosine similarity between two texts using sentence-transformers.
         
         Args:
             text1: First text
             text2: Second text
             
         Returns:
-            Cosine similarity score
+            Cosine similarity score in range [-1, 1]
         """
-        if self.model is None or self.tokenizer is None:
-            # Fallback to random similarity if BERT not available
+        if self.model is None:
+            # Fallback to random similarity if model not available
             return np.random.random()
         
         try:
-            # Tokenize inputs
-            inputs1 = self.tokenizer(text1, return_tensors="pt", 
-                                    truncation=True, max_length=512, padding=True)
-            inputs2 = self.tokenizer(text2, return_tensors="pt", 
-                                    truncation=True, max_length=512, padding=True)
+            # Encode both texts with normalization for cosine similarity
+            embeddings = self.model.encode([text1, text2], 
+                                          convert_to_tensor=True, 
+                                          normalize_embeddings=True)
             
-            # Get embeddings
-            with torch.no_grad():
-                outputs1 = self.model(**inputs1)
-                outputs2 = self.model(**inputs2)
-            
-            # Use CLS token embeddings
-            cls1 = outputs1.last_hidden_state[:, 0, :]  # Shape: [1, hidden_size]
-            cls2 = outputs2.last_hidden_state[:, 0, :]
-            
-            # Compute cosine similarity
-            similarity = torch.cosine_similarity(cls1, cls2, dim=1)
+            # Compute cosine similarity (returns value in [-1, 1])
+            similarity = util.cos_sim(embeddings[0], embeddings[1]).item()
 
-            print(f"Similarity by BERT: {similarity.item()}")
-            return similarity.item()
+            print(f"Similarity by BERT: {similarity}")
+            return similarity
             
         except Exception as e:
             logging.warning(f"Error computing similarity: {e}")
