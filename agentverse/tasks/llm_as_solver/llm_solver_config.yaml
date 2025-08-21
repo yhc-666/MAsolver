@@ -20,7 +20,7 @@ llm_config:
   
   # API凭证配置
   api_credentials:
-    openai_api_key: "sk-733e47bc35da4b49b0bc7ca99ede48f8"
+    openai_api_key: "sk-c54acf253a834d25a8cddec234dd6ccc"
     openai_base_url: "https://api.deepseek.com/v1"
   
   api_settings:

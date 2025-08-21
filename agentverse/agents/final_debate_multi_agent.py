@@ -16,8 +16,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from agentverse.environments.base import BaseEnvironment
 
-# Use generic Exception handling for rate limit errors
-RateLimitError = Exception
+from openai import RateLimitError
 
 @agent_registry.register("final_debate_multi")
 class FinalDebateMultiAgent(LLMEvalAgent):
@@ -189,6 +188,8 @@ class FinalDebateMultiAgent(LLMEvalAgent):
                     if isinstance(e, RateLimitError):
                         logging.error(e)
                         logging.warning("Retrying Until rate limit error disappear...")
+                        import time
+                        time.sleep(5)  # Add 5-second delay before retry
                         break
                     else:
                         logging.error(e)

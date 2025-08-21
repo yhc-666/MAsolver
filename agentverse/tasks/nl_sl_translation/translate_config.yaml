@@ -5,7 +5,7 @@ dataset:
 data_path:
   data/ProofWriter/dev.json
 output_dir:
-  outputs/deepseek/ProofWriter/translation
+  outputs/gpt/ProofWriter/translation/tur5
 prompts:
   # ${chat_history} 之前的放在system, 之后的放在user
   prompt: &prompt |-
@@ -22,8 +22,10 @@ prompts:
     2. **Completeness Check**: Review others' translations to understand their interpretation of the natural language problem. While keeping YOUR OWN symbolic language system, verify and correct the information completeness of your translation (no missing/extra facts, rules, predicates, or statements from the original problem).
     
     3. **Language Independence**: When referencing others' translations, you MUST maintain your own symbolic language system. DO NOT adopt symbols or syntax from other languages (e.g., LP uses ">>>", FOL uses "→", SAT uses "==" - never mix these).
+    
     Here is your discussion history:
     ${chat_history} 
+    
     ${turn_specific_instruction}
 
 llm_config:
@@ -32,22 +34,22 @@ llm_config:
   
   # API凭证配置
   api_credentials:
-    openai_api_key: "sk-c54acf253a834d25a8cddec234dd6ccc"
-    openai_base_url: "https://api.deepseek.com/v1"
+    openai_api_key: "1889146223668690996"
+    openai_base_url: "https://aigc.sankuai.com/v1/openai/native"
   
   # API模式配置
   api_settings:
-    model: "deepseek-chat"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
+    model: "gpt-4-0613"    # API调用的模型名称，直接传递给OpenAI兼容的API, 在 agentverse/llms/openai.py 中，通过 client.chat.completions.create(messages=messages, **self.args.dict()) 调用时，model 字段会被传递给API服务器
     llm_type: "gpt-4.1" #"deepseek-chat"  # LLM类选择：在 agentverse/initialization.py 的 load_llm() 函数中，通过 llm_registry.build(llm_type, **llm_config) 来选择具体的LLM实现类   注册系统：通过装饰器 @llm_registry.register() 将不同的LLM类注册到系统中
     temperature: 0
     max_tokens: 4000
-    max_retry: 3
+    max_retry: 4
     
   # 本地LLM模式配置  
   local_settings:
     model_path: "/mnt/sdb/ssuser/llm_models/Deepseek-14B"
     llm_type: "deepseek-local"
-    temperature: 0.7
+    temperature: 0
     top_p: 0.9
     top_k: 50
     max_tokens: 5120
@@ -55,11 +57,11 @@ llm_config:
     gpu_memory_utilization: 0.9
     max_model_len: 4096
     trust_remote_code: true
-    max_retry: 3
+    max_retry: 4
 
 environment:
   env_type: llm_eval
-  max_turns: 9    # 必须是3的倍数
+  max_turns: 5    # 必须是3的倍数
   rule:
     order:
       type: concurrent

@@ -10,7 +10,9 @@
       "WebFetch(domain:docs.anthropic.com)",
       "Bash(conda activate:*)",
       "Bash(source:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(conda:*)",
+      "Bash(/opt/miniconda3/envs/chateval/bin/python:*)"
     ],
     "deny": []
   }

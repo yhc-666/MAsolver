@@ -6,8 +6,8 @@ dataset:
   name: "ProofWriter"  # Available options: ProntoQA, ProofWriter, FOLIO, LogicalDeduction
 
 paths:
-  input_file: "outputs/deepseek/ProofWriter/translation/translation_results.json"
-  output_file: "outputs/deepseek/ProofWriter/symbolic_solver/results.json"
+  input_file: "outputs/gpt/ProofWriter/translation/tur1/translation_results.json"
+  output_file: "outputs/gpt/ProofWriter/symbolic_solver/tur1/results.json"
   backup_LLM_result_path: ""
 
 solver:

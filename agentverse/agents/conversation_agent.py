@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import logging
 import bdb
+import time
 from string import Template
 from typing import TYPE_CHECKING, List
 
 from agentverse.message import Message
+from openai import RateLimitError
 
 from . import agent_registry
 from .base import BaseAgent
@@ -17,17 +19,31 @@ class ConversationAgent(BaseAgent):
         prompt = self._fill_prompt_template(env_description)
 
         parsed_response = None
-        for i in range(self.max_retry):
-            try:
-                response = self.llm.generate_response(prompt, self.memory.messages, self.final_prompt)
-                parsed_response = self.output_parser.parse(response)
+        should_break = False
+        while True:
+            for i in range(self.max_retry):
+                try:
+                    response = self.llm.generate_response(prompt, self.memory.messages, self.final_prompt)
+                    parsed_response = self.output_parser.parse(response)
+                    should_break = True
+                    break
+                except KeyboardInterrupt:
+                    raise
+                except RateLimitError as e:
+                    logging.error(e)
+                    logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                    time.sleep(5)
+                    break  # Break inner loop to restart
+                except Exception as e:
+                    logging.error(e)
+                    logging.warning("Retrying...")
+                    continue
+            else:
+                # Max retries exceeded for non-rate-limit errors
+                logging.error(f"After {self.max_retry} failed tries, stopping.")
                 break
-            except KeyboardInterrupt:
-                raise
-            except Exception as e:
-                logging.error(e)
-                logging.warning("Retrying...")
-                continue
+            if should_break:
+                break
 
         if parsed_response is None:
             logging.error(f"{self.name} failed to generate valid response.")
@@ -46,17 +62,32 @@ class ConversationAgent(BaseAgent):
         prompt = self._fill_prompt_template(env_description)
 
         parsed_response = None
-        for i in range(self.max_retry):
-            try:
-                response = await self.llm.agenerate_response(prompt, self.memory.messages, self.final_prompt)
-                parsed_response = self.output_parser.parse(response)
+        should_break = False
+        while True:
+            for i in range(self.max_retry):
+                try:
+                    response = await self.llm.agenerate_response(prompt, self.memory.messages, self.final_prompt)
+                    parsed_response = self.output_parser.parse(response)
+                    should_break = True
+                    break
+                except (KeyboardInterrupt, bdb.BdbQuit):
+                    raise
+                except RateLimitError as e:
+                    logging.error(e)
+                    logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                    import asyncio
+                    await asyncio.sleep(5)
+                    break  # Break inner loop to restart
+                except Exception as e:
+                    logging.error(e)
+                    logging.warning("Retrying...")
+                    continue
+            else:
+                # Max retries exceeded for non-rate-limit errors
+                logging.error(f"After {self.max_retry} failed tries, stopping.")
                 break
-            except (KeyboardInterrupt, bdb.BdbQuit):
-                raise
-            except Exception as e:
-                logging.error(e)
-                logging.warning("Retrying...")
-                continue
+            if should_break:
+                break
 
         if parsed_response is None:
             logging.error(f"{self.name} failed to generate valid response.")

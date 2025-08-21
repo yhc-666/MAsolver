@@ -96,6 +96,8 @@ class LLMEvalAgent(BaseAgent):
                     if isinstance(e, RateLimitError):
                         logging.error(e)
                         logging.warning("Retrying Until rate limit error disappear...")
+                        import time
+                        time.sleep(5)  # Add 5-second delay before retry
                         break
                     else:
                         logging.error(e)

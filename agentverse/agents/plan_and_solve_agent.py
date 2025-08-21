@@ -3,8 +3,10 @@ from __future__ import annotations
 import time
 import asyncio
 import re
+import logging
 from string import Template
 from typing import Dict, Any, Optional, List
+from openai import RateLimitError
 
 from agentverse.agents.llm_solver_agent import LLMSolverAgent, SolverResult
 from agentverse.message import StructuredPrompt
@@ -74,18 +76,29 @@ class PlanAndSolveAgent(LLMSolverAgent):
             reasoning_response = None
             last_error = None
             
-            for attempt in range(self.max_retry):
-                try:
-                    # First LLM call for reasoning
-                    reasoning_result = self.llm.generate_response(planning_prompt, [])
-                    reasoning_response = reasoning_result.content
-                    break
-                    
-                except Exception as e:
-                    last_error = e
-                    if attempt < self.max_retry - 1:
-                        time.sleep(1)
-                    continue
+            while True:
+                rate_limit_encountered = False
+                for attempt in range(self.max_retry):
+                    try:
+                        # First LLM call for reasoning
+                        reasoning_result = self.llm.generate_response(planning_prompt, [])
+                        reasoning_response = reasoning_result.content
+                        break
+                        
+                    except RateLimitError as e:
+                        logging.error(f"Rate limit error: {e}")
+                        logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                        time.sleep(5)
+                        rate_limit_encountered = True
+                        break  # Break inner loop to restart
+                    except Exception as e:
+                        last_error = e
+                        if attempt < self.max_retry - 1:
+                            time.sleep(1)
+                        continue
+                
+                if not rate_limit_encountered:
+                    break  # Exit outer loop if not rate limit
             
             if reasoning_response is None:
                 latency_ms = int((time.time() - start_time) * 1000)
@@ -126,18 +139,29 @@ class PlanAndSolveAgent(LLMSolverAgent):
             extraction_prompt = self._create_extraction_prompt(reasoning_response)
             
             answer_response = None
-            for attempt in range(self.max_retry):
-                try:
-                    # Second LLM call for answer extraction
-                    answer_result = self.llm.generate_response(extraction_prompt, [])
-                    answer_response = answer_result.content
-                    break
-                    
-                except Exception as e:
-                    last_error = e
-                    if attempt < self.max_retry - 1:
-                        time.sleep(1)
-                    continue
+            while True:
+                rate_limit_encountered = False
+                for attempt in range(self.max_retry):
+                    try:
+                        # Second LLM call for answer extraction
+                        answer_result = self.llm.generate_response(extraction_prompt, [])
+                        answer_response = answer_result.content
+                        break
+                        
+                    except RateLimitError as e:
+                        logging.error(f"Rate limit error: {e}")
+                        logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                        time.sleep(5)
+                        rate_limit_encountered = True
+                        break  # Break inner loop to restart
+                    except Exception as e:
+                        last_error = e
+                        if attempt < self.max_retry - 1:
+                            time.sleep(1)
+                        continue
+                
+                if not rate_limit_encountered:
+                    break  # Exit outer loop if not rate limit
             
             if answer_response is None:
                 latency_ms = int((time.time() - start_time) * 1000)
@@ -215,18 +239,29 @@ class PlanAndSolveAgent(LLMSolverAgent):
             reasoning_response = None
             last_error = None
             
-            for attempt in range(self.max_retry):
-                try:
-                    # First LLM call for reasoning
-                    reasoning_result = await self.llm.agenerate_response(planning_prompt, [])
-                    reasoning_response = reasoning_result.content
-                    break
-                    
-                except Exception as e:
-                    last_error = e
-                    if attempt < self.max_retry - 1:
-                        await asyncio.sleep(1)
-                    continue
+            while True:
+                rate_limit_encountered = False
+                for attempt in range(self.max_retry):
+                    try:
+                        # First LLM call for reasoning
+                        reasoning_result = await self.llm.agenerate_response(planning_prompt, [])
+                        reasoning_response = reasoning_result.content
+                        break
+                        
+                    except RateLimitError as e:
+                        logging.error(f"Rate limit error: {e}")
+                        logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                        await asyncio.sleep(5)
+                        rate_limit_encountered = True
+                        break  # Break inner loop to restart
+                    except Exception as e:
+                        last_error = e
+                        if attempt < self.max_retry - 1:
+                            await asyncio.sleep(1)
+                        continue
+                
+                if not rate_limit_encountered:
+                    break  # Exit outer loop if not rate limit
             
             if reasoning_response is None:
                 latency_ms = int((time.time() - start_time) * 1000)
@@ -267,18 +302,29 @@ class PlanAndSolveAgent(LLMSolverAgent):
             extraction_prompt = self._create_extraction_prompt(reasoning_response)
             
             answer_response = None
-            for attempt in range(self.max_retry):
-                try:
-                    # Second LLM call for answer extraction
-                    answer_result = await self.llm.agenerate_response(extraction_prompt, [])
-                    answer_response = answer_result.content
-                    break
-                    
-                except Exception as e:
-                    last_error = e
-                    if attempt < self.max_retry - 1:
-                        await asyncio.sleep(1)
-                    continue
+            while True:
+                rate_limit_encountered = False
+                for attempt in range(self.max_retry):
+                    try:
+                        # Second LLM call for answer extraction
+                        answer_result = await self.llm.agenerate_response(extraction_prompt, [])
+                        answer_response = answer_result.content
+                        break
+                        
+                    except RateLimitError as e:
+                        logging.error(f"Rate limit error: {e}")
+                        logging.warning("Rate limit encountered, retrying indefinitely after delay...")
+                        await asyncio.sleep(5)
+                        rate_limit_encountered = True
+                        break  # Break inner loop to restart
+                    except Exception as e:
+                        last_error = e
+                        if attempt < self.max_retry - 1:
+                            await asyncio.sleep(1)
+                        continue
+                
+                if not rate_limit_encountered:
+                    break  # Exit outer loop if not rate limit
             
             if answer_response is None:
                 latency_ms = int((time.time() - start_time) * 1000)
